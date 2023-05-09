@@ -12,6 +12,7 @@
 #
 # possible command line options: see subroutine FullUsage
 #
+# version       1.3     09.05.2023      handle also boxes and only bas files
 # version       1.2     30.03.2023      restructured and -collect, -reduce
 # version       1.1     ?
 #
@@ -384,8 +385,14 @@ sub show_files {
   my $newitem = "";
 
   my $basin = $str->get_basin();
-  $basin .= ".grd";
   $basin =~ s/^\s+//;
+  if( file_exists("$basin.grd") ) {
+    $basin .= ".grd";
+  } elsif( file_exists("$basin.bas") ) {
+    $basin .= ".bas";
+  } else {
+    die "*** cannot find basin $basin: no .grd or .bas file found";
+  }
   print "  basin :    grid = '$basin'\n";
   push(@files,$basin);
 
@@ -394,6 +401,16 @@ sub show_files {
   $item{"varname"} = "basin";
   $item{"value"} = $basin;
   push(@items,\%item);
+
+  if( file_exists("boxes.txt") ) {
+    my %bitem = ();
+    print "  boxes :    boxes = 'boxes.txt'\n";
+    push(@files,"boxes.txt");
+    $bitem{"section"} = "none";
+    $bitem{"varname"} = "boxes";
+    $bitem{"value"} = "boxes.txt";
+    push(@items,\%bitem);
+  }
 
   my $sections = $str->{sections};
   my $sequence = $str->{sequence};
@@ -580,8 +597,16 @@ sub collect_str {
       print STDERR "  copying grd file $file to $dir\n";
       system("cp $file $dir");
       $item->{"newdir"} = "";
+    } elsif( $file =~ /\.bas$/ ) {
+      print STDERR "  copying bas file $file to $dir\n";
+      system("cp $file $dir");
+      $item->{"newdir"} = "";
     } elsif( $file =~ /\.nml$/ ) {
       print STDERR "  copying nml file $file to $dir\n";
+      system("cp $file $dir");
+      $item->{"newdir"} = "";
+    } elsif( $file =~ /boxes.txt$/ ) {
+      print STDERR "  copying boxes file $file to $dir\n";
       system("cp $file $dir");
       $item->{"newdir"} = "";
     } elsif( not $::reduce ) {
@@ -646,6 +671,17 @@ sub collect_str {
   print STDERR "  tar cvzf $dir.tar.gz $dir\n";
   print STDERR "you can run the simulation by doing the following:\n";
   print STDERR "  cd $dir; make basin; make run\n";
+}
+
+sub file_exists {
+
+  my $file = shift;
+
+  if( -e $file ) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 sub create_makefile {

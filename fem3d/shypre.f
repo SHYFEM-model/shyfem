@@ -67,6 +67,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2020    ggu     better handle copyright notice
 c 13.07.2020    ggu     honor noopti flag, stack poisoning eliminated
+c 06.05.2023    ggu     some enhancements and better error handeling
 c
 c notes :
 c
@@ -90,6 +91,8 @@ c==========================================================
 	logical, save :: bquiet
 	logical, save :: bsilent
 
+	real, save :: eps_area = 1.e-4
+
 c==========================================================
 	end module mod_shypre
 c==========================================================
@@ -100,6 +103,7 @@ c**********************************************************
 
 	use basin
 	use mod_shypre
+	use mod_sort
 
 	implicit none
 
@@ -108,7 +112,7 @@ c**********************************************************
 	character*80 errfil
 	character*80 errtex
         character*80 descrg,descra,basnam,grdfile
-        logical bstop,bwrite,bdebug,bww
+        logical bstop,bwrite,bdebug,bww,bstopall
 
         integer, save, allocatable :: ipdex(:), iedex(:)
         integer, save, allocatable :: iphv(:), kphv(:)
@@ -124,7 +128,7 @@ c**********************************************************
 
 	integer ianz,idepth,itief
 	integer ie,k
-	integer nat,net,ner,nb1,nb2,nb3,nb4,nb9
+	integer nat,net,nb1,nb2,nb3,nb4,nb9
 
 	integer nk,ne,nl,nn
         integer nknh,nelh,nli,nco
@@ -137,9 +141,8 @@ c**********************************************************
 
 	integer idefbas,ichanm,ifileo
 
-	data bstop /.false./
-	data errfil /'errout.dat'/
-
+	bstop = .false.
+	bstopall = .false.
 	bdebug = .false.
 
         dcorbas=0.
@@ -155,7 +158,6 @@ c
 	nb9=9
 	net=5
 	nat=6
-	ner=99		!errout
 
 	hflag = -999.
 
@@ -166,16 +168,6 @@ c get name of basin
 c--------------------------------------------------------
 
 	call shypre_init(grdfile)
-
-c--------------------------------------------------------
-c open error file
-c--------------------------------------------------------
-
-	ner=ifileo(ner,errfil,'form','new')
-	if(ner.le.0) then
-		write(6,*) 'Cannot open error file'
-		stop 'error stop : shypre'
-	end if
 
 c--------------------------------------------------------
 c set parameters
@@ -250,7 +242,7 @@ c--------------------------------------------------------
 	end if
 
         if(nkn.le.0 .or. nel.le.0) then
-          write(ner,*) ' Nothing to process'
+          write(6,*) ' Nothing to process'
 	  goto 99999
         end if
 
@@ -311,21 +303,21 @@ c--------------------------------------------------------
         write(nat,*) ' ...making external index'
 	end if
 
-        call isort(nkn,ipv,ipdex)
-        call isort(nel,ipev,iedex)
+        call sort(nkn,ipv,ipdex)
+        call sort(nel,ipev,iedex)
 
 	if( bwrite ) then
         write(nat,*) ' ...controlling uniqueness of node numbers'
 	end if
 
-        call uniqn(nkn,ipv,ipdex,ner,bstop)
+        call uniqn(nkn,ipv,ipdex,bstop)
 	if(bstop) goto 99909
 
 	if( bwrite ) then
         write(nat,*) ' ...controlling uniqueness of element numbers'
 	end if
 
-        call uniqn(nel,ipev,iedex,ner,bstop)
+        call uniqn(nel,ipev,iedex,bstop)
 
 	if( bdebug ) then
 	call gtest('end uniqn',nelddi,nkn,nel,nen3v)
@@ -335,21 +327,29 @@ c--------------------------------------------------------
         write(nat,*) ' ...controlling uniqueness of elements'
 	end if
 
-        call uniqe(nel,nen3v,iaux,iphev,ipev,ner,bstop)
-        if(bstop) goto 99915
-
-	if( bwrite ) then
-	write(nat,*) ' ...changing extern with intern node numbers'
+        call uniqe(nel,nen3v,ipev,bstop)
+	if( bstop ) then
+	  bstop = .false.
+	  bstopall = .true.
+	  if( bwrite ) then
+	    write(6,*) 'trying to eliminate non-unique eliments'
+	  end if
+          call uniqe(nel,nen3v,ipev,bstop)
+          if(bstop) goto 99915
 	end if
 
-        !call chexin(nkn,nel,nen3v,ipv,ipdex,ner,bstop)
+	!if( bwrite ) then
+	!write(nat,*) ' ...changing extern with intern node numbers'
+	!end if
+
+        !call chexin(nkn,nel,nen3v,ipv,ipdex,bstop)
 	!if(bstop) goto 99920
 
 	if( bwrite ) then
         write(nat,*) ' ...controlling node numbers'
 	end if
 
-        call needn(nkn,nel,nen3v,ipv,iaux,ner,bstop)
+        call needn(nkn,nel,nen3v,ipv,iaux,bstop)
 	if(bstop) goto 99918
 
 	if( bwrite ) then
@@ -361,8 +361,20 @@ c--------------------------------------------------------
 	call gtest('end sense',nelddi,nkn,nel,nen3v)
 	end if
 
-        call clockw(nkn,nel,nen3v,ipev,xgv,ygv,ner,bstop)
-	if(bstop) goto 99930
+        call clockw(nkn,nel,nen3v,ipev,xgv,ygv,bstop)
+	if( bstop ) then
+	  bstop = .false.
+	  bstopall = .true.
+          call clockw(nkn,nel,nen3v,ipev,xgv,ygv,bstop)
+	  if(bstop) goto 99930
+	end if
+
+	if( bwrite ) then
+	write(nat,*) ' ...testing area of elements'
+	end if
+
+        call areaz(nkn,nel,nen3v,ipev,xgv,ygv,bstop)
+	if(bstop) goto 99931
 
 	if( bwrite ) then
 	write(nat,*) ' ...setting up side index'
@@ -371,8 +383,10 @@ c--------------------------------------------------------
         call estimate_grade(nkn,nel,nen3v,ng,ngr1)
 	allocate(iknot(ngr1,nk))
 
-        call sidei(nkn,nel,nen3v,ng,iknot,ngr1,ngr)
-        call check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngr1,iaux)
+        call sidei(nkn,nel,nen3v,ng,iknot,ngr1,ngr,bstop)
+	if(bstop) goto 99934
+        call check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngr1,bstop)
+	if(bstop) goto 99935
 	call knscr(nkn,ngr,ngr1,iknot)
 
 	if( bww ) write(nat,*) 'Maximum grade of nodes is ',ngr
@@ -456,26 +470,23 @@ c--------------------------------------------------------
 	if(itief.eq.0) then
           if( bwrite ) write(nat,*) ' ...................elementwise'
           call helem(nel,nelh,iphev,iaux,iedex,ipev
-     +				,hm3v,hev,ner,bstop)
+     +				,hm3v,hev,bstop)
 	else if( itief .eq. 1 ) then
           if( bwrite ) write(nat,*) ' ......................nodewise'
           call hnode(nkn,nel,nknh,nen3v,iphv,iaux,ipdex,ipv
-     +                      ,hm3v,hkv,ner,bstop)
+     +                      ,hm3v,hkv,bstop)
 	else
           if( bwrite ) write(nat,*) ' .............first elementwise'
           call helem(nel,nelh,iphev,iaux,iedex,ipev
-     +				,hm3v,hev,ner,bstop)
+     +				,hm3v,hev,bstop)
           if( bwrite ) write(nat,*) ' .................then nodewise'
           call hnode(nkn,nel,nknh,nen3v,iphv,iaux,ipdex,ipv
-     +                      ,hm3v,hkv,ner,bstop)
+     +                      ,hm3v,hkv,bstop)
 	end if
+
+	if( bstop ) goto 99932
 
 	call check_hm3v(nel,hm3v,hflag)
-
-	if( bstop ) then
-	  write(6,*) '*** error in processing depth'
-	end if
-
 	call ketest(nel,nen3v)
 
 	descrr=descrg
@@ -488,10 +499,16 @@ c--------------------------------------------------------
 	call handle_partition(nkn,nel,kphv,ierank)
 
 c--------------------------------------------------------
+c final error check
+c--------------------------------------------------------
+
+	if( bstopall ) goto 99940
+
+c--------------------------------------------------------
 c write to file
 c--------------------------------------------------------
 
-	if( bwrite ) write(nat,*) ' ...writing file ',nb2
+	if( bwrite ) write(nat,*) ' ...writing file '
 
 	call basin_write(nb2)
 
@@ -504,60 +521,44 @@ c end of routine
 c--------------------------------------------------------
 
 	stop
-99900	write(nat,*)' (00) error in dimension declaration'
+99909	write(nat,*)' (09) error: no unique definition of nodes'
 	goto 99
-99909	write(nat,*)' (09) error : no unique definition of nodes'
+99915	write(nat,*)' (15) error: no unique definition of elements'
 	goto 99
-99915	write(nat,*)' (15) error : no unique definition of elements'
+99918	write(nat,*)' (18) error: not used nodes present'
 	goto 99
-99918	write(nat,*)' (18) error reading file 1'
+99920	write(nat,*)' (20) error: extern/intern node numbers'
 	goto 99
-99920	write(nat,*)' (20) error reading file 1'
+99930	write(nat,*)' (30) error: elements with clockwise nodes'
 	goto 99
-99930	write(nat,*)' (30) error in element index'
+99931	write(nat,*)' (31) error: zero area elements'
 	goto 99
-99990	continue
-	write(6,*) 'nknddi = ',nknddi,'    nkn = ',nkn
-	write(6,*) 'nelddi = ',nelddi,'    nel = ',nel
-	write(nat,*)' (90) error reading grid file'
-	write(nat,*)' plaese have a look at the error messages'
-	write(nat,*)' if there are errors in the file please adjust'
-	write(nat,*)' if there are dimension errors please adjust'
-	write(nat,*)'   dimensions, re-compile and re-run the command'
+99932	write(nat,*)' (32) error: processing depth'
 	goto 99
-99999	write(nat,*)' (99) generic error'
+99934	write(nat,*)' (34) error: ngr1 is wrong (internal error'
 	goto 99
-c
-   99	continue
-c
-	nrec = 0
-	rewind(ner)
-   98	read(ner,6000,err=97,end=97) errtex
-	write(nat,*) errtex
-	nrec = nrec + 1
-	goto 98
-   97	continue
-c
-	if( nrec .gt. 0 ) then
-	  write(nat,*)
-	  write(nat,*) ' Error messages have been written to file :'
-	  write(nat,*) errfil
-	  write(nat,*)
-	end if
+99935	write(nat,*)' (35) error: irregular connections'
+	goto 99
+99940	write(nat,*)' (40) error: generic error'
+	goto 99
+99999	write(nat,*)' (99) error: no grid in grd file'
+	goto 99
 
-	stop ' error stop : shypre'
- 6000	format(a)
+   99	continue
+
+	write(6,*) 'no bas file written... aborting'
+	stop ' error stop shypre'
  	end
 
 c*****************************************************************
 
-        subroutine uniqn(n,iv,index,ner,bstop)
+        subroutine uniqn(n,iv,index,bstop)
 
 c controlls uniqueness of numbers in iv
 
         implicit none
 
-        integer n,ner
+        integer n
         logical bstop
         integer iv(n)
         integer index(n)
@@ -568,7 +569,7 @@ c controlls uniqueness of numbers in iv
         do i=2,n
           k2=iv(index(i))
           if(k1.eq.k2) then
-            write(ner,*)' warning : ',k1,' not unique'
+            write(6,*)' warning : ',k1,' not unique'
             bstop=.true.
           end if
           k1=k2
@@ -579,21 +580,28 @@ c controlls uniqueness of numbers in iv
 
 c*****************************************************************
 
-        subroutine uniqe(nel,nen3v,iaux,index,ipev,ner,bstop)
+        subroutine uniqe(nel,nen3v,ipev,bstop)
 
 c controlls uniqueness of elements (shell for equale)
 
+	use mod_shypre
+	use mod_sort
+
         implicit none
 
-        integer nel,ner
+        integer nel
         logical bstop
         integer nen3v(3,nel)
-        integer iaux(nel),index(nel+1)  !bug lahey
         integer ipev(nel)
 
-        integer ie,ii,ka,km,k1,k
+        integer ie,ii,ka,km,k1,k,ne,i
         integer ie1,ie2
-        integer isum
+        integer isum,iold,inew,itest
+        integer iaux(nel),index(nel),elist(2,nel)
+
+	logical bwrite
+
+	bwrite = .not. bquiet
 
         isum=0
 
@@ -610,13 +618,24 @@ c controlls uniqueness of elements (shell for equale)
           iaux(ie)=ka+km+k1
         end do
 
-        call isort(nel,iaux,index)
+        call sort(nel,iaux,index)
+
+	iold = 0
+	itest = 0
+	do ie=1,nel
+	  inew = iaux(index(ie))
+	  if( inew == iold ) itest = itest + 1
+	  iold = inew
+	end do
+
+	if( bwrite ) write(6,*) 'testing uniqueness of elements: ',itest
+
+	ne = 0
+	elist = 0
 
         ie1=1
         do while(ie1.le.nel)
           ie2=ie1+1
-c          write(6,*) nel,ie1,ie2,index(ie1),index(ie2)
-          !do while(ie2.le.nel.and.iaux(index(ie1)).eq.iaux(index(ie2)))
           do
 	    if( ie2 > nel ) exit
 	    if( iaux(index(ie1)) /= iaux(index(ie2)) ) exit
@@ -624,10 +643,21 @@ c          write(6,*) nel,ie1,ie2,index(ie1),index(ie2)
           end do
           if(ie2-ie1.gt.1) then
             isum=isum+ie2-ie1-1
-            call equale(nel,ie1,ie2-1,nen3v,index,ipev,ner,bstop)
+	    call equale(nel,ie1,ie2-1,nen3v,index,ipev,ne,elist)
           end if
           ie1=ie2
         end do
+
+	if( ne > 0 ) then
+	  bstop = .true.
+	  if( bwrite ) then
+	    write(6,*) 'non-unique elements present: ',ne
+	    do i=1,ne
+	      !write(6,*) '  elements: ',ipev(elist(1,i)),ipev(elist(2,i))
+	    end do
+	  end if
+	  call elime(ne,elist,nel,nen3v,ipev)
+	end if
 
         !write(6,*) 'uniqe (isum) : ',isum
 
@@ -636,19 +666,42 @@ c          write(6,*) nel,ie1,ie2,index(ie1),index(ie2)
 
 c*****************************************************************
 
-        subroutine equale(nel,ip1,ip2,nen3v,index,ipev,ner,bstop)
+	subroutine elime(ne,elist,nel,nen3v,ipev)
+
+	implicit none
+
+	integer ne
+	integer elist(2,ne)
+	integer nel
+	integer nen3v(3,nel)
+	integer ipev(nel)
+
+	integer i,ie
+
+	do i=1,ne
+	  ie = elist(2,i)
+	  nen3v(:,ie) = nen3v(:,nel)
+	  ipev(ie) = ipev(nel)
+	  nel = nel - 1
+	end do
+
+	end
+
+c*****************************************************************
+
+	subroutine equale(nel,ip1,ip2,nen3v,index,ipev,ne,elist)
 
 c controlls uniqueness of listed elements
 
         implicit none
 
         integer nel
-        integer ner
         integer ip1,ip2
-        logical bstop
         integer nen3v(3,nel)
         integer index(nel)
         integer ipev(nel)
+	integer ne
+        integer elist(2,nel)
 
         integer ip,i,ie1,ie2
         integer i1,i2,i3,kn1,kn2,kn3
@@ -666,9 +719,11 @@ c controlls uniqueness of listed elements
                 kn3=nen3v(3,ie1)
                 if(nen3v(i2,ie2).eq.kn2 .and.
      +                  nen3v(i3,ie2).eq.kn3) then
-                  write(ner,*)' warning : element',ipev(ie1)
+                  write(6,*)' error: element',ipev(ie1)
      +                  ,'  and',ipev(ie2),'  are identical'
-                  bstop=.true.
+		  ne = ne + 1
+		  elist(1,ne) = ie1
+		  elist(2,ne) = ie2
                 end if
               end if
             end do
@@ -680,13 +735,13 @@ c controlls uniqueness of listed elements
 
 c*****************************************************************
 
-        subroutine needn(nkn,nel,nen3v,ipv,iaux,ner,bstop)
+        subroutine needn(nkn,nel,nen3v,ipv,iaux,bstop)
 
 c controlls if all nodes are needed (use nen3v as one-dim array)
 
         implicit none
 
-        integer nkn,nel,ner
+        integer nkn,nel
         logical bstop
         integer nen3v(3,nel)
         integer ipv(nkn)
@@ -706,7 +761,7 @@ c controlls if all nodes are needed (use nen3v as one-dim array)
 
         do k=1,nkn
           if(iaux(k).eq.0) then
-            write (ner,*)' warning : node ',ipv(k),' not needed'
+            write (6,*)' error: node ',ipv(k),' not needed'
             bstop=.true.
           end if
         end do
@@ -716,13 +771,15 @@ c controlls if all nodes are needed (use nen3v as one-dim array)
 
 c*****************************************************************
 
-        subroutine chexin(nkn,nel,nen3v,ipv,index,ner,bstop)
+        subroutine chexin(nkn,nel,nen3v,ipv,index,bstop)
 
 c changing extern with intern node numbers in element index
 
+	use mod_sort
+
         implicit none
 
-        integer nkn,nel,ner
+        integer nkn,nel
         logical bstop
         integer nen3v(3,nel)
         integer ipv(nkn)
@@ -736,7 +793,7 @@ c changing extern with intern node numbers in element index
             kn=nen3v(ii,ie)
             i=locate(nkn,ipv,index,kn)
             if(i.le.0) then
-              write(ner,*)' warning : node',kn,' not found'
+              write(6,*)' error: node',kn,' not found'
               bstop=.true.
             else
               nen3v(ii,ie)=i
@@ -749,19 +806,103 @@ c changing extern with intern node numbers in element index
 
 c*****************************************************************
 
-        subroutine clockw(nkn,nel,nen3v,ipev,xgv,ygv,ner,bstop)
+        subroutine areaz(nkn,nel,nen3v,ipev,xgv,ygv,bstop)
 
-c test for anti-clockwise sense of nodes
+c test for zero area elements
+
+	use mod_shypre
+	use mod_sort
 
         implicit none
 
-        integer nkn,nel,ner
+        integer nkn,nel
         logical bstop
         integer nen3v(3,nel)
         integer ipev(nel)
         real xgv(nkn),ygv(nkn)
 
-        integer ie,ii,iii,k1,k2
+	logical bwarn
+        integer ie,ii,ii2,ii3,k1,k2,k3,ke,i
+        real a,x1,x2,x3,y1,y2,y3,p
+        real area(nel),amin,amax
+	real eps
+
+	real get_area
+
+	amin = 1.e+30
+	amax = -1.e+30
+	eps = eps_area
+	bwarn = .false.
+
+	do ie=1,nel
+	  ii = 1
+          ii2=mod(ii,3)+1
+          ii3=mod(ii2,3)+1
+          k1=nen3v(ii,ie)
+          k2=nen3v(ii2,ie)
+          k3=nen3v(ii3,ie)
+	  x1=xgv(k1)
+	  y1=ygv(k1)
+	  x2=xgv(k2)
+	  y2=ygv(k2)
+	  x3=xgv(k3)
+	  y3=ygv(k3)
+          a = get_area(x1,y1,x2,y2,x3,y3)
+	  a = abs(a)
+	  amin = min(amin,a)
+	  amax = max(amax,a)
+	  area(ie) = a
+	end do
+
+	!call sort(nel,area)
+	!do i=1,10
+	!  write(6,*) i,area(i),area(i)/amax
+	!end do
+	!write(6,*)
+	!do i=nel-10,nel
+	!  write(6,*) i,area(i),area(i)/amax
+	!end do
+	!call histo_area(nel,area)
+	!stop
+
+	do ie=1,nel
+	  a = area(ie)
+	  p = a / amax
+	  ke = ipev(ie)
+          if(a.eq.0.) then
+            write(6,*)' error: area in element ',ipev(ie)
+     +                     ,' is zero'
+            bstop=.true.
+          else if(p.lt.eps) then
+            write(6,1000)' warning: element ',ipev(ie)
+     +                     ,' seems too small:',a,p
+            bwarn=.true.
+          end if
+	end do
+
+	if( .not. bquiet .and. bwarn ) then
+	  write(6,*) ' area amin,amax: = ',amin,amax,amin/amax
+	end if
+
+        return
+ 1000	format(1x,a,i10,a,2g14.5)
+        end
+
+c*****************************************************************
+
+        subroutine clockw(nkn,nel,nen3v,ipev,xgv,ygv,bstop)
+
+c test for anti-clockwise sense of nodes
+
+        implicit none
+
+        integer nkn,nel
+        logical bstop
+        integer nen3v(3,nel)
+        integer ipev(nel)
+        real xgv(nkn),ygv(nkn)
+
+        integer ie,ii,iii,k1,k2,ieaux
         double precision a,x1,x2,y1,y2	!new 16.3.95
 
 	do ie=1,nel
@@ -776,10 +917,13 @@ c test for anti-clockwise sense of nodes
 	    y2=ygv(k2)
             a=a+x1*y2-x2*y1
           end do
-          if(a.le.0.) then
-            write(ner,*)' warning : nodes in element ',ipev(ie)
-     +                     ,' are in clockwise sense'
+          if(a.lt.0.) then
+            write(6,*)' error: nodes in element ',ipev(ie)
+     +                     ,' are in clockwise sense... adjusting'
             bstop=.true.
+	    ieaux = nen3v(1,ie)
+	    nen3v(1,ie) = nen3v(2,ie)
+	    nen3v(2,ie) = ieaux
           end if
 	end do
 
@@ -821,7 +965,7 @@ c estimates ngr
 
 c*****************************************************************
 
-        subroutine check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngr1,iaux)
+        subroutine check_sidei(nkn,nel,nen3v,ipv,ng,iknot,ngr1,bstop)
 
 c set up side index and find grade
 
@@ -833,16 +977,15 @@ c set up side index and find grade
         integer ipv(nkn)
         integer ng(nkn)
         integer iknot(ngr1,nkn)
+	logical bstop
+
         integer iaux(nkn)
 
         integer ii,ie,k
 	integer igr,iel
-	logical bstop
 
 	bstop = .false.
-	do k=1,nkn
-	  iaux(k) = 0
-	end do
+	iaux = 0
 
 	do ie=1,nel
 	  do ii=1,3
@@ -855,18 +998,21 @@ c set up side index and find grade
 	  igr = ng(k)
 	  iel = iaux(k)
 	  if( igr .gt. iel + 1 .or. igr .lt. iel ) then
-	    write(6,*) 'node not regular: ',ipv(k),igr,iel
+	    write(6,*) ' error: irregular connection of node: '
+     +				,ipv(k),igr,iel
 	    bstop = .true.
 	  end if
 	end do
 
-	if( bstop ) stop 'error stop check_sidei: node not regular'
+	if( bstop ) then
+	  write(6,*) ' ...please check nodes for connections'
+	end if
 
 	end
 
 c*****************************************************************
 
-        subroutine sidei(nkn,nel,nen3v,ng,iknot,ngr1,ngr)
+        subroutine sidei(nkn,nel,nen3v,ng,iknot,ngr1,ngr,bstop)
 
 c set up side index and find grade ngr
 
@@ -877,6 +1023,7 @@ c set up side index and find grade ngr
         integer nen3v(3,nel)
         integer ng(nkn)
         integer iknot(ngr1,nkn)
+	logical bstop
 
         integer i,ii,iii,ie,k1,k2
 
@@ -912,8 +1059,8 @@ c set up side index and find grade ngr
 
         return
    99	continue
-	write(6,*) 'dimension of ngr1 is too low: ',ngr1
-	stop 'error stop sidei: ngr1'
+	bstop = .true.
+	write(6,*) ' error: dimension of ngr1 is too low: ',ngr1
         end
 
 c**********************************************************
@@ -1206,6 +1353,8 @@ c we construct iedex newly and use iaux,iedex as aux arrays
 c iedex is also used as a real aux array for rcopy	-> changed
 c neaux is probably he3v (real) used as an aux array	-> changed
 
+	use mod_sort
+
         implicit none
 
         integer nel
@@ -1224,7 +1373,7 @@ c neaux is probably he3v (real) used as an aux array	-> changed
           ival(ie)=min(nen3v(1,ie),nen3v(2,ie),nen3v(3,ie))
 	end do
 
-        call isort(nel,ival,iedex)    !iedex is the index table
+        call sort(nel,ival,iedex)    !iedex is the index table
         call rank(nel,iedex,ierank)   !ierank is the rank table
 
         call icopy(nel,ipev,ierank)
@@ -1329,14 +1478,15 @@ c**********************************************************
 c**********************************************************
 
         subroutine helem(nel,nhd,iphev,iaux,iedex
-     +                    ,ipev,hm3v,hev,ner,bstop)
+     +                    ,ipev,hm3v,hev,bstop)
 
 c depth by elements
+
+	use mod_sort
 
         implicit none
 
         integer nel,nhd
-        integer ner
         logical bstop
         integer iaux(nel)
         integer iedex(nel)
@@ -1352,7 +1502,7 @@ c depth by elements
 
 	!write(6,*) 'helem: ',nel,nhd
 
-        call isort(nel,ipev,iedex)
+        call sort(nel,ipev,iedex)
 
 c it is : ipev(ie) == iphev(i)
 
@@ -1361,11 +1511,11 @@ c it is : ipev(ie) == iphev(i)
           iel=iphev(i)
           ie=locate(nel,ipev,iedex,iel)
           if(ie.le.0) then
-            write(ner,*)' warning : element',iel,' not found'
+            write(6,*)' warning : element',iel,' not found'
             bstop=.true.
           else
             if(iaux(ie).ne.0) then
-              write(ner,*)' for element ',ipev(ie)
+              write(6,*)' for element ',ipev(ie)
      +                        ,' depth data not unique'
               bstop=.true.
             else
@@ -1376,7 +1526,7 @@ c it is : ipev(ie) == iphev(i)
 
         do  ie=1,nel
           if(iaux(ie).eq.0) then
-            write(ner,*)' for element ',ipev(ie)
+            write(6,*)' for element ',ipev(ie)
      +                        ,' no depth data found'
             bstop=.true.
 	  else
@@ -1392,14 +1542,15 @@ c it is : ipev(ie) == iphev(i)
 c**********************************************************
 
         subroutine hnode(nkn,nel,nhd,nen3v,iphv,iaux,ipdex,ipv
-     +                      ,hm3v,hkv,ner,bstop)
+     +                      ,hm3v,hkv,bstop)
 
 c depth by nodes
+
+	use mod_sort
 
         implicit none
 
         integer nkn,nel,nhd
-        integer ner
         logical bstop
         integer iaux(nkn)
         integer ipdex(nkn)
@@ -1417,17 +1568,17 @@ c depth by nodes
           iaux(k)=0
         end do
 
-        call isort(nkn,ipv,ipdex)
+        call sort(nkn,ipv,ipdex)
 
         do i=1,nhd
           kn=iphv(i)
           k=locate(nkn,ipv,ipdex,kn)
           if(k.le.0) then
-            write(ner,*)' warning : node',kn,' not found'
+            write(6,*)' warning : node',kn,' not found'
             bstop=.true.
           else
             if(iaux(k).ne.0) then
-              write(ner,*)' for node ',ipv(k)
+              write(6,*)' for node ',ipv(k)
      +                        ,' depth data not unique'
               bstop=.true.
             else
@@ -1438,7 +1589,7 @@ c depth by nodes
 
         do  k=1,nkn
           if(iaux(k).eq.0) then
-            write(ner,*)' for node ',ipv(k)
+            write(6,*)' for node ',ipv(k)
      +                        ,' no depth data found'
             bstop=.true.
 	  end if
@@ -1559,6 +1710,21 @@ c checks uniquness of nodes in elements
 
 	return
 	end
+
+c**********************************************************
+
+        function get_area(x1,y1,x2,y2,x3,y3)
+
+c computes area of triangle
+
+        implicit none
+
+        real get_area
+        real x1,y1,x2,y2,x3,y3
+
+        get_area = 0.5 * ( (x2-x1) * (y3-y1) - (x3-x1) * (y2-y1) )
+
+        end
 
 c**********************************************************
 c**********************************************************
@@ -1733,6 +1899,71 @@ c**********************************************************
 
 	call clo_check_files(1)
 	call clo_get_file(1,grdfile)
+
+	end
+
+c**********************************************************
+
+	subroutine histo_area(n,array)
+
+	implicit none
+
+	integer n
+	real array(n)
+
+	integer, parameter :: nbuck = 20
+	integer ib,i,ntot
+	integer ibuck(0:nbuck)
+	real atot,adiff,a1,a2
+	real abuck(0:nbuck)
+	real x,y,a,y0,z,s,b
+	real amin,amax
+
+	amin = minval(array)
+	amax = maxval(array)
+
+	b = 0.1
+	b = 5.
+	b = 10.
+
+	atot = amax - amin
+	adiff = atot / nbuck
+	a1 = amin + adiff/2.
+	a2 = amax - adiff/2.
+	y0 = exp(0.)/exp(b*1.0)
+	abuck(0) = amin
+	do ib=0,nbuck
+	  x = ib/float(nbuck)
+	  y = exp(b*x)/exp(b*1.0)
+	  z = (y-y0)/(1.-y0)		![0-1]
+	  s = amin + z*(amax-amin)
+	  abuck(ib) = s
+	  write(6,*) ib,x,y,z,s
+	end do
+	ibuck = 0
+	
+	do i=1,n
+	  a = array(i)
+	  do ib=1,nbuck
+	    if( a > abuck(ib-1) .and. a <= abuck(ib) ) exit
+	  end do
+	  ib = ib - 1
+	  if( ib < 0 ) write(6,*) '*** hist: ',ib,a,a1,a2
+	  if( ib > nbuck ) write(6,*) '*** hist: ',ib,a,a1,a2
+	  ibuck(ib) = ibuck(ib) + 1
+	  !write(6,*) ib,a,abuck(ib)
+	end do
+
+	write(6,*) 'histogram areas: ',nbuck
+	write(6,*) 'abuck0 = ',abuck(0)
+	ntot = 0
+	do ib=0,nbuck
+	  write(6,*) ib,abuck(ib),ibuck(ib)
+	  ntot = ntot + ibuck(ib)
+	end do
+
+	write(6,*) ntot,n
+	if( n /= ntot ) stop 'error stop histo: ntot/=n'
 
 	end
 

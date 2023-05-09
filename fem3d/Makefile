@@ -586,7 +586,7 @@ VPOBJS = \
         subdef.o subbas.o \
         subfil.o \
         $(PARMOD) \
-        subsrt.o \
+        subsrt.o subsort.o \
         subsss.o subround.o subscn.o subnsu.o \
 	subapn.o subnsa.o subnls.o subsys.o subdum.o \
 	$(GRDOBJS) subclo.o substrings.o mod_geom_dynamic.o

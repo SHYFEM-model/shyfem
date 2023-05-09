@@ -1,5 +1,19 @@
 ============================================================
 
+Tue May  9 15:47:06 CEST 2023
+
+new shypre
+
+ fem3d/Makefile     |   2 +-
+ fem3d/shypre.f     | 485 +++++++++++++++++++++++---------
+ fem3d/subsort.f    | 807 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fembin/strparse.pl |  38 ++-
+ 4 files changed, 1203 insertions(+), 129 deletions(-)
+ new file:
+   fem3d/subsort.f
+
+============================================================
+
 Wed May  3 19:23:18 CEST 2023
 
 bug fix for shyplot
