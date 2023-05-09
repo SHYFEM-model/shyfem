@@ -1316,6 +1316,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/mod_shympi_debug.mod: check_shympi_debug.o
 ../femlib/mod/mod_shypre.mod: shypre.o
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
+../femlib/mod/mod_sort.mod: subsort.o
 ../femlib/mod/mod_subset.mod: mod_subset.o
 ../femlib/mod/mod_system.mod: mod_system.o
 ../femlib/mod/mod_system_global.mod: simsys_para.o
@@ -1948,7 +1949,7 @@ shyparts_orig.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/shympi.mod 
 shyparts_util.o: ../femlib/mod/basin.mod ../femlib/mod/grd.mod
 shypre.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
-		../femlib/mod/grd.mod 
+		../femlib/mod/grd.mod ../femlib/mod/mod_sort.mod 
 shyproj.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/grd.mod ../femlib/mod/projection.mod 
 shyutil.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
