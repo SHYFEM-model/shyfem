@@ -158,6 +158,7 @@ c 09.04.2022    ggu     new iterwant in rhoset_shell for mpi
 c 15.10.2022	ggu	bug fix: rhov was recomputed after restart
 c 15.10.2022	ggu	bpresv deleted
 c 02.04.2023	ggu	min/max of T/S computed correctly for mpi
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c notes :
 c
@@ -637,7 +638,7 @@ c presbc and rhov() are given at node and layer center
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
-	implicit none
+	 implicit none
 
 	real resid
 c common
@@ -645,7 +646,7 @@ c common
 
 c local
 	logical bdebug,debug,bsigma
-	integer k,l,lmax
+	integer k,l,lmax,lmin
 	integer nresid,nsigma
 	real sigma0,rho0,pres,hsigma
 	real depth,hlayer,hh
@@ -672,9 +673,10 @@ c functions
 	do k=1,nkn
 	  depth = 0.
 	  presbc = 0.
+	  lmin = jlhkv(k)
 	  lmax = ilhkv(k)
 
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    bsigma = l .le. nsigma
 
 	    hlayer = hdkov(l,k)

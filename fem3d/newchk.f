@@ -693,7 +693,7 @@ c checks mass conservation of single boxes (finite volumes)
 	include 'mkonst.h'
 
 	logical berror,bdebug
-	integer ie,l,ii,k,lmax,mode,ks,kss
+	integer ie,l,ii,k,lmin,lmax,mode,ks,kss
 	integer levdbg
 	real am,az,azt,dt,azpar,ampar
 	real areafv,b,c
@@ -748,6 +748,7 @@ c----------------------------------------------------------------
 
         do ie=1,nel
           areafv = 4. * ev(10,ie)               !area of triangle / 3
+	  lmin = jlhv(ie)
           lmax = ilhv(ie)
           do l=1,lmax
             do ii=1,3
@@ -772,13 +773,14 @@ c----------------------------------------------------------------
 	ks = 0
 	if( ks .gt. 0 ) then
 	  k = ks
+	  lmin = jlhkv(k)
 	  lmax = ilhkv(k)
 	  write(77,*) '------------- mass_conserve'
-	  write(77,*) k,lmax
-	  write(77,*) (vf(l,k),l=1,lmax)
-	  write(77,*) (wlnv(l,k),l=1,lmax)
+	  write(77,*) k,lmin,lmax
+	  write(77,*) (vf(l,k),l=lmin,lmax)
+	  write(77,*) (wlnv(l,k),l=lmin,lmax)
 	  vtotmax = 0.
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    vtotmax = vtotmax + vf(l,k)
 	  end do
 	  write(77,*) 'from box: ',vtotmax
@@ -786,6 +788,7 @@ c----------------------------------------------------------------
 
 	vtotmax = 0.
 	do k=1,nkn
+	  lmin = jlhkv(k)
           lmax = ilhkv(k)
 	  abot = 0.
 	  vvv = 0.
@@ -818,8 +821,9 @@ c----------------------------------------------------------------
 	  bdebug = k .eq. kss
 	  if( bdebug ) write(78,*) '============================='
 	  berror = .false.
+	  lmin = jlhkv(k)
           lmax = ilhkv(k)
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    voln = volnode(l,k,+1)
 	    volo = volnode(l,k,-1)
 	    vdiv = vf(l,k)
@@ -1139,37 +1143,38 @@ c writes debug information on node k
 	include 'femtime.h'
 
 	integer iu
-	integer l,lmax,kk
+	integer l,lmax,lmin,kk
 	character*20 aline
 
 	integer ipext
 	real volnode
 
 	call check_get_unit(iu)
+        lmin = jlhkv(k)
 	lmax = ilhkv(k)
 	call get_act_timeline(aline)
 
 	write(iu,*) '-------------------------------- check_node'
-	write(iu,*) 'time:          ',aline
-	write(iu,*) 'it,idt,k,kext: ',it,idt,k,ipext(k)
-	write(iu,*) 'lmax,inodv:    ',lmax,inodv(k)
-	write(iu,*) 'xgv,ygv:       ',xgv(k),ygv(k)
-	write(iu,*) 'zov,znv:       ',zov(k),znv(k)
-	write(iu,*) 'hkv,hkv+znv:   ',hkv(k),hkv(k)+znv(k)
-	write(iu,*) 'hdkov:         ',(hdkov(l,k),l=1,lmax)
-	write(iu,*) 'hdknv:         ',(hdknv(l,k),l=1,lmax)
-	write(iu,*) 'areakv:        ',(areakv(l,k),l=1,lmax)
-	write(iu,*) 'volold:        ',(volnode(l,k,-1),l=1,lmax)
-	write(iu,*) 'volnew:        ',(volnode(l,k,+1),l=1,lmax)
-	write(iu,*) 'wlnv:          ',(wlnv(l,k),l=0,lmax)
-	write(iu,*) 'mfluxv:        ',(mfluxv(l,k),l=1,lmax)
-	write(iu,*) 'tempv:         ',(tempv(l,k),l=1,lmax)
-	write(iu,*) 'saltv:         ',(saltv(l,k),l=1,lmax)
-	write(iu,*) 'visv:          ',(visv(l,k),l=0,lmax)
-	write(iu,*) 'difv:          ',(difv(l,k),l=0,lmax)
-	write(iu,*) 'qpnv:          ',(qpnv(l,k),l=1,lmax)
-	write(iu,*) 'uprv:          ',(uprv(l,k),l=1,lmax)
-	write(iu,*) 'vprv:          ',(vprv(l,k),l=1,lmax)
+	write(iu,*) 'time:            ',aline
+	write(iu,*) 'it,idt,k,kext:   ',it,idt,k,ipext(k)
+	write(iu,*) 'lmin,lmax,inodv: ',lmin,lmax,inodv(k)
+	write(iu,*) 'xgv,ygv:         ',xgv(k),ygv(k)
+	write(iu,*) 'zov,znv:         ',zov(k),znv(k)
+	write(iu,*) 'hkv,hkv+znv:     ',hkv(k),hkv(k)+znv(k)
+	write(iu,*) 'hdkov:           ',(hdkov(l,k),l=1,lmax)
+	write(iu,*) 'hdknv:           ',(hdknv(l,k),l=1,lmax)
+	write(iu,*) 'areakv:          ',(areakv(l,k),l=1,lmax)
+	write(iu,*) 'volold:          ',(volnode(l,k,-1),l=1,lmax)
+	write(iu,*) 'volnew:          ',(volnode(l,k,+1),l=1,lmax)
+	write(iu,*) 'wlnv:            ',(wlnv(l,k),l=0,lmax)
+	write(iu,*) 'mfluxv:          ',(mfluxv(l,k),l=1,lmax)
+	write(iu,*) 'tempv:           ',(tempv(l,k),l=1,lmax)
+	write(iu,*) 'saltv:           ',(saltv(l,k),l=1,lmax)
+	write(iu,*) 'visv:            ',(visv(l,k),l=0,lmax)
+	write(iu,*) 'difv:            ',(difv(l,k),l=0,lmax)
+	write(iu,*) 'qpnv:            ',(qpnv(l,k),l=1,lmax)
+	write(iu,*) 'uprv:            ',(uprv(l,k),l=1,lmax)
+	write(iu,*) 'vprv:            ',(vprv(l,k),l=1,lmax)
 	write(iu,*) '-------------------------------------------'
 
 	end
@@ -1196,13 +1201,14 @@ c writes debug information on element ie
 	include 'femtime.h'
 
 	integer iu
-	integer l,lmax,ii
+	integer l,lmin,lmax,ii
 	real zmed
 	character*20 aline
 
 	integer ieext
 
 	call check_get_unit(iu)
+        lmin = jlhv(ie)
 	lmax = ilhv(ie)
 	zmed = sum(zenv(:,ie))/3.
 	call get_act_timeline(aline)
@@ -1210,7 +1216,8 @@ c writes debug information on element ie
 	write(iu,*) '-------------------------------- check_elem'
 	write(iu,*) 'time:             ',aline
 	write(iu,*) 'it,idt,ie,ieext:  ',it,idt,ie,ieext(ie)
-	write(iu,*) 'lmax,iwegv,iwetv: ',lmax,iwegv(ie),iwetv(ie)
+	write(iu,*) 'lmin,lmax:        ',lmin,lmax
+        write(iu,*) 'iwegv,iwetv:      ',iwegv(ie),iwetv(ie)
 	write(iu,*) 'area:             ',ev(10,ie)*12.
 	write(iu,*) 'nen3v  :          ',(nen3v(ii,ie),ii=1,3)
 	write(iu,*) 'hev,hev+zenv:     ',hev(ie),hev(ie)+zmed

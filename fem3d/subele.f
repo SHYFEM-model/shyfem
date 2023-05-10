@@ -125,6 +125,7 @@ c 02.06.2021	ggu	computing depth at node run over nkn_inner
 c 06.04.2022	ggu	area and depth routines adapted with ie_mpi
 c 11.10.2022	ggu	new routine initialize_layer_depth
 c 02.04.2023	ggu	to compute total mass only run over nkn_inner
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c****************************************************************
 
@@ -203,7 +204,7 @@ c computes (average) depth of element ie for all layers
 
 c****************************************************************
 
-	subroutine dep3dnod(k,mode,nlev,h)
+	subroutine dep3dnod(k,flev,mode,nlev,h)
 
 c computes depth of node k for all layers
 
@@ -214,22 +215,24 @@ c computes depth of node k for all layers
 
 	integer k	!number of node
 	integer mode	!-1: old zeta   0: no zeta   1: new zeta
-	integer nlev	!total number of levels
+	integer nlev	!index of bottom layer
+	integer flev    !index of top layer
 	real h(nlev)	!depth of layers
 
 	integer ndim
 	integer l
 
 	ndim = nlev
+	flev = jlhkv(k)
 	nlev = ilhkv(k)
 	if( nlev > ndim ) goto 99
 
 	if( mode .gt. 0 ) then
-	  do l=1,nlev
+	  do l=flev,nlev
 	    h(l) = hdknv(l,k)
 	  end do
 	else if( mode .lt. 0 ) then
-	  do l=1,nlev
+	  do l=flev,nlev
 	    h(l) = hdkov(l,k)
 	  end do
 	else
@@ -238,7 +241,7 @@ c computes depth of node k for all layers
 
 	return
    99	continue
-	write(6,*) 'k,ndim,nlev: ',k,ndim,nlev
+	write(6,*) 'k,ndim,flev,nlev: ',k,ndim,flev,nlev
 	write(6,*) 'old: ',hdkov(:,k)
 	write(6,*) 'new: ',hdknv(:,k)
 	stop 'error stop dep3dnod: nlev>ndim'
@@ -659,7 +662,7 @@ c sets up area for nodes
 	implicit none
 
 	integer k,l,ie,ii,ie_mpi
-	integer nlev,n
+	integer nlev,flev,n
 	real areael,areafv
 	real areaele
 
@@ -673,7 +676,8 @@ c sets up area for nodes
 	  nlev = ilhv(ie)
 	  do ii=1,n
 	    k = nen3v(ii,ie)
-	    do l=1,nlev
+	    flev = jlhkv(k)
+	    do l=flev,nlev
 	      areakv(l,k) = areakv(l,k) + areafv
 	    end do
 	  end do

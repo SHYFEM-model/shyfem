@@ -30,6 +30,7 @@
 ! 21.05.2019	ggu	changed VERS_7_5_62
 ! 28.01.2020	ggu	new code to transfrom trans2vel on element, vorticity
 ! 02.02.2020	ggu	update for vorticity
+! 09.05.2023    lrp     introduce top layer index variable
 
 !***************************************************************
 
@@ -169,7 +170,7 @@
         real hl(nlvddi)                 !aux variable for real level thickness
 
         logical bsigma
-        integer ie,ii,k,l,lmax,nsigma,nlvaux
+        integer ie,ii,k,l,lmax,lmin,nsigma,nlvaux
         real hmed,u,v,area,zeta
         real hsigma
 
@@ -188,9 +189,10 @@
 
           area = area_elem(ie)
           lmax = ilhv(ie)
+	  lmin = 1
 	  if( bvel ) then
 	    zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
-	    call get_layer_thickness(lmax,nsigma,hsigma
+	    call get_layer_thickness(lmax,lmin,nsigma,hsigma
      +				,zeta,hev(ie),hlv,hl)
 	  end if
 
@@ -244,7 +246,7 @@
         real hl(nlvddi)                 !aux variable for real level thickness
 
         logical bsigma
-        integer ie,ii,k,l,lmax,nsigma,nlvaux
+        integer ie,ii,k,l,lmin,lmax,nsigma,nlvaux
         real hmed,zeta
         real hsigma
 
@@ -259,9 +261,10 @@
         do ie=1,nel
 
           lmax = ilhv(ie)
+	  lmin = 1
 	  zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
 	  if( bvel ) then
-	    call get_layer_thickness(lmax,nsigma,hsigma
+	    call get_layer_thickness(lmax,lmin,nsigma,hsigma
      +				,zeta,hev(ie),hlv,hl)
 	  end if
 

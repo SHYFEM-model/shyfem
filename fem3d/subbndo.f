@@ -119,6 +119,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 26.04.2022	ggu	implementing OB in more than one domain
 c 03.05.2022	ggu	lots of debug code integrated
 c 22.03.2023	ggu	relax error condition on one node open boundary
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c***********************************************************************
 
@@ -602,7 +603,7 @@ c imposes boundary conditions on open boundary
         logical bdebug
         integer i,j,k,l
         integer ibc,ibcold
-        integer nb,lmax
+        integer nb,lmax,lmin
         integer ibtyp
         real value,rb
 	real, parameter :: flag = -999.
@@ -628,6 +629,7 @@ c imposes boundary conditions on open boundary
 	  blevel = ibtyp .eq. 1
 	  bfix = ibtyp .eq. 5
           lmax = ilhkv(k)
+          lmin = jlhkv(k)
 
 	!if( bfix ) then
 	!write(6,*) 'bfix: ',ibc,ibtyp
@@ -641,7 +643,7 @@ c imposes boundary conditions on open boundary
 	if( bfix ) then
 	!write(6,*) 'fixing bound: ',k,ibtyp,ibc,rbc(1,k)
 	end if
-            do l=1,lmax
+            do l=lmin,lmax
 	      rb = rbc(l,k)
               if( rb .ne. flag ) cv(l,k) = rb
             end do
@@ -684,7 +686,7 @@ c this is only done one level boundaries ( ibtyp == 1 )
 	integer i,j,k,l
 	integer ibtyp,igrad0
 	integer ibc,ibcold
-	integer nb,nlev,ko
+	integer nb,nlev,flev,ko
         integer ntbc,nlevko
 	real dx,dy
 	real scal,bc,weight,tweight
@@ -742,8 +744,9 @@ c this is only done one level boundaries ( ibtyp == 1 )
 	  dx = xynorm(1,i)
 	  dy = xynorm(2,i)
 	  nlev = ilhkv(k)
+	  flev = jlhkv(k)
 
-	  do l=1,nlev
+	  do l=flev,nlev
 	    scal = dx * uprv(l,k) + dy * vprv(l,k)
 	    bout = scal .le. 0.				!outgoing flow
 	    bamb = cv(l,k) .le. -990.			!make ambient value

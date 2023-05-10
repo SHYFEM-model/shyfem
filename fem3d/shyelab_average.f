@@ -29,6 +29,7 @@
 !
 ! 07.10.2017	ggu	started
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 09.05.2023    lrp     introduce top layer index variable
 !
 !***********************************************************
 
@@ -44,7 +45,7 @@
 	real values(lmax)
 	real aver		!return
 
-	integer l
+	integer l,lmin
 	integer nlvaux,nsigma
 	real hsigma
 	real h
@@ -56,11 +57,12 @@
 	if( lmax <= 1 ) return
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
-        call get_layer_thickness(lmax,nsigma,hsigma,z,htot,hlv,hd)
+	lmin = 1
+        call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,htot,hlv,hd)
 
 	vaccum = 0.
 	haccum = 0.
-	do l=1,lmax
+	do l=lmin,lmax
 	  h = hd(l)
 	  vaccum = vaccum + values(l) * h
 	  haccum = haccum + h

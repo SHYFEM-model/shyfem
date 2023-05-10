@@ -69,6 +69,7 @@ c 20.03.2022	ggu	upgraded to da_out
 c 01.06.2022	ggu	in gravity_wave_stability() set hz to min 0
 c 29.03.2023	ggu	exchange rindex,tindex,gindex, write to info file
 c 02.04.2023    ggu     only master writes to iuinfo
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c*****************************************************************
 c*****************************************************************
@@ -402,7 +403,7 @@ c mode = 2		eliminate elements with r>rindex
         real dt			!time step to be used
         real rindex		!stability index (return)
 
-	integer ie,l,lmax,iweg,ilin,ibarcl,iu
+	integer ie,l,lmax,lmin,iweg,ilin,ibarcl,iu
 	integer, save :: iuinfo = 0
         real rkpar,azpar,ahpar,rlin
 	real dindex,aindex,tindex,sindex,gindex
@@ -458,8 +459,9 @@ c mode = 2		eliminate elements with r>rindex
 	tindex = 0.
 	do ie=1,nel
 	  lmax = ilhv(ie)
+	  lmin = jlhv(ie)
 	  iweg = 0
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    sindex = sauxe(l,ie)
 	    if( sindex .ge. rmax ) iweg = 1
 	    tindex = max(tindex,sindex)

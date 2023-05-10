@@ -62,6 +62,7 @@ c 07.10.2017	ggu	substitute get_bottom_of_layer with get_depth_of_layer
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 29.04.2022	ggu	in compute_sigma_info() check for nlv<1
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c notes :
 c
@@ -229,7 +230,8 @@ c---------------------------------------------------------
 
 c******************************************************************
 
-	subroutine get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hdl)
+	subroutine get_layer_thickness(lmax,lmin,nsigma,
+     +				       hsigma,z,h,hlv,hdl)
 
 c returns layer thickness - works also for lmax higher than actual layers
 c
@@ -238,7 +240,8 @@ c in this case the last values for hl are 0
 
 	implicit none
 
-	integer lmax		!total number of layers
+	integer lmax		!index of bottom layer
+	integer lmin		!index of surface layer
 	integer nsigma		!total number of sigma layers
 	real hsigma		!closing depth of hybrid layers
 	real z			!water level
@@ -281,13 +284,13 @@ c compute level structure of zeta and/or hybrid levels
 c---------------------------------------------------------
 
 	if( lmax .gt. nsigma ) then		!also zeta coordinates
-	  if( lmax .eq. 1 ) then		!just one layer
-	    hdl(1) = htot + zmed
+	  if( lmax .eq. lmin ) then		!just one layer
+	    hdl(lmin) = htot + zmed
 	  else
 	    hbot = hsigma
 	    if( nsigma .eq. 0 ) hbot = -zmed
 	    if( bdebug ) write(6,*) nsigma,lmax,zmed,hbot
-	    do l=nsigma+1,lmax
+	    do l=nsigma+lmin,lmax
 	      if( hbot == htot ) exit	!no more layers
 	      htop = hbot
 	      hbot = hlv(l)
@@ -366,7 +369,7 @@ c******************************************************************
 
 	do ie=1,nel
 	  h = hev(ie)
-	  call get_layer_thickness(nlv,nsigma,hsigma,z,h,hlv,hdl)
+	  call get_layer_thickness(nlv,1,nsigma,hsigma,z,h,hlv,hdl)
 	  do l=1,nlv
 	    if( hdl(l) == 0. ) exit
 	  end do
@@ -420,11 +423,11 @@ c******************************************************************
 	h = 4.2
 
 	lmax = 5
-	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hdl)
+	call get_layer_thickness(lmax,1,nsigma,hsigma,z,h,hlv,hdl)
 	write(6,*) lmax,hdl
 
 	lmax = 2
-	call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hdl)
+	call get_layer_thickness(lmax,1,nsigma,hsigma,z,h,hlv,hdl)
 	write(6,*) lmax,hdl
 
 	end

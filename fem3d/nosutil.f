@@ -59,6 +59,7 @@ c 09.09.2016	ggu	changed VERS_7_5_17
 c 14.11.2017	ggu	changed VERS_7_5_36
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 22.09.2020    ggu     correct warnings for PGI compiler
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c***************************************************************
 
@@ -397,7 +398,7 @@ c we could do better using information on node area and depth structure
 	real vol3(nlvddi,nkn)
 
 	logical bvolwrite,bdebug
-	integer ie,ii,k,l,lmax,nsigma,nlvaux,ks
+	integer ie,ii,k,l,lmax,lmin,nsigma,nlvaux,ks
 	real z,h,hsigma
 	double precision ak,vk,ve
 	double precision, allocatable :: volk(:,:)
@@ -420,7 +421,9 @@ c we could do better using information on node area and depth structure
 	do ie=1,nel
 	  ak = 4. * weight_elem(ie)	!area of vertex
 	  h = hev(ie)
-	  call get_layer_thickness(nlv,nsigma,hsigma,z,h,hlv,hl)
+	  lmin=1
+	  call get_layer_thickness(nlv,lmin,nsigma,
+     +				   hsigma,z,h,hlv,hl)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    bdebug = k == ks .and. nlv > 1

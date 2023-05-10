@@ -68,6 +68,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 03.06.2022	ggu	prepared for mpi (not yet ready)
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c*****************************************************************
 
@@ -222,7 +223,7 @@ c fix or nudge  velocities on open boundaries
 	real tramp	!time for smooth init
 
         integer ie,l,i,k,ii,n,ie_mpi
-	integer lmax
+	integer lmax,lmin
 	integer nbc
         real u(nlvdi),v(nlvdi)
         real h,t
@@ -302,6 +303,7 @@ c------------------------------------------------------------------
 	  if( n .gt. 0 ) then
 
 	    lmax = ilhv(ie)
+            lmin = jlhv(ie)
 
 	    do l=1,lmax
 	      u(l) = 0.
@@ -310,13 +312,13 @@ c------------------------------------------------------------------
 
 	    do i=1,n
 	      k = ielfix(i,ie)
-	      do l=1,lmax
+	      do l=lmin,lmax
 	        u(l) = u(l) + ubound(l,k)
 	        v(l) = v(l) + vbound(l,k)
 	      end do
 	    end do
 
-	    do l=1,lmax
+	    do l=lmin,lmax
 	      u(l) = u(l) / n
 	      v(l) = v(l) / n
 	    end do
@@ -324,7 +326,7 @@ c------------------------------------------------------------------
 	    tnudge = tnudgev(ie)
 
 	    if (iuvfix(ie) .eq. 1 ) then	!fix velocities
-              do l=1,lmax
+              do l=lmin,lmax
                 h = hdeov(l,ie)
                 ulnv(l,ie) = u(l)*alpha
                 vlnv(l,ie) = v(l)*alpha
@@ -332,7 +334,7 @@ c------------------------------------------------------------------
                 vtlnv(l,ie) = vlnv(l,ie)*h
               end do
 	    else if( tnudge > 0 ) then		!nudge velocities
-	      do l=1,lmax
+	      do l=lmin,lmax
                 h = hdeov(l,ie)
                 uexpl = (ulnv(l,ie)-u(l))*alpha*h/tnudge
                 vexpl = (vlnv(l,ie)-v(l))*alpha*h/tnudge
