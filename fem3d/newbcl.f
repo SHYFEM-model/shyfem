@@ -638,7 +638,7 @@ c presbc and rhov() are given at node and layer center
 	use levels
 	use basin, only : nkn,nel,ngr,mbw
 
-	 implicit none
+	implicit none
 
 	real resid
 c common
