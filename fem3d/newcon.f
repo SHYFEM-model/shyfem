@@ -1420,7 +1420,7 @@ c for explicit treatment, cnv/cdiag gives new concentration [kg/m**3]
 c----------------------------------------------------------------
 c accumulate contributions on each node
 c----------------------------------------------------------------
- 
+
 ! here we could make just one loop over nkn
 ! this would include this loop, the boundary conditions
 ! and then  the solution of the vertical system
