@@ -1,5 +1,15 @@
 ============================================================
 
+Fri May 19 14:32:36 CEST 2023
+
+box model and closing routines
+
+ fem3d/newclose.f | 129 +++++++++++++++++++++++++++++++++++++++----------------
+ fem3d/subboxa.f  |  16 +------
+ 2 files changed, 92 insertions(+), 53 deletions(-)
+
+============================================================
+
 Fri May 19 12:06:40 CEST 2023
 
 bug fix for box model (changes in flux computation)

@@ -67,6 +67,7 @@
 ! 26.03.2020	ggu	set vmax here
 ! 09.04.2020	ggu	increase non computing elements with ndist
 ! 06.12.2020	ggu	deleted close.h
+! 18.05.2023	ccf	include reading closure from file
 !
 !************************************************************************
 
@@ -92,6 +93,8 @@
           real :: zdate
           real :: vdate
           real :: zdiff
+          character*80 :: cfile         !closure file name
+          integer :: idfile             !closure file id
 
           integer :: ioper		!operation mode (see below is_*)
           integer :: iact		!where are we in itb
@@ -106,6 +109,8 @@
           real, allocatable :: distfact(:)
 
         end type entry
+
+	integer, save :: iclose = 0	!total number of closing sects
 
 	integer, save :: nclose = 0	!total number of closing sects
 	integer, save :: nb13 = 0	!unit for output
@@ -185,6 +190,8 @@
         pentry(id)%zdate = 0.
         pentry(id)%vdate = 0.
         pentry(id)%zdiff = 0.
+        pentry(id)%cfile = ''
+        pentry(id)%idfile = 0
 
         pentry(id)%ioper = 0
         pentry(id)%iact = 0
@@ -221,10 +228,19 @@
 	integer color(nkn)
 	real dfact(nkn)
 
+        logical bcfile
+        double precision dtime
+        character*80 file       !closure file name
+        integer idfile          !closure file unit
+
+	real getpar
+
 	logical, save :: binit = .false.
 
 	if( binit ) return			!already initialized
 	binit = .true.
+
+	iclose = nint(getpar('iclose'))
 
 	nbc = nbnds()
 	call makehkv_minmax(hkv,0)		!get average depths
@@ -343,6 +359,19 @@
         if( pentry(id)%dsoft < 0 ) pentry(id)%dsoft = 0.
         if( pentry(id)%dwait < 0 ) pentry(id)%dwait = pentry(id)%dsoft
 
+!	-----------------------------------------------
+!	initialize file
+!	-----------------------------------------------
+
+        call get_act_dtime(dtime)
+
+        file = pentry(id)%cfile
+        bcfile = ( file /= ' ' )
+        if (bcfile) then
+           call iff_ts_init(dtime,file,2,1,idfile)
+           pentry(id)%idfile = idfile
+        end if
+
 	call close_info(id)
 
 	end do
@@ -373,7 +402,7 @@
 
 	integer ii
 	integer kref,kdir,kout,kin,nkboc,nieboc
-
+        character*80 file
 	integer ipext,ieext,ideffi
 
         if( nb13 == 0 ) then        !open file
@@ -389,6 +418,7 @@
 	kin  = pentry(id)%kin
 	nkboc = size(pentry(id)%kboc)
 	nieboc = size(pentry(id)%ieboc)
+	file = pentry(id)%cfile
 
 	write(nb13,*)
 	write(nb13,*) 'first call for closing section nr. : ',id
@@ -401,6 +431,7 @@
 	write(nb13,*) (pentry(id)%hdep(ii),ii=1,nkboc)
 	write(nb13,*) 'ieboc : ',nieboc
 	write(nb13,*) (ieext(pentry(id)%ieboc(ii)),ii=1,nieboc)
+	write(nb13,*) 'cfile : ',trim(file)
 	write(nb13,*)
 
 	flush(nb13)
@@ -466,6 +497,10 @@
 ! zdate,zdiff	water level variables used in mode
 ! vdate		velocity variable used in mode
 !
+! cfile 	Name of the file for the closure. In file is provided, the
+!		reference nodes and levels are ignored. Format is:
+!  		   datetime flag (with flag=0 open; flag=1 close)
+!
 !---------------------------------------------------------------------------
 
 	use close
@@ -485,7 +520,6 @@
         integer nsc
         integer iact,imode
 
-	integer iclose
 	integer icltot,ioptot,icl,iop
 	real geyer
 	character*20 aline
@@ -493,9 +527,10 @@
 	double precision dtime,dstart,dend,dsoft,dwait
 	double precision, parameter :: dflag = -999.
 
-	real getpar
+	integer idfile
+        logical, save :: bcfile
+        real fclose
 
-	iclose=nint(getpar('iclose'))
 	if(iclose.le.0) return		!no closing enabled
 
 	if( shympi_is_parallel() ) then
@@ -533,6 +568,8 @@
         imode  = pentry(id)%imode
         dsoft  = pentry(id)%dsoft
         dwait  = pentry(id)%dwait
+        idfile = pentry(id)%idfile
+        bcfile = ( idfile /= 0 )
 
 !	----------------------------------------------
 !	new open & close mode
@@ -542,6 +579,8 @@
 	bnewmode=.false.
         call get_new_mode(id,dtime,iact,imode,bnewmode)
 	!if( bnewmode ) call print_closing_info(id,'***')
+
+        if ( bcfile ) call iff_ts_intp(idfile,dtime,fclose)
 
 	write(nb13,*)
 	write(nb13,'(1x,a,4i5)') 'id,iact,imode,ioper :'
@@ -578,9 +617,17 @@
 		if( ioper == is_closed_waiting ) bclos=.true.
 		if( ioper == is_open_waiting ) bopen=.true.
 	else if( ioper == is_open ) then	!inlet is open
-		call closing(id,icl,bclos)
+                if (bcfile) then
+                   bclos = (fclose == 1)
+                else
+                   call closing(id,icl,bclos)
+                end if
 	else if( ioper == is_closed ) then	!inlet is closed
-		call opening(id,iop,bopen)
+               if (bcfile) then
+                  bopen = (fclose == 0)
+                else
+                  call opening(id,iop,bopen)
+                end if
 	end if
 
 !	----------------------------------------------
@@ -888,9 +935,12 @@
             if( iweich .eq. 2 ) then
               if( name .ne. 'kboc' .and. name .ne. 'itb' ) goto 93
 	    end if
+            if( iweich .eq. 3 ) then
+              if( name .ne. 'cfile' ) goto 93
+	    end if
 
 	    if( iweich == 0 ) exit
-	    if( iweich > 2 ) goto 98
+	    if( iweich > 3 ) goto 98
 	    if( iweich < 0 ) goto 98
 
               if( name .eq. 'kboc' ) then
@@ -919,6 +969,8 @@
 	        pentry(id)%vdate=dvalue
 	      else if(name.eq.'zdiff') then
 	        pentry(id)%zdiff=dvalue
+	      else if(name.eq.'cfile') then
+	        pentry(id)%cfile=text
 	      else
 		goto 96
 	      end if
@@ -1057,25 +1109,26 @@
 	if( nsc .le. 0 ) return
 
 	write(6,*)
-        write(6,*) 'closing sections :'
+        write(6,*) '====== info on closing sections ========='
 
-        write(6,*) '...header :' ,nsc
+        write(6,*) ' number of close sections:' ,nsc
 
         do j=1,nsc
 
 	id = j
 
-        write(6,*) pentry(id)%isc
-        write(6,*) pentry(id)%kref
-        write(6,*) pentry(id)%kout
-        write(6,*) pentry(id)%kin
-        write(6,*) pentry(id)%ibndz
-        write(6,*) pentry(id)%ibnd
-        write(6,*) pentry(id)%dsoft
-        write(6,*) pentry(id)%dwait
-        write(6,*) pentry(id)%zdate
-        write(6,*) pentry(id)%vdate
-        write(6,*) pentry(id)%zdiff
+        write(6,*) ' close section number: ', pentry(id)%isc
+        write(6,*) '   kref:  ', pentry(id)%kref
+        write(6,*) '   kout:  ', pentry(id)%kout
+        write(6,*) '   kin:   ', pentry(id)%kin
+        write(6,*) '   ibndz: ', pentry(id)%ibndz
+        write(6,*) '   ibnd:  ', pentry(id)%ibnd
+        write(6,*) '   dsoft: ', pentry(id)%dsoft
+        write(6,*) '   dwait: ', pentry(id)%dwait
+        write(6,*) '   zdate: ', pentry(id)%zdate
+        write(6,*) '   vdate: ', pentry(id)%vdate
+        write(6,*) '   zdiff: ', pentry(id)%zdiff
+        write(6,*) '   cfile: ', trim(pentry(id)%cfile)
 
         end do
 
@@ -1361,29 +1414,29 @@
 	izref = nint(100.*zref)
 	izdate = nint(100.*zdate)
 
-	if( id == 1 ) icall = icall + 1
+!	if( id == 1 ) icall = icall + 1
 
-	string1 = '     time    id  iact imode ioper'
-     +			//' zdate  zref   zin  zout geyer  scal'
+!	string1 = '     time    id  iact imode ioper'
+!     +			//' zdate  zref   zin  zout geyer  scal'
 
-	string2 = '      date and time   id iact mode oper'
-     +			//' zctr zref  zin zout geyer  scal   flux'
+!	string2 = '      date and time   id iact mode oper'
+!     +			//' zctr zref  zin zout geyer  scal   flux'
 
-	it = nint(dtime)
-	call get_timeline(dtime,aline)
-	if( mod(icall-1,50) == 0 ) write(70+id,*) trim(string1)
-	write(70+id,1000) it,id,iact,imode,ioper
-     +			,izdate,izref,izin,izout,geyer,scal
+!	it = nint(dtime)
+!	call get_timeline(dtime,aline)
+!	if( mod(icall-1,50) == 0 ) write(70+id,*) trim(string1)
+!	write(70+id,1000) it,id,iact,imode,ioper
+!     +			,izdate,izref,izin,izout,geyer,scal
 
-	if( id == 1 ) write(66,*) trim(string1)
-	write(66,1000) it,id,iact,imode,ioper
-     +			,izdate,izref,izin,izout,geyer,scal
- 1000	format(i10,8i6,2f6.2)
+!	if( id == 1 ) write(66,*) trim(string1)
+!	write(66,1000) it,id,iact,imode,ioper
+!     +			,izdate,izref,izin,izout,geyer,scal
+! 1000	format(i10,8i6,2f6.2)
 
-	if( id == 1 ) write(68,*) trim(string2)
-	write(68,1100) aline,id,iact,imode,ioper
-     +			,izdate,izref,izin,izout,geyer,scal,iflux
- 1100	format(a20,8i5,2f6.2,i7)
+!	if( id == 1 ) write(68,*) trim(string2)
+!	write(68,1100) aline,id,iact,imode,ioper
+!     +			,izdate,izref,izin,izout,geyer,scal,iflux
+! 1100	format(a20,8i5,2f6.2,i7)
 
 	end
 

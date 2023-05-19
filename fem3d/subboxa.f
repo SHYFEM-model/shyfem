@@ -172,7 +172,7 @@
 	logical, parameter :: bmasserror = .false.	!write mass error
 	logical, parameter :: bmass2d = .true.		!check mass error 2d
 	logical, parameter :: bmass3d = .false.		!check mass error 3d
-	logical, parameter :: b777 = .true.		!write debug to 777
+	logical, parameter :: b777 = .false.		!write debug to 777
 
         integer, save :: nbxdim = 0	!maximum for nbox
         integer, save :: nscboxdim = 0	!maximum for nsect
@@ -547,8 +547,6 @@ c	-------------------------------------------------------
 	call box_ob_compute(nbc_ob,nlvdi,fluxes_ob)	!open boundary conditions
 	call fluxes_accum_d(nlvdi,nbc_ob,nslayers_ob,dt,trob
      +				,masst_ob,fluxes_ob)
-	call flx_print(678,'orig',nbc_ob,nlvdi,fluxes_ob)
-	call flx_print(678,'accum',nbc_ob,nlvdi,masst_ob)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
@@ -645,22 +643,10 @@ c	-------------------------------------------------------
 	call fluxes_aver_d(nlvdi,nsect,nslayers,trm,masst,fluxes)
 	call box_flx_collect(nlvdi,fluxes,fluxesg_m)
 	call box_flx_write(atime,nbflx,ivar,fluxesg_m)
-	iu = 680+my_id
-	call flx_print(iu,'local',nsect,nlvdi,fluxes)
-	iu = 690+my_id
-	call flx_print(iu,'global',nsect,nlv_global,fluxesg_m)
 
 	call fluxes_aver_d(nlvdi,nbc_ob,nslayers_ob,trob
      +					,masst_ob,fluxes_ob)
 	call box_flx_collect(nlvdi,fluxes_ob,fluxesg_ob)
-
-	iu = 630+my_id
-	call flx_print(iu,'local',nbc_ob,nlvdi,fluxes_ob)
-	iu = 640+my_id
-	call flx_print(iu,'global',nbc_ob,nlv_global,fluxesg_ob)
-
-	call flx_print(678,'local',nbc_ob,nlvdi,fluxes_ob)
-	call flx_print(678,'global',nbc_ob,nlv_global,fluxesg_ob)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
