@@ -70,6 +70,7 @@
 ! 11.11.2020	ggu	get_ice_all() renamed to get_ice_cover_all()
 ! 20.03.2022	ggu	converted convert_time -> convert_time_d
 ! 30.03.2022	ggu	bug: in write_wwm nlev was not set before call
+! 09.05.2023    lrp     introduce top layer index variable
 !
 !**************************************************************
 c DOCS  START   S_wave
@@ -561,7 +562,7 @@ c local
 	real, allocatable	:: ddl(:,:) !3D layer depth (in the middle of layer)
 	real, allocatable 	:: h(:)
         integer it              !time [s]
-        integer k,l,nlev,lmax
+        integer k,l,nlev,flev,lmax
 	real u,v
 	double precision tempvar,dtime
 
@@ -572,7 +573,7 @@ c local
 
 !       -----------------------------------------------
 !       Same time step, do write
-!       -----------------------------------------------
+!       ------------------- ----------------------------
 
 	call get_act_dtime(dtime)
 	it = dtime
@@ -587,7 +588,7 @@ c local
 
           do k = 1,nkn
 	    nlev = nlv
-	    call dep3dnod(k,+1,nlev,h)
+	    call dep3dnod(k,+1,flev,nlev,h)
             ddl(1,k) = - 0.5 * h(1)
             do l = 2,nlev
               ddl(l,k) = ddl(l-1,k) - 0.5 * (h(l) + h(l-1))

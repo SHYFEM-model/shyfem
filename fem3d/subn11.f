@@ -188,6 +188,7 @@ c 11.10.2022	ggu	make_new_depth substituted with initialize_layer_depth
 c 16.12.2022	ggu	no tilting for mpi -> error
 c 01.02.2023	ggu	rflux introduced for double BC
 c 01.04.2023	ggu	handle new boundary type 5
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c***************************************************************
 
@@ -1100,7 +1101,7 @@ c------------------------------------------------------------------
 	    lmax = ilhkv(k)
 	    if( levmax .gt. 0 ) lmax = min(lmax,levmax)
 	    if( levmax .lt. 0 ) lmax = min(lmax,lmax+1+levmax)
-	    lmin = 1
+	    lmin = jlhkv(k)
 	    if( levmin .gt. 0 ) lmin = max(lmin,levmin)
 	    if( levmin .lt. 0 ) lmin = max(lmin,lmax+1+levmin)
 
@@ -1132,7 +1133,8 @@ c add distributed sources
 c------------------------------------------------------------------
 
 	do k=1,nkn
-	  mfluxv(1,k) = mfluxv(1,k) + rqdsv(k)	!rain, evaporation
+	  lmin = jlhkv(k)
+	  mfluxv(lmin,k) = mfluxv(lmin,k) + rqdsv(k)	!rain, evaporation
 	  !lmax = ilhkv(k)
 	  !mfluxv(lmax,k) = gwf		!here distributed ground water flow
 	end do
@@ -1148,7 +1150,8 @@ c------------------------------------------------------------------
 	do k=1,nkn
 	  fluxnode = 0.
 	  lmax = ilhkv(k)
-	  do l=1,lmax
+	  lmin = jlhkv(k)
+	  do l=lmin,lmax
 	    flux = mfluxv(l,k)
 	    !if( debug .and. flux .gt. 0. ) write(6,*) '  flux: ',k,l,flux
 	    fluxnode = fluxnode + flux
@@ -1235,7 +1238,7 @@ c computes scalar flux from fluxes and concentrations
 
 	logical bdebug
 	integer iunit
-	integer k,l,lmax,ks
+	integer k,l,lmax,lmin,ks
 	real flux,conz
 	real surf_flux
 	real getpar
@@ -1252,12 +1255,13 @@ c computes scalar flux from fluxes and concentrations
 	do k=1,nkn
 	  bdebug = ( ipext(k) == ks )
 	  lmax = ilhkv(k)
+	  lmin = jlhkv(k)
 	  surf_flux = rqdsv(k)
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    sflux(l,k) = 0.
 	    sconz(l,k) = 0.
 	    flux = mfluxv(l,k)
-	    if( l .eq. 1 ) flux = flux - surf_flux	!without surface flux
+	    if( l .eq. lmin ) flux = flux - surf_flux	!without surface flux
 	    conz = r3v(l,k)
 	    if( flux .ne. 0. .or. conz .ne. flag ) then
 	      if( flux .ne. 0. .and. conz .eq. flag ) goto 99
@@ -1269,13 +1273,13 @@ c computes scalar flux from fluxes and concentrations
 	    end if
 	  end do
 	  conz = ssurf
-	  if( ssurf .le. -990 ) conz = scal(1,k)
-	  if( ssurf .le. -5555 ) conz = scal(1,k) - 10000. - ssurf !diff
-	  sflux(1,k) = sflux(1,k) + surf_flux * conz
+	  if( ssurf .le. -990 ) conz = scal(lmin,k)
+	  if( ssurf .le. -5555 ) conz = scal(lmin,k) - 10000. - ssurf !diff
+	  sflux(lmin,k) = sflux(lmin,k) + surf_flux * conz
 	  ! next should be sconz(1,k) = conz if surf_flux is eliminated
 	  !sconz(1,k) = 0.
-	  if( mfluxv(1,k) .ne. 0 ) then
-	    sconz(1,k) = sflux(1,k) / mfluxv(1,k)
+	  if( mfluxv(lmin,k) .ne. 0 ) then
+	    sconz(lmin,k) = sflux(lmin,k) / mfluxv(lmin,k)
 	  end if
 	  if( bdebug ) then
 	    iunit = 730 + my_id
@@ -1315,7 +1319,7 @@ c**********************************************************************
 	real sflux(nlvdi,nkn)	!scalar flux
 	real sconz(nlvdi,nkn)	!concentration for each finite volume
 
-	integer k,l,lmax
+	integer k,l,lmax,lmin
 	integer ifemop
 	real qtot,stot
 	double precision dtime
@@ -1330,9 +1334,10 @@ c**********************************************************************
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
+	  lmin = jlhkv(k)
 	  stot = 0.
 	  qtot = 0.
-	  do l=1,lmax
+	  do l=lmin,lmax
 	    qtot = qtot + mfluxv(l,k)
 	    stot = stot + mfluxv(l,k) * sconz(l,k)
 	  end do
@@ -1361,7 +1366,7 @@ c checks scalar flux
 
 	include 'mkonst.h'
 
-	integer k,l,lmax,ks
+	integer k,l,lmax,lmin,ks
 	real cconz,qflux,mflux
 	double precision dtime
 
@@ -1371,7 +1376,8 @@ c checks scalar flux
 
         do k=1,nkn
           lmax = ilhkv(k)
-          do l=1,lmax
+	  lmin = jlhkv(k)
+          do l=lmin,lmax
             cconz = sconz(l,k)         !concentration has been passed
             qflux = mfluxv(l,k)
             if( qflux .lt. 0. ) cconz = scal(l,k)

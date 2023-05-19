@@ -52,6 +52,7 @@ c 20.07.2015	ggu	changed VERS_7_1_81
 c 25.05.2016	ggu	changed VERS_7_5_10
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 01.04.2021	ggu	mod_turbulence substituted by mod_keps
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c**************************************************************
 
@@ -116,7 +117,7 @@ c---------------------------------------------------------------
 
 
 	integer k,l
-	integer nlev
+	integer flev,nlev
 	integer mode
 	real h(nlvdim)
 	real ri,vis,dif
@@ -165,9 +166,9 @@ c------------------------------------------------------
 
 	do k=1,nkn
 
-	    call dep3dnod(k,mode,nlev,h)
+	    call dep3dnod(k,mode,flev,nlev,h)
 
-	    do l=1,nlev-1
+	    do l=flev,nlev-1
 	      ri = buoyf2(l,k) / shearf2(l,k)
 	      vis = vistur*(1.+a*ri)**alpha
 	      dif = diftur*(1.+b*ri)**beta
@@ -177,15 +178,15 @@ c------------------------------------------------------
 	      richard(l,k) = ri
 	    end do
 
-            if( nlev .eq. 1 ) then
-	      visv(0,k) = vistur
-	      difv(0,k) = diftur
-	      visv(1,k) = vistur
-	      difv(1,k) = diftur
-	      richard(1,k) = 0.
+            if( nlev .eq. flev ) then
+	      visv(flev-1,k) = vistur
+	      difv(flev-1,k) = diftur
+	      visv(flev,k) = vistur
+	      difv(flev,k) = diftur
+	      richard(flev,k) = 0.
             else
-	      visv(0,k) = visv(1,k)
-	      difv(0,k) = difv(1,k)
+	      visv(flev-1,k) = visv(flev,k)
+	      difv(flev-1,k) = difv(flev,k)
 	      visv(nlev,k) = visv(nlev-1,k)
 	      difv(nlev,k) = difv(nlev-1,k)
 	      richard(nlev,k) = richard(nlev-1,k)
@@ -259,14 +260,14 @@ c---------------------------------------------------------------
 	integer ioutfreq,ks
 	integer i, k,l
 	integer laux
-	integer nlev
+	integer nlev,flev,numOfLev
 	real g
 	real czdef,taubot
 	save czdef
 	real vismol 
 	save vismol
 	double precision nu
-
+ 
 	real h(nlvdim)
 	double precision depth		!total depth [m]
 	double precision z0s,z0b	!surface/bottom roughness length [m]
@@ -385,23 +386,24 @@ c------------------------------------------------------
     
 	do k=1,nkn
 
-	    call dep3dnod(k,+1,nlev,h)
+	    call dep3dnod(k,+1,flev,nlev,h)
+	    numOfLev = nlev-flev+1
 
-            if( nlev .eq. 1 ) goto 1
+            if( numOfLev .eq. 1 ) goto 1
 
 c           ------------------------------------------------------
 c           update boyancy and shear-frequency vectors
 c           ------------------------------------------------------
 
-	    do l=1,nlev-1
+	    do l=flev,nlev-1
 	      laux = nlev - l
 	      nn(laux) = buoyf2(l,k)
 	      ss(laux) = shearf2(l,k)
 	    end do
 	    nn(0) = 0.
-	    nn(nlev) = 0.
+	    nn(numOfLev) = 0.
 	    ss(0) = ss(1)
-	    ss(nlev) = ss(nlev-1)
+	    ss(numOfLev) = ss(numOfLev-1)
 
 c       ------------------------------------------------------
 c       compute layer thickness and total depth
@@ -409,12 +411,12 @@ c       ------------------------------------------------------
 
             depth = 0.
             ddepth = 0.
-            do l=1,nlev
+            do l=flev,nlev
               hh(nlev-l+1) = h(l)
               depth = depth + h(l)
               ddepth(l) = depth 
             end do
-            do l =1,nlev
+            do l =flev,nlev
               ddepth(l) = depth - ddepth(l) 
             end do
 
@@ -463,7 +465,7 @@ c           call GOTM turbulence routine
 c           ------------------------------------------------------
 
  	    call do_gotm_turb   (
-     &				  nlev,dt,depth
+     &				  numOfLev,dt,depth
      &				 ,u_taus,u_taub
      &				 ,z0s,z0b,hh
      &	                         ,nn,ss
@@ -920,7 +922,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 
 
 
-	integer k,l,nlev
+	integer k,l,nlev,flev
 	real aux,dh,du,dv,m2,dbuoy
 	real h(nlvdim)
 	real cnpar			!numerical "implicitness" parameter
@@ -938,9 +940,9 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	n2max = 0.
  
         do k=1,nkn
-          call dep3dnod(k,+1,nlev,h)
+          call dep3dnod(k,+1,flev,nlev,h)
 
-          do l=1,nlev-1
+          do l=flev,nlev-1
             dh = 0.5 * ( h(l) + h(l+1) )
             dbuoy = aux * ( rhov(l,k) - rhov(l+1,k) )
             n2 = dbuoy / dh
@@ -1013,7 +1015,7 @@ c**************************************************************
 
 
         logical ldebug
-        integer k,l,nlev,iwrite,icycle,testnode
+        integer k,l,flev,nlev,iwrite,icycle,testnode
         real aux,dh,du,dv,m2,g_dot
         real h(nlvdim), rho1, rho2
         save iwrite
@@ -1021,11 +1023,11 @@ c**************************************************************
 
         if( nldim .ne. nlvdim ) stop 'error stop setbuoyf: dimension'
 
-        call dep3dnod(k,+1,nlev,h)
+        call dep3dnod(k,+1,flev,nlev,h)
  
         !write(*,*) sum(eps(:,k))
 
-        do l=1,nlev
+        do l=flev,nlev
           if (buoyf2(l,k) .gt. 0.0000001) then
             rig(l) = shearf2(l,k)/buoyf2(l,k)
             rif(l) = 1./(1.-eps_gotm(l,k)/buoyf2(l,k))
@@ -1067,7 +1069,7 @@ c**************************************************************
 
         logical ldebug
 
-        integer k,l,nlev,testnode,icycle,iwrite
+        integer k,l,nlev,flev,testnode,icycle,iwrite
         real aux,dh,du,dv,m2,dbuoy
         real h(nlvdim), rho1, rho2, visk_bar, sr1, sr2
         real cnpar,stress_x,stress_y, rhobar, g_dot
@@ -1075,8 +1077,8 @@ c**************************************************************
         data iwrite/0/
 
         if( nldim .ne. nlvdim ) stop 'error stop setbuoyf: dimension'
-        call dep3dnod(k,+1,nlev,h)
-        do l=1,nlev
+        call dep3dnod(k,+1,flev,nlev,h)
+        do l=flev,nlev
           g_dot = sqrt(shearf2(l,k))
           rhobar = rhov(l,k)+1000.
           visk_bar = visv(l,k) + vts(l,k)

@@ -70,6 +70,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 22.09.2020    ggu     correct warnings for PGI compiler
 ! 03.06.2022    ggu     documentation, adapted for mpi (only itvd==1 is working)
+! 09.05.2023    lrp     introduce top layer index variable
 !
 !*****************************************************************
 !
@@ -147,7 +148,6 @@
 	end
 
 !*****************************************************************
-
         subroutine tvd_upwind_init_shell
 
 ! initializes position of upwind node (shell) - original version
@@ -779,7 +779,7 @@
 
 !*****************************************************************
 
-	subroutine vertical_flux_ie(btvdv,ie,lmax,dt,wsink
+	subroutine vertical_flux_ie(btvdv,ie,lmax,lmin,dt,wsink
      +					,cl,wvel,hold,vflux)
 
 ! computes vertical fluxes of concentration - element version
@@ -800,7 +800,8 @@
 
 	logical btvdv				!use vertical tvd?
 	integer ie				!element
-	integer lmax				!total number of layers
+	integer lmax				!index of bottom layer
+	integer lmin				!index of top layer
 	double precision dt			!time step
 	double precision wsink			!sinking velocity (+ downwards)
 	double precision cl(0:nlvdi+1,3)	!scalar to be advected
@@ -822,7 +823,7 @@
 	double precision, parameter :: half = 1./2.
 
 	do ii=1,3
-	 do l=1,lmax-1
+	 do l=lmin,lmax-1
 	  w = wvel(l,ii) - wsink
 
 	  if( w .gt. 0. ) then
@@ -845,7 +846,7 @@
 	      cond = cl(l+1,ii)
 	      conu = cond
 	      lu = l - 1
-	      if( lu .ge. 1 ) conu = cl(lu,ii)
+	      if( lu .ge. lmin ) conu = cl(lu,ii)
 	    end if
 
 	    hdis = 0.5*(hold(l,ii)+hold(l+1,ii))
@@ -861,7 +862,7 @@
 
 	  vflux(l,ii) = w * conf
 	 end do
-	 vflux(0,ii) = 0.
+	 vflux(lmin-1,ii) = 0.
 	 vflux(lmax,ii) = 0.
 	end do
 

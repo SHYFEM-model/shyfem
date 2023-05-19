@@ -65,6 +65,7 @@ c 29.01.2020	ggu	insert extra information for error message
 c 22.04.2021	ggu	accept short data type (NF_SHORT)
 c 20.03.2022	ggu	accept int64 data type for time variable
 c 20.06.2022	ggu	maximum dimensions updated
+c 09.05.2023    lrp     write vertical velocity and density
 c
 c notes :
 c
@@ -1053,7 +1054,7 @@ c*****************************************************************
  1010     format(3i5,a,a)
 
 	  if( blong ) then
-	    do ia=1,natts
+	    do ia=1,n atts
 	      retval = nf_inq_attname(ncid,var_id,ia,aname)
 	      call nc_handle_err(retval,'get_var_info')
 	      retval = nf_inq_att(ncid,var_id,aname,xtype,length)
@@ -2661,6 +2662,20 @@ c*****************************************************************
 	  units = 'degC'
 	  cmin = -10.
 	  cmax = 100.
+        else if( ivar .eq. 13 ) then    ! density anomaly
+          name = 'density anomaly'
+          what = 'standard_name'
+          std = 'sea_water_density_anomaly'
+          units = 'kg m-3'
+          cmin = -1000.
+          cmax = +1000.		
+        else if( ivar .eq. 14 ) then    ! vertical mass-transfer among layers
+          name = 'w_velocity'
+          what = 'standard_name'
+          std = 'vertical_sea_water_mass_tranfer'
+          units = 'm s-1'
+          cmin = -10.
+          cmax = +10.
 	else if( ivar .eq. 19 ) then	! vorticity
 	  name = 'vorticity'
 	  what = 'standard_name'

@@ -74,6 +74,7 @@ c 05.12.2017	ggu	changed VERS_7_5_39
 c 22.02.2018	ggu	changed VERS_7_5_42
 c 19.04.2018	ggu	changed VERS_7_5_45
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c******************************************
 
@@ -349,7 +350,7 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
 
 	include 'pkonst.h'
 
-	integer ie,ii,l,lmax,ia,k,ntot
+	integer ie,ii,l,lmax,lmin,ia,k,ntot
 	double precision area,pot,kin,kinsurf,z,zz,ke
 	double precision h,uu,vv,rho
 
@@ -379,7 +380,8 @@ c	kin = (1/2) * rho * area * (U*U+V*V)/H
           pot = pot + area * rho * zz
 
 	  lmax = ilhv(ie)
-	  do l=1,lmax
+	  lmin = jlhv(ie)
+	  do l=lmin,lmax
 	    rho = 0.
 	    do ii=1,3
 	      k = nen3v(ii,ie)

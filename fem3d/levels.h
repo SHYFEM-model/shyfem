@@ -27,12 +27,19 @@
 !
 ! 19.01.2015	ggu	changed VERS_7_1_3
 ! 16.02.2019	ggu	changed VERS_7_5_60
+! 09.05.2023    lrp     introduce top layer index variable
 
         integer ilhkv(nkndim)
         common /ilhkv/ilhkv
 
         integer ilhv(neldim)
         common /ilhv/ilhv
+
+        integer jlhkv(nkndim)
+        common /jlhkv/jlhkv
+
+        integer jlhv(neldim)
+        common /jlhv/jlhv
 
         real hlv(nlvdim), hldv(nlvdim)
         common /hlv/hlv, /hldv/hldv
@@ -44,4 +51,4 @@
         common /ilmkv/ilmkv
 
 	save /ilhkv/,/ilhv/,/hlv/,/hldv/,/ilmv/,/ilmkv/
-
+        save /jlhkv/,/jlhv/

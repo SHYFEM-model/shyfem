@@ -106,6 +106,7 @@ c 18.03.2023	ggu	adjusted horizontal diffusion for mpi
 c 27.03.2023	ggu	tripple point routines in new file submpi_tripple.f
 c 29.03.2023	ggu	handle tripple points, new horizontal diffusion routine
 c 29.03.2023	ggu	exchange rindex between domains
+c 09.05.2023    lrp     introduce top layer index variable
 c
 c notes :
 c
@@ -223,7 +224,7 @@ c stability is computed for dt == 1
         real dstab(nlvdi,nel)
 
         logical bdebug
-        integer ie,ii,iei,l,lmax,lmaxi
+        integer ie,ii,iei,l,lmax,lmin,lmaxi
         real u,v,ui,vi
         real anu,ax,ay
         real area,areai
@@ -239,10 +240,11 @@ c stability is computed for dt == 1
         do ie=1,nel
 
           lmax = ilhv(ie)
+          lmin = jlhv(ie)
           area = 12. * ev(10,ie)
           r = rdistv(ie)
 
-          do l=1,lmax
+          do l=lmin,lmax
 
             a = 0.
             do ii=1,3
@@ -293,7 +295,7 @@ c stability is computed for dt == 1
 	real rindex
 	real dstab(nlvdi,nel)
 
-	integer ie,ii,iei,l,lmax,lmaxi
+	integer ie,ii,iei,l,lmax,lmin,lmaxi
 	integer itr
 	real u,v,ui,vi
 	real anu,ax,ay
@@ -311,6 +313,7 @@ c stability is computed for dt == 1
 	do ie=1,nel
 
 	  lmax = ilhv(ie)
+          lmin = jlhv(ie)
 	  area = 12. * ev(10,ie)
 	  r = rdistv(ie)
 	  al(1:lmax) = 0.
@@ -327,7 +330,7 @@ c stability is computed for dt == 1
 	      call tripple_point_get_la(itr,lmaxi,areai)
 	    end if
 
-	    do l=1,lmax
+	    do l=lmin,lmax
 	      !if( l > lmaxi ) exit
 	      anu = ahpar * difhv(l,ie)
               ai = 2. * anu / ( area + areai )
@@ -565,7 +568,7 @@ c sets arrays momentx/yv
 
         implicit none
 
-        integer ii,ie,k,l,lmax,ie_mpi
+        integer ii,ie,k,l,lmax,lmin,ie_mpi
         real b,c
         real ut,vt
         real uc,vc
@@ -594,7 +597,8 @@ c---------------------------------------------------------------
 	do ie_mpi=1,nel
 	  ie = ip_sort_elem(ie_mpi)
 	  lmax = ilhv(ie)
-	  do l=1,lmax
+	  lmin = jlhv(ie)
+	  do l=lmin,lmax
             h = hdeov(l,ie)
 	    ut = utlov(l,ie)
 	    vt = vtlov(l,ie)
@@ -618,7 +622,8 @@ c---------------------------------------------------------------
 
 	do k=1,nkn
 	  lmax = ilhkv(k)
-	  do l=1,lmax
+	  lmin = jlhkv(k)
+	  do l=lmin,lmax
             h = hdkov(l,k)
 	    if( saux(l,k) .gt. 0 ) then		!flux into node
 	      momentxv(l,k) = momentxv(l,k) / saux(l,k)
@@ -665,7 +670,7 @@ c******************************************************************
 	real wtop,wbot
 
         integer ihwadv  	! vertical advection for momentum
-        integer ii,ie,k,l,lmax,ie_mpi
+        integer ii,ie,k,l,lmax,lmin,ie_mpi
         real b,c
         real ut,vt
         real uc,vc
@@ -703,12 +708,13 @@ c---------------------------------------------------------------
 	  ie = ip_sort_elem(ie_mpi)
           wtop = 0.0
 	  lmax = ilhv(ie)
+	  lmin = jlhv(ie)
 
           rdist = rdistv(ie)              !use terms (distance from OB)
           rcomp = rcomputev(ie)           !use terms (custom elements)
           ruseterm = min(rcomp,rdist)     !use terms (both)
 
-	  do l=1,lmax
+	  do l=lmin,lmax
 
 c	    ---------------------------------------------------------------
 c	    horizontal advection
@@ -843,7 +849,7 @@ c stability is computed for dt == 1
 	real rindex		   !stability index (return)
 	real astab(nlvdi,nel)      !stability matrix (return)
 
-	integer ie,l,ii,k,lmax,iweg
+	integer ie,l,ii,k,lmax,lmin,iweg
 	real cc,cmax
 	real ut,vt
 	real area,h,vol
@@ -855,8 +861,9 @@ c stability is computed for dt == 1
 	do ie=1,nel
 	  area = 12. * ev(10,ie)
 	  lmax = ilhv(ie)
+	  lmin = jlhv(ie)
 	  iweg = iwegv(ie)
-	  do l=1,lmax
+	  do l=lmin,lmax
 
             h = hdenv(l,ie)
 	    vol = area * h
@@ -1143,12 +1150,12 @@ c do not use this routine !
         do ie=1,nel
           presbcx = 0.
           presbcy = 0.
-	  lmin = ilmv(ie)
+	  lmin = jlhv(ie)
           lmax = ilhv(ie)
 
 	  px(0) = presbcx
 	  py(0) = presbcy
-          do l=1,lmax
+          do l=lmin,lmax
             hhi = hdeov(l,ie)
             hhi = hldv(l)
             hlayer = 0.5 * hhi
@@ -1291,12 +1298,12 @@ c---------- DEB SIG
 
           presbcx = 0.
           presbcy = 0.
-	  lmin = ilmv(ie)
+	  lmin = jlhv(ie)
           lmax = ilhv(ie)
 	  brup=0.
 	  crup=0.
 	  hhup=0.
-          do l=1,lmax		!loop over layers to set up interface l-1
+          do l=lmin,lmax		!loop over layers to set up interface l-1
 	    bsigma = l .le. nsigma
 
 	    htint = 0.				!depth of layer top interface
