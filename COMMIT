@@ -1,5 +1,20 @@
 ============================================================
 
+Fri May 19 12:06:40 CEST 2023
+
+bug fix for box model (changes in flux computation)
+
+ fem3d/Makefile          |   6 +-
+ fem3d/mod_shympi_node.f |  40 ++-
+ fem3d/shyelab1.f        |   6 +-
+ fem3d/subboxa.f         | 709 ++++++++++++++++++++++++++++++++++++------------
+ fem3d/subflxa.f         |  23 +-
+ fem3d/subflxm.f         |  45 ++-
+ fem3d/substress.f       |  10 +-
+ 7 files changed, 632 insertions(+), 207 deletions(-)
+
+============================================================
+
 Tue May  9 16:16:52 CEST 2023
 
 forgotten make depend

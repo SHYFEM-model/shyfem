@@ -96,6 +96,7 @@
 ! 29.01.2023	ggu	format of boxes_geom.txt has changed (with box nums)
 ! 01.04.2023	ggu	debugging code
 ! 21.04.2023	ggu	changes in writing OB fluxes and boxes_3d_aver()
+! 18.05.2023	ggu	tons of changes to get 2D mass check right
 !
 ! notes :
 !
@@ -169,6 +170,9 @@
 	character*80, save :: boxfile = 'boxes.txt'	!file name of box info
 	logical, parameter :: bbox3d = .false.		!write 3d results
 	logical, parameter :: bmasserror = .false.	!write mass error
+	logical, parameter :: bmass2d = .true.		!check mass error 2d
+	logical, parameter :: bmass3d = .false.		!check mass error 3d
+	logical, parameter :: b777 = .true.		!write debug to 777
 
         integer, save :: nbxdim = 0	!maximum for nbox
         integer, save :: nscboxdim = 0	!maximum for nsect
@@ -247,8 +251,6 @@
 	real, save, allocatable :: wlaux(:,:)		!aux array
 	real, save, allocatable :: wl0aux(:,:)		!aux array for vert w
 
-	double precision, save, allocatable :: fluxes_m(:,:,:)	!mass fluxes
-
         integer, save :: nslmax = 0
 	integer, save, allocatable :: nslayers(:)	!layers in section
 	double precision, save, allocatable :: masst(:,:,:)	!accum mass
@@ -262,11 +264,11 @@
 
 	integer, save, allocatable :: nblayers(:)	!layers in boxes
 	double precision, save, allocatable :: barea(:)		!area of boxes
-	double precision, save, allocatable :: bvolume(:)	!volume of boxes
+	double precision, save, allocatable :: bvol2d(:)	!vol2d of boxes
 	double precision, save, allocatable :: bdepth(:)	!depth of boxes
-	double precision, save, allocatable :: bdtarea(:)	!area of boxes
-	double precision, save, allocatable :: bvol(:,:)	!area of boxes
-	double precision, save, allocatable :: bdtvol(:,:)	!area of boxes
+	double precision, save, allocatable :: bvol3d(:,:)	!vol of boxes
+	double precision, save, allocatable :: bdtarea(:)	!area*dt
+	double precision, save, allocatable :: bdtvol(:,:)	!vol*dt
 
 	integer, parameter :: nv3d = 4
 	double precision, save, allocatable :: val3d(:,:,:)	!3d variables
@@ -283,19 +285,24 @@
 	double precision, save, allocatable :: eta_act(:)	!new water level
 	double precision, save, allocatable :: eta_old(:)	!old water level
 
+	double precision, save, allocatable :: fluxesg(:,:,:)	!aux fluxes
+	double precision, save, allocatable :: fluxesg_m(:,:,:)	!mass fluxes
+	double precision, save, allocatable :: fluxesg_ob(:,:,:)!ob fluxes
+	double precision, save, allocatable :: aux3dg(:,:)	!aux 3d vars
+	double precision, save, allocatable :: val3dg(:,:,:)	!3d variables
+	double precision, save, allocatable :: valv3dg(:,:,:)	!3d variables
+
 !==================================================================
 	contains
 !==================================================================
 
-	subroutine box_arrays_alloc(nlv,nbc,nb,ns,nn)
+	subroutine box_arrays_alloc(nlv,nlvg,nbc,nb,ns,nn)
 
-	integer nlv,nbc,nb,ns,nn
+	integer nlv,nlvg,nbc,nb,ns,nn
 
 	allocate(fluxes(0:nlv,3,ns))
 	allocate(aux2d(nb))
 	allocate(aux3d(0:nlv,nb))
-
-	allocate(fluxes_m(0:nlv,3,ns))
 
 	allocate(nslayers(ns))
 	allocate(masst(0:nlv,3,ns))
@@ -304,23 +311,30 @@
 	allocate(conzt(0:nlv,3,ns))
 
 	allocate(nslayers_ob(nbc))
-	allocate(fluxes_ob(0:1,3,nbc))
-	allocate(masst_ob(0:1,3,nbc))
+	allocate(fluxes_ob(0:nlv,3,nbc))
+	allocate(masst_ob(0:nlv,3,nbc))
 
 	allocate(nblayers(nb))
-	allocate(bvolume(nb))			!static volume - no eta
+	allocate(bvol2d(nb))			!static volume - no eta
 	allocate(bdepth(nb))
 
 	allocate(barea(nb))
 	allocate(bdtarea(nb))			!area*dt
 
-	allocate(bvol(0:nlv,nb))
+	allocate(bvol3d(0:nlv,nb))
 	allocate(bdtvol(0:nlv,nb))		!vol*dt
 
 	allocate(val3d(0:nlv,nb,nv3d))
 	allocate(valv3d(0:nlv,nb,nvv3d))
 	allocate(val2d(nb,nv2d))
 	allocate(valmet(nb,nvmet))
+
+	allocate(fluxesg(0:nlvg,3,ns))		!global 3d values
+	allocate(fluxesg_m(0:nlvg,3,ns))	!global 3d mass fluxes
+	allocate(fluxesg_ob(0:nlvg,3,ns))		!global 3d values
+	allocate(aux3dg(0:nlvg,nb))
+	allocate(val3dg(0:nlvg,nb,nv3d))
+	allocate(valv3dg(0:nlvg,nb,nvv3d))
 
 	allocate(eta_old(nb))
 	allocate(eta_act(nb))
@@ -352,6 +366,7 @@ c administers writing of flux data
 	use levels, only : nlvdi,nlv,ilhkv
 	use box
 	use box_arrays
+	use mod_debug
 	use shympi
 
 	implicit none
@@ -361,16 +376,17 @@ c administers writing of flux data
 	integer j,i,k,l,lmax,nlmax,ivar,nvers,nk_ob
 	integer date,time
 	integer idtbox
-	integer nvar,ierr,iuaux,ib,iv
+	integer nvar,ierr,iuaux,ib,iv,iu
 	real az,azpar,dt,dt1
 	double precision atime0,atime,dtime
+	double precision daux
 	character*80 title,femver,aline
 
         double precision, save :: trm,trs,trt,trc
 	double precision, save :: trob
-	real, save :: dtbox			!need for time averaging
+	double precision, save :: dtbox		!need for time averaging
 
-        integer, save :: nbbox = 0		!unit number for output
+        integer, save :: nbflx = 0		!unit number for output
         integer, save :: icall = 0
 	integer, save :: ibarcl,iconz,ievap
 	double precision, save :: da_out(4)
@@ -424,13 +440,14 @@ c-----------------------------------------------------------------
 		nscboxdim = nsect + nbc_ob
 		nfxboxdim = kfluxm + nbc_ob + nk_ob
 		call box_alloc(nkn,nel,nlvdi,nbc_ob,nbox,nscboxdim,nfxboxdim)
-		call box_arrays_alloc(nlv,nbc_ob,nbox,nscboxdim,nfxboxdim)
+		call box_arrays_alloc(nlv,nlv_global,nbc_ob,nbox
+     +					,nscboxdim,nfxboxdim)
 		allocate(wlaux(nlv,nkn))
 		allocate(wl0aux(0:nlv,nkn))
 
 		call box_init		!reads boxfile and sets up things
 		call box_make_stats(nbox,iboxes,nblayers !sets up nblayers
-     +					,barea,bvolume,bdepth)
+     +					,barea,bvol2d,bdepth)
 
                 if( nsect .gt. nscboxdim ) then
                   stop 'error stop wrboxa: dimension nscboxdim'
@@ -440,6 +457,8 @@ c-----------------------------------------------------------------
 		  if( shympi_is_master() ) then
 		    write(6,*) 'box model working in mpi mode'
 		  end if
+		  flush(6)
+		  call shympi_syncronize
 		  !stop 'error stop wrboxa: no mpi mode'
 		end if
 
@@ -448,6 +467,8 @@ c-----------------------------------------------------------------
 		ievap = nint(getpar('ievap'))
 
 		call fluxes_init_d(nlvdi,nsect,nslayers,trm,masst)
+		call fluxes_init_d(nlvdi,nbc_ob,nslayers_ob,trob,masst_ob)
+		!call fluxes_init_d(nlvdi,nsect,nslayers,trob,masst_ob)
 		nvar = 1
 		if( ibarcl .gt. 0 ) then
 		  call fluxes_init_d(nlvdi,nsect,nslayers,trs,saltt)
@@ -467,13 +488,17 @@ c-----------------------------------------------------------------
 		call boxes_2d_init(nbox,nv2d,val2d)	!2d variables
 		call boxes_2d_init(nbox,nvmet,valmet)	!meteo variables
 
+		!write(6,*) 'gggguuuu 1',my_id; flush(6)
+		call shympi_syncronize
 		call box_aver_eta(zeov,aux2d)
 		eta_old = aux2d
 
-		nslayers_ob = 1
-		call fluxes_init_d(1,nbc_ob,nslayers_ob,trob,masst_ob)
-
+		!write(6,*) 'gggguuuu 2',my_id; flush(6)
+		!call shympi_syncronize
+	
         	call box_flx_file_open(nvar,da_out)
+		!call shympi_syncronize
+		!write(6,*) 'gggguuuu 3',my_id; flush(6)
 
 c               here we could also compute and write section in m**2
 
@@ -484,10 +509,12 @@ c               here we could also compute and write section in m**2
      +					,nbox,nsect,iboxes,isects
      +					,kfluxm,kflux,kflux_ext
      +					,nslayers,nblayers
-     +					,barea,bvolume,bdepth
+     +					,barea,bvol2d,bdepth
      +					,bextra)
 
 		allocate(taubot(nkn))
+
+		call write_matrix_boxes
         end if
 
 c-----------------------------------------------------------------
@@ -517,9 +544,11 @@ c	-------------------------------------------------------
 	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
 	call fluxes_accum_d(nlvdi,nsect,nslayers,dt,trm,masst,fluxes)
 
-	call box_ob_compute(nbc_ob,fluxes_ob)	!open boundary conditions
-	call fluxes_accum_d(1,nbc_ob,nslayers_ob,dt,trob
+	call box_ob_compute(nbc_ob,nlvdi,fluxes_ob)	!open boundary conditions
+	call fluxes_accum_d(nlvdi,nbc_ob,nslayers_ob,dt,trob
      +				,masst_ob,fluxes_ob)
+	call flx_print(678,'orig',nbc_ob,nlvdi,fluxes_ob)
+	call flx_print(678,'accum',nbc_ob,nlvdi,masst_ob)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
@@ -544,44 +573,31 @@ c	-------------------------------------------------------
 
 	call boxes_compute_area(barea)
 	bdtarea = bdtarea + dt*barea
-	call boxes_compute_volume(bvol)
-	bdtvol = bdtvol + dt*bvol
+	call boxes_compute_volume(bvol3d)
+	bdtvol = bdtvol + dt*bvol3d
 
-	call box_debug_2d('bvol',330,nbox,bvol(0,:))
+	!call box_debug_2d('bvol3d',330,nbox,bvol3d(0,:))
 
 	call box_3d_aver_scalar(tempv,aux3d,1)
-	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,1),aux3d)
+	call boxes_3d_accum(nlvdi,nbox,dt,bvol3d,val3d(:,:,1),aux3d)
 	call box_3d_aver_scalar(saltv,aux3d,1)
-	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,2),aux3d)
+	call boxes_3d_accum(nlvdi,nbox,dt,bvol3d,val3d(:,:,2),aux3d)
 	call box_3d_aver_vel(aux3d)
-	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,3),aux3d)
-
-	wlaux = 1.		!for volume
-	!wlaux = 0.		!for volume
-	!do k=1,nkn
-	!  lmax = ilhkv(k)
-	!  do l=1,lmax
-	!    wlaux(l,k) = 1.
-	!  end do
-	!end do
-
-	call box_3d_aver_scalar(wlaux,aux3d,0)
-	!if( any( bvol /= aux3d ) ) stop 'error stop volume 1'
-	call boxes_3d_accum(nlvdi,nbox,dt,bvol,val3d(:,:,4),aux3d)
+	call boxes_3d_accum(nlvdi,nbox,dt,bvol3d,val3d(:,:,3),aux3d)
 
 	wl0aux = wlnv
 	where( wl0aux < 0. ) wl0aux = 0.		!positive vertical flux
 	call box_3d_aver_vertical(wl0aux,aux3d,0)
-	call boxes_3d_accum(nlvdi,nbox,dt,bvol,valv3d(:,:,1),aux3d)
+	call boxes_3d_accum(nlvdi,nbox,dt,bvol3d,valv3d(:,:,1),aux3d)
 	wl0aux = wlnv
 	where( wl0aux > 0. ) wl0aux = 0.		!negative vertical flux
 	call box_3d_aver_vertical(wl0aux,aux3d,0)
-	call boxes_3d_accum(nlvdi,nbox,dt,bvol,valv3d(:,:,2),aux3d)
+	call boxes_3d_accum(nlvdi,nbox,dt,bvol3d,valv3d(:,:,2),aux3d)
 
 	call box_3d_aver_vertical(visv,aux3d,1)
-	call boxes_3d_accum(nlvdi,nbox,dt,bvol,valv3d(:,:,3),aux3d)
+	call boxes_3d_accum(nlvdi,nbox,dt,bvol3d,valv3d(:,:,3),aux3d)
 	call box_3d_aver_vertical(difv,aux3d,1)
-	call boxes_3d_accum(nlvdi,nbox,dt,bvol,valv3d(:,:,4),aux3d)
+	call boxes_3d_accum(nlvdi,nbox,dt,bvol3d,valv3d(:,:,4),aux3d)
 
 	call box_aver_eta(zenv,aux2d)
 	call boxes_2d_accum(nbox,dt,barea,val2d(:,1),aux2d)
@@ -601,51 +617,98 @@ c	-------------------------------------------------------
 
         if( .not. next_output_d(da_out) ) return
 
-	nbbox = nint(da_out(4))
+	nbflx = nint(da_out(4))
 
 c	-------------------------------------------------------
-c	time average results
+c	time average results and collect domains
 c	-------------------------------------------------------
 
 	nvers = 0
 	call get_absolute_act_time(atime)
 	call get_act_dtime(dtime)
 
+	!------------------------------------------------------
+	! average and gather eta and barea
+	!------------------------------------------------------
+
+	call box_aver_eta(zenv,aux2d)
+	eta_act = aux2d * barea
+	call boxes_2d_aver(nbox,1,barea,eta_act)	!2d variables
+
+	call gather_sum_d2(nbox,barea)
+
+	!------------------------------------------------------
+	! average, gather, and write fluxes on section
+	!------------------------------------------------------
+
 	ivar = 0
 	call fluxes_aver_d(nlvdi,nsect,nslayers,trm,masst,fluxes)
-	call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
+	call box_flx_collect(nlvdi,fluxes,fluxesg_m)
+	call box_flx_write(atime,nbflx,ivar,fluxesg_m)
+	iu = 680+my_id
+	call flx_print(iu,'local',nsect,nlvdi,fluxes)
+	iu = 690+my_id
+	call flx_print(iu,'global',nsect,nlv_global,fluxesg_m)
 
-	fluxes_m = fluxes
-	call fluxes_aver_d(1,nbc_ob,nslayers_ob,trob,masst_ob,fluxes_ob)
+	call fluxes_aver_d(nlvdi,nbc_ob,nslayers_ob,trob
+     +					,masst_ob,fluxes_ob)
+	call box_flx_collect(nlvdi,fluxes_ob,fluxesg_ob)
+
+	iu = 630+my_id
+	call flx_print(iu,'local',nbc_ob,nlvdi,fluxes_ob)
+	iu = 640+my_id
+	call flx_print(iu,'global',nbc_ob,nlv_global,fluxesg_ob)
+
+	call flx_print(678,'local',nbc_ob,nlvdi,fluxes_ob)
+	call flx_print(678,'global',nbc_ob,nlv_global,fluxesg_ob)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
 	  call fluxes_aver_d(nlvdi,nsect,nslayers,trs,saltt,fluxes)
-	  call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
+	  call box_flx_collect(nlvdi,fluxes,fluxesg)
+	  call box_flx_write(atime,nbflx,ivar,fluxesg)
 	  ivar = 12
 	  call fluxes_aver_d(nlvdi,nsect,nslayers,trt,tempt,fluxes)
-	  call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
+	  call box_flx_collect(nlvdi,fluxes,fluxesg)
+	  call box_flx_write(atime,nbflx,ivar,fluxesg)
 	end if
 
 	if( iconz .eq. 1 ) then
 	  ivar = 10
 	  call fluxes_aver_d(nlvdi,nsect,nslayers,trc,conzt,fluxes)
-	  call box_flx_write(atime,nbbox,ivar,nlvdi,fluxes)
+	  call box_flx_collect(nlvdi,fluxes,fluxesg)
+	  call box_flx_write(atime,nbflx,ivar,fluxesg)
 	end if
 
-	call boxes_3d_aver(nlvdi,nbox,nv3d,bdtvol,val3d)	!3d variables
-	call boxes_3d_aver(nlvdi,nbox,nvv3d,bdtvol,valv3d) !3d vert variables
-	call boxes_2d_aver(nbox,1,barea,eta_act)	!2d variables
-	call boxes_2d_aver(nbox,nv2d,bdtarea,val2d)	!2d variables
-	call boxes_2d_aver(nbox,nvmet,bdtarea,valmet)	!meteo in box
+	!------------------------------------------------------
+	! average, gather, and write box values
+	!------------------------------------------------------
 
-	aux2d = barea*(eta_act-eta_old)
-	call boxes_mass_balance_2d(dtbox,bvolume,fluxes_m,fluxes_ob,aux2d)
-	if( b3d .and. .false. ) then
-	  aux3d = valv3d(:,:,1) + valv3d(:,:,2)		!vertical velocity
-	  call boxes_mass_balance_3d(dtbox,bvolume
+	call boxes_3d_aver(nlvdi,nbox,nv3d,bdtvol,val3d,val3dg)
+	call boxes_3d_aver(nlvdi,nbox,nvv3d,bdtvol,valv3d,valv3dg)
+	!call boxes_2d_aver(nbox,1,barea,eta_act)	   !eta
+	call boxes_2d_aver(nbox,nv2d,bdtarea,val2d)	   !2d variables
+	call boxes_2d_aver(nbox,nvmet,bdtarea,valmet)	   !meteo variables
+
+	call boxes_3d_sum(nlvdi,nbox,bdtvol,aux3dg)
+	val3dg(:,:,4) = aux3dg / dtbox
+
+	!------------------------------------------------------
+	! mass conservation check
+	!------------------------------------------------------
+
+	if( bmass2d ) then
+	  aux2d = barea*(eta_act-eta_old)
+	  call print_2d(nbox,barea,bvol2d,eta_act,eta_old)
+	  call print_3d_flx(nsect,nbc_ob,dtbox,fluxesg_m,fluxesg_ob)
+	  call boxes_mass_balance_2d(dtbox,bvol2d
+     +					,fluxesg_m,fluxesg_ob,aux2d)
+	end if
+	if( b3d .and. bmass3d ) then
+	  aux3dg = valv3dg(:,:,1) + valv3dg(:,:,2)	   !vertical velocity
+	  call boxes_mass_balance_3d(dtbox,bvol2d
      +					,nblayers,nslayers
-     +					,fluxes_m,fluxes_ob,aux2d,aux3d)
+     +					,fluxesg_m,fluxesg_ob,aux2d,aux3dg)
 	end if
 
 c	-------------------------------------------------------
@@ -653,17 +716,19 @@ c	write results
 c	-------------------------------------------------------
 
 	call get_act_timeline(aline)
-	write(6,*) 'writing box results... ',trim(aline)
+	if( shympi_is_master() ) then
+	  write(6,*) 'writing box results... ',trim(aline)
+	end if
 
-	call box_write_2d(dtime,aline,fluxes_m,fluxes_ob
-     +					,nv3d,val3d
+	call box_write_2d(dtime,aline,fluxesg_m,fluxesg_ob
+     +					,nv3d,val3dg
      +					,nv2d,val2d
      +					,eta_act)
 	call box_write_meteo(dtime,aline,nvmet,valmet)
 
 	if( bbox3d .and. b3d ) then
 	  call box_write_3d(dtime,aline,nblayers,nslayers
-     +			,fluxes,fluxes_ob
+     +			,fluxesg_m,fluxesg_ob
      +			,nv3d,val3d
      +			,nv2d,val2d)
 	  call box_write_vertical(dtime,aline,nblayers
@@ -677,7 +742,7 @@ c	reset variables
 c	-------------------------------------------------------
 
 	call fluxes_init_d(nlvdi,nsect,nslayers,trm,masst)
-	call fluxes_init_d(1,nbc_ob,nslayers_ob,trob,masst_ob)
+	call fluxes_init_d(nlvdi,nbc_ob,nslayers_ob,trob,masst_ob)
 
 	if( ibarcl .gt. 0 ) then
 	  call fluxes_init_d(nlvdi,nsect,nslayers,trs,saltt)
@@ -1036,7 +1101,7 @@ c is -1 if node belongs to more than one box
 c******************************************************************
 
 	subroutine box_make_stats(nbox,iboxes,nblayers
-     +					,barea,bvolume,bdepth)
+     +					,barea,bvol2d,bdepth)
 
 c computes max layers for each box
 
@@ -1052,7 +1117,7 @@ c computes max layers for each box
 	integer iboxes(nel)			!indicator of boxes
 	integer nblayers(nbox)			!number of layers in boxes
 	double precision barea(nbox)		!area of boxes
-	double precision bvolume(nbox)		!volume of boxes (static)
+	double precision bvol2d(nbox)		!volume of boxes (static)
 	double precision bdepth(nbox)		!depth of boxes
 
 	integer ib,lmax,ie,nel_mpi
@@ -1060,7 +1125,7 @@ c computes max layers for each box
 
 	nblayers = 0
 	barea = 0.
-	bvolume = 0.
+	bvol2d = 0.
 	bdepth = 0.
 	nel_mpi = nel_unique
 
@@ -1069,7 +1134,7 @@ c computes max layers for each box
 	  hdep = hev(ie)
 	  area = 12.*ev(10,ie)
 	  barea(ib) = barea(ib) + area
-	  bvolume(ib) = bvolume(ib) + area * hdep
+	  bvol2d(ib) = bvol2d(ib) + area * hdep
 	  lmax = ilhv(ie)
 	  nblayers(ib) = max(nblayers(ib),lmax)
 	end do
@@ -1081,11 +1146,11 @@ c computes max layers for each box
 	end do
 
 	call shympi_gather_and_sum(barea)
-	call shympi_gather_and_sum(bvolume)
-	bdepth = bvolume / barea
+	call shympi_gather_and_sum(bvol2d)
+	bdepth = bvol2d / barea
 
 	!bdepth = 0.
-	!where( barea > 0. ) bdepth = bvolume / barea
+	!where( barea > 0. ) bdepth = bvol2d / barea
 
 	end
 
@@ -1101,7 +1166,7 @@ c******************************************************************
      +					,nbox,nsect,iboxes,isects
      +					,kfluxm,kflux,kflux_ext
      +					,nslayers,nblayers
-     +					,barea,bvolume,bdepth
+     +					,barea,bvol2d,bdepth
      +					,bextra)
 
 c writes statistics to files boxes_stats.txt and boxes_geom.txt
@@ -1122,14 +1187,14 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	integer nslayers(nsect)		!number of layers in section
 	integer nblayers(nbox)		!number of layers in boxes
 	double precision barea(nbox)		!area of boxes
-	double precision bvolume(nbox)		!volume of boxes
+	double precision bvol2d(nbox)		!volume of boxes
 	double precision bdepth(nbox)		!depth of boxes
 	logical bextra
 
 	logical bw
 	integer i,ipt,k,ke,n,ndim,ip
 	integer ib,iu,iuaux
-	integer is,ib1,ib2,itype
+	integer is,ib1,ib2,itype,ns
 	integer nb1,nb2
 	integer ie,iext,ia
 	integer nvars
@@ -1137,12 +1202,13 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	double precision areatot
 	double precision dtime,atime,atime0
 	character*20 line
-	character*80 string,s1,s2
+	character*80 string,s1,s2,s3,s4
 
 	integer nsbox(-1:nbox)			!number of nodes in box section
 	integer, allocatable :: kbox(:,:)	!nodes of section of box
 	integer, allocatable :: kaux(:)
 	integer, allocatable :: iboxesg(:)
+	integer, allocatable :: ipevg(:)
 	real, allocatable :: areav(:)
 	real, allocatable :: areag(:)
 	real, allocatable :: heg(:)
@@ -1190,7 +1256,7 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
 	do ib=1,nbox
 	  if( bw ) write(iu,1000) ib,nblayers(ib)
-     +				,barea(ib),bvolume(ib),bdepth(ib)
+     +				,barea(ib),bvol2d(ib),bdepth(ib)
  1000	  format(2i8,2e14.6,f12.4)
 	end do
 
@@ -1198,9 +1264,9 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 
 	if( bextra ) write(iu,'(a)') '#   sections'
         if( bw ) write(iu,*) nsect
-	s1 = '    from          to'
+	s1 = '#    section        from          to'
 	s2 = '         nls        nlb1        nlb2'
-	if( bextra ) write(iu,'(a)') '#   '//trim(s1)//trim(s2)
+	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
         do is=1,nsect
           ib1 = isects(3,is)
 	  nb1 = 0
@@ -1208,7 +1274,7 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
           ib2 = isects(4,is)
 	  nb2 = 0
 	  if( ib2 > 0 ) nb2 = nblayers(ib2)
-          if( bw ) write(iu,*) ib1,ib2,nslayers(is),nb1,nb2
+          if( bw ) write(iu,*) is,ib1,ib2,nslayers(is),nb1,nb2
           n = isects(1,is)
 	  if( ib1 > 0 ) nsbox(ib1) = nsbox(ib1) + n + 1
 	  if( ib2 > 0 ) nsbox(ib2) = nsbox(ib2) + n + 1
@@ -1219,15 +1285,17 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	kbox = 0
 	allocate(kaux(kfluxm),xxx(kfluxm),yyy(kfluxm))
 	kaux(1:kfluxm) = kflux(1:kfluxm)
-	call make_kexy(kfluxm,kaux,xxx,yyy)
+	call make_kexy(kfluxm,kaux,xxx,yyy,ns)
 
 	iuaux = 440 + my_id
 	if( bextra ) write(iu,'(a)') '#  section details'
         if( bw ) write(iu,*) nsect
-	s1 = ' section       nodes'
+	s1 = '#    section       nodes'
 	s2 = '    from-box      to-box      layers'
+	s3 = '#       node node-number'
+	s4 = '            x                y'
         do is=1,nsect
-	  if( bextra ) write(iu,'(a)') '#   '//trim(s1)//trim(s2)
+	  if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
           n = isects(1,is)
           itype = isects(2,is)
           ib1 = isects(3,is)
@@ -1235,6 +1303,7 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
           ipt = isects(5,is)
           !write(iuaux,*) is,n,ib1,ib2,nslayers(is)
           if( bw ) write(iu,*) is,n,ib1,ib2,nslayers(is)
+	  if( bextra ) write(iu,'(a)') trim(s3)//trim(s4)
 	  do i=1,n
 	    ip = ipt-1+i
 	    k = kflux(ip)
@@ -1252,12 +1321,14 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 
 	if( bextra ) write(iu,'(a)') '#  box detail on sections'
 	if( bw ) write(iu,*) nbox
+	s1 = '#        box       nodes    sections'
 	do ib=1,nbox
-	  if( bextra ) write(iu,'(a)') '#        box       nodes'
 	  n = kbox(0,ib)
 	  kaux(1:n) = kbox(1:n,ib)
-	  call make_kexy(n,kaux,xxx,yyy)
-	  if( bw ) write(iu,*) ib,n
+	  call make_kexy(n,kaux,xxx,yyy,ns)
+	  if( bextra ) write(iu,'(a)') trim(s1)
+	  if( bw ) write(iu,*) ib,n,ns
+	  if( bextra ) write(iu,'(a)') trim(s3)//trim(s4)
 	  do i=1,n
 	    k = kaux(i)
 	    if( k == 0 ) then
@@ -1290,6 +1361,7 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	allocate(areag(nel_global))
 	allocate(heg(nel_global))
 	allocate(iboxesg(nel_global))
+	allocate(ipevg(nel_global))
 
 	areatot = 0.
 	!nvars = 2						!version 3
@@ -1312,9 +1384,10 @@ c writes statistics to files boxes_stats.txt and boxes_geom.txt
 	call shympi_l2g_array(areav,areag)
 	call shympi_l2g_array(hev,heg)
 	call shympi_l2g_array(iboxes,iboxesg)
+	call shympi_l2g_array(ipev,ipevg)
 
 	do ie=1,nel_global
-	  iext = ieext(ie)
+	  iext = ipevg(ie)
 	  ia = iboxesg(ie)
 	  area = areag(ie)
 	  depth = heg(ie)
@@ -1359,7 +1432,7 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine make_kexy(n,knodes,x,y)
+	subroutine make_kexy(n,knodes,x,y,ns)
 
 ! computes external nodes and x/y
 
@@ -1371,6 +1444,7 @@ c******************************************************************
 	integer n
 	integer knodes(n)
 	real x(n),y(n)
+	integer ns		!number of sections (return)
 
 	real, parameter :: high = 1.e+30
 	integer i,k
@@ -1396,6 +1470,11 @@ c******************************************************************
 	call gather_max_r(n,x)
 	call gather_max_r(n,y)
 	call shympi_barrier
+
+	ns = 0
+	do i=1,n
+	  if( knodes(i) == 0 ) ns = ns + 1
+	end do
 
 	end
 
@@ -1444,8 +1523,8 @@ c writes initial conditions boxes_init.txt for eta - still to be done : T/S
 
 c******************************************************************
 
-	subroutine box_write_2d(dtime,aline,fluxes,fluxes_ob
-     +				,nv3d,val3d
+	subroutine box_write_2d(dtime,aline,fluxesg,fluxesg_ob
+     +				,nv3d,val3dg
      +				,nv2d,val2d
      +				,eta_act)
 
@@ -1466,11 +1545,11 @@ c	4	current velocity
 
 	double precision dtime
 	character*(*) aline
-	double precision fluxes(0:nlvdi,3,nsect) !mass fluxes between boxes
-	double precision fluxes_ob(0:1,3,nbc_ob) !mass fluxes at open boundaries
+	double precision fluxesg(0:nlv_global,3,nsect) !mass fluxes between boxes
+	double precision fluxesg_ob(0:nlv_global,3,nbc_ob) !mass fluxes at open boundaries
 	double precision flux2d(3,nsect) !mass fluxes between boxes
 	integer nv3d
-	double precision val3d(0:nlvdi,nbox,nv3d)	!3d variables
+	double precision val3dg(0:nlv_global,nbox,nv3d)	!3d variables
 	integer nv2d
 	double precision val2d(nbox,nv2d)		!2d variables
 	double precision eta_act(nbox)		!actual eta
@@ -1509,10 +1588,10 @@ c	4	current velocity
 	if( bextra ) write(iu,'(a)') '#'//trim(s1)//trim(s2)
 	do ib=1,nbox
 	  if( bw ) write(iu,1000) ib
-     +				,(val3d(0,ib,iv),iv=1,nv3d-1)
+     +				,(val3dg(0,ib,iv),iv=1,nv3d-1)
      +				,eta_act(ib)
      +				,(val2d(ib,iv),iv=1,nv2d)
-     +				,val3d(0,ib,nv3d)		!volume
+     +				,val3dg(0,ib,nv3d)		!volume
  !1000	  format(i5,10f10.5)	!FIXME
  1000	  format(i5,6f10.5,e14.6)
 	end do
@@ -1531,10 +1610,10 @@ c	4	current velocity
 	!     12345678901234567890123456789012345678901234567890
 	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
 	do is=1,ns
-	  flux2d(:,:) = fluxes(0,:,:)
+	  flux2d(:,:) = fluxesg(0,:,:)
 	  itype = isects(2,is)
 	  if( itype /= 1 .and. itype /= 99 ) flux2d = 0.
-	  call flx_collect_2d(3*nsect,flux2d)
+	  !call flx_collect_2d(3*nsect,flux2d)
 	  ib1 = isects(3,is)
 	  ib2 = isects(4,is)
 	  !write(69,*) is,ib1,ib2,itype
@@ -1549,8 +1628,8 @@ c	4	current velocity
 	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
 
 	if( nbc_ob > nsect ) stop 'error stop box_write_2d: nbc_ob>nsect'
-	flux2d(:,1:nbc_ob) = fluxes_ob(0,:,1:nbc_ob)
-	call flx_collect_2d(3*nbc_ob,flux2d)
+	flux2d(:,1:nbc_ob) = fluxesg_ob(0,:,1:nbc_ob)
+	!call flx_collect_2d(3*nbc_ob,flux2d)
 
 	do is=1,nbc_ob
 	  itype = iscbnd(2,is)
@@ -1572,7 +1651,7 @@ c	4	current velocity
 c******************************************************************
 
 	subroutine box_write_3d(dtime,aline,nblayers,nslayers
-     +			,fluxes,fluxes_ob
+     +			,fluxesg,fluxesg_ob
      +			,nv3d,val3d
      +			,nv2d,val2d)
 
@@ -1581,6 +1660,7 @@ c writes 3d box values to file
 	use basin
 	use levels
 	use box
+	use shympi
 
 	implicit none
 
@@ -1588,10 +1668,10 @@ c writes 3d box values to file
 	character*(*) aline
 	integer nblayers(nbox)		!number of layers in box
 	integer nslayers(nsect)		!number of layers in section
-	double precision fluxes(0:nlvdi,3,nsect) !mass fluxes between boxes
-	double precision fluxes_ob(0:1,3,nbc_ob) !mass fluxes at open boundaries
+	double precision fluxesg(0:nlv_global,3,nsect) !mass fluxes between boxes
+	double precision fluxesg_ob(0:nlv_global,3,nbc_ob) !mass fluxes at open boundaries
 	integer nv3d
-	double precision val3d(0:nlvdi,nbox,nv3d)	!3d variables
+	double precision val3d(0:nlv_global,nbox,nv3d)	!3d variables
 	integer nv2d
 	double precision val2d(nbox,nv2d)		!2d variables
 
@@ -1650,7 +1730,7 @@ c writes 3d box values to file
 	  if( bw ) write(iu,2000) ib1,ib2,lmax
 	  if( bextra ) write(iu,'(a)') trim(s2)
 	  do l=1,lmax
-	    if( bw ) write(iu,2100) l,(fluxes(l,ii,is),ii=1,3)
+	    if( bw ) write(iu,2100) l,(fluxesg(l,ii,is),ii=1,3)
 	  end do
 	end do
 
@@ -1672,7 +1752,7 @@ c writes 3d box values to file
 	  if( bextra ) write(iu,'(a)') trim(s1)
 	  if( bw ) write(iu,2000) ib1,ib2,1
 	  if( bextra ) write(iu,'(a)') trim(s2)
-	  if( bw ) write(iu,2100) 0,(fluxes_ob(0,ii,is),ii=1,3)
+	  if( bw ) write(iu,2100) 0,(fluxesg_ob(0,ii,is),ii=1,3)
 	end do
 
 	if( bflush ) call file_flush(iu)
@@ -1841,9 +1921,18 @@ c computes average eta values for box
 
 	double precision vald(nbox)
 	double precision vold(nbox)
+	!double precision, allocatable :: vald(:)
+	!double precision, allocatable :: vold(:)
 
 	integer ib,ie,ii
 	real vol,area3,z
+
+	!write(6,*) 'gyeywu',my_id,nbox,nel,nel_unique
+	!write(6,*) my_id,nbox,nel_unique
+	!write(6,*) my_id,size(zev,1),size(zev,2)
+	!write(6,*) my_id,size(val)
+	!allocate(vald(nbox),vold(nbox))
+	!stop
 
 	vald = 0.
 	vold = 0.
@@ -1851,6 +1940,7 @@ c computes average eta values for box
 	do ie=1,nel_unique
 	  !if( iwegv(ie) .eq. 0 ) then	!only for wet elements
 	    ib = iboxes(ie)
+	if( ib <= 0 ) stop 'internal error...'
 	    area3 = 4.*ev(10,ie)
 	    vol = area3
 	    do ii=1,3
@@ -2181,11 +2271,11 @@ c******************************************************************
 	double precision vbox(n)
 
 	area = bdtarea
-	call gather_sum_d(n,area)
+	call gather_sum_d2(n,area)
 
 	do iv=1,nv
 	  vbox = val(:,iv)
-	  call gather_sum_d(n,vbox)
+	  call gather_sum_d2(n,vbox)
 	  vbox = vbox / area
 	  val(:,iv) = vbox
 	end do
@@ -2207,45 +2297,84 @@ c******************************************************************
 
 c******************************************************************
 
-	subroutine boxes_3d_accum(nlvddi,n,dt,bvol,val,value)
+	subroutine boxes_3d_accum(nlvddi,n,dt,bvol3d,val,value)
 
 	implicit none
 
 	integer nlvddi,n
 	real dt
-	double precision bvol(0:nlvddi,n)
+	double precision bvol3d(0:nlvddi,n)
 	double precision val(0:nlvddi,n)
 	double precision value(0:nlvddi,n)
 
-	val = val + value * dt * bvol
+	val = val + value * dt * bvol3d
 
 	end
 
 c******************************************************************
 
-	subroutine boxes_3d_aver(nlvddi,n,nv,vol,val)
+	subroutine boxes_3d_sum(nlvddi,n,val,valg)
 
 	use shympi
 
 	implicit none
 
-	integer nlvddi,n,nv
-	double precision vol(0:nlvddi,n)
-	double precision val(0:nlvddi,n,nv)
+	integer, intent(in) :: nlvddi,n
+	double precision, intent(in) :: val(0:nlvddi,n)
+	double precision, intent(out) :: valg(0:nlv_global,n)
 
 	integer iv
 	integer l,i
-	double precision volume(0:nlvddi,n)
-	double precision vbox(0:nlvddi,n)
+	double precision vbox(0:nlv_global,n)
 
-	volume = vol
-	call gather_sum_d3(nlvddi,n,volume)
+	if( .not. bmpi ) then
+	  valg = val
+	  return
+	end if
+
+	vbox = 0.
+
+	vbox(0:nlvddi,:) = val(:,:)
+	call gather_sum_d3(nlv_global,n,vbox)
+	valg = vbox
+
+	end
+
+c******************************************************************
+
+	subroutine boxes_3d_aver(nlvddi,n,nv,vol,val,valg)
+
+	use shympi
+
+	implicit none
+
+	integer, intent(in) :: nlvddi,n,nv
+	double precision, intent(in) :: vol(0:nlvddi,n)
+	double precision, intent(in) :: val(0:nlvddi,n,nv)
+	double precision, intent(out) :: valg(0:nlv_global,n,nv)
+
+	integer iv
+	integer l,i
+	double precision volume(0:nlv_global,n)
+	double precision vbox(0:nlv_global,n)
+
+	!if( .not. bmpi ) then
+	!  valg = 0.
+	!  where( vol > 0 ) valg = val / vol
+	!  return
+	!end if
+
+	volume = 0.
+	vbox = 0.
+
+	volume(0:nlvddi,:) = vol
+	if( bmpi ) call gather_sum_d3(nlv_global,n,volume)
 
 	do iv=1,nv
-	  vbox = val(:,:,iv)
-	  call gather_sum_d3(nlvddi,n,vbox)
+	  vbox(0:nlvddi,:) = val(:,:,iv)
+	  if( bmpi ) call gather_sum_d3(nlv_global,n,vbox)
 	  where( volume > 0 ) vbox = vbox / volume
-	  val(:,:,iv) = vbox
+	  valg(:,:,iv) = vbox
 	end do
 
 	end
@@ -2295,7 +2424,6 @@ c sets up open boundary inputs
 	    k = iauxv(i)
 	    if( k <= 0 ) cycle
 	    ibk = ikboxes(k)
-	    !write(6,*) 'ggguuu yyyy:',ibc,i,k,ibk
 	    if( ibk .le. 0 ) goto 99	!node not in unique box
 	    if( ib .eq. 0 ) ib = ibk
 	    if( ibk .ne. ib ) goto 98	!boundary nodes in different boxes
@@ -2343,16 +2471,19 @@ c sets up open boundary inputs
 
 c******************************************************************
 
-	subroutine box_ob_compute(nbc_ob,fluxes_ob)
+	subroutine box_ob_compute(nbc_ob,nlvddi,fluxes_ob)
 
 c computes open boundary inputs
 c
 c these fluxes are barotropic, so we insert them in 0 (baro) and 1 (1 layer)
 
+	use shympi
+
 	implicit none
 
 	integer nbc_ob
-	double precision fluxes_ob(0:1,3,nbc_ob) !discharges at open bound
+	integer nlvddi
+	double precision fluxes_ob(0:nlvddi,3,nbc_ob) !discharges at open bound
 
 	integer ibc,nbc
 	real val
@@ -2360,6 +2491,7 @@ c these fluxes are barotropic, so we insert them in 0 (baro) and 1 (1 layer)
 	real get_discharge
 
 	nbc = nbc_ob
+	fluxes_ob = 0.
 
 	do ibc = 1,nbc
 	  val = get_discharge(ibc)
@@ -2552,34 +2684,36 @@ c******************************************************************
 c******************************************************************
 c******************************************************************
 
-	subroutine boxes_mass_balance_2d(dtbox,bvolume
-     +					,fluxes,fluxes_ob,voldif)
+	subroutine boxes_mass_balance_2d(dtbox,bvol2d
+     +					,fluxesg,fluxesg_ob,voldif)
 
 c computes mass balance
 
 	use basin
 	use levels
 	use box
+	use shympi
 
 	implicit none
 
-	real dtbox
-	double precision bvolume(nbox)
-	double precision fluxes(0:nlvdi,3,nsect)
-	double precision fluxes_ob(0:1,3,nbc_ob)
+	double precision dtbox
+	double precision bvol2d(nbox)
+	double precision fluxesg(0:nlv_global,3,nsect)
+	double precision fluxesg_ob(0:nlv_global,3,nbc_ob)
 	double precision voldif(nbox)		!volume difference due to eta
 
-	integer ib,is,ib1,ib2
+	integer ib,is,ib1,ib2,iu,l
 	real volf,vole,volb,vola,vold,volr
 	real errmax,errv(nbox),errd(nbox)
 	double precision vol(nbox)
 	double precision flux
-	logical bdebug
+	logical bdebug,bw
 
-	real, parameter :: eps = 1.e-2
+	real, parameter :: eps = 1.e-5
 
-	bdebug = .true.
 	bdebug = .false.
+	bdebug = .true.
+	bw = ( my_id == 0 )
 
 	vol = 0.
 
@@ -2587,7 +2721,7 @@ c computes mass balance
 	do is=1,nsect
 	  ib1 = isects(3,is)
 	  ib2 = isects(4,is)
-	  flux = dtbox * fluxes(0,1,is)
+	  flux = dtbox * fluxesg(0,1,is)
 	  !write(601,*) ib1,ib2,flux,fluxes(0,1,is)
 	  if( ib1 > 0 ) vol(ib1) = vol(ib1) - flux
 	  if( ib2 > 0 ) vol(ib2) = vol(ib2) + flux
@@ -2597,7 +2731,7 @@ c computes mass balance
 	do is=1,nbc_ob
 	  ib1 = iscbnd(3,is)
 	  ib2 = iscbnd(4,is)
-	  flux = dtbox * fluxes_ob(0,1,is)
+	  flux = dtbox * fluxesg_ob(0,1,is)
 	  !write(601,*) ib1,ib2,flux,fluxes_ob(0,1,is)
 	  !if( ib1 > 0 ) vol(ib1) = vol(ib1) - flux
 	  !if( ib2 > 0 ) vol(ib2) = vol(ib2) + flux
@@ -2605,7 +2739,7 @@ c computes mass balance
 
 	errmax = 0.
 	do ib=1,nbox
-	  volb = bvolume(ib)			!total volume of box
+	  volb = bvol2d(ib)			!total volume of box
 	  if( volb <= 0. ) cycle
 	  volf = vol(ib)			!volume change by fluxes
 	  vole = voldif(ib)			!volume change by eta
@@ -2618,20 +2752,20 @@ c computes mass balance
 	  errv(ib) = volr
 	  errd(ib) = vold
 	  if( volr .gt. eps ) then
-	    write(6,*) '*** mass balance error in box ',ib
-	    write(6,*) '***',ib,volf,vole,vold,volr
+	    if(bw) write(6,*) '*** mass balance error in box ',ib,my_id
+	    if(bw) write(6,*) '***',ib,volf,vole,vold,volr
 	  end if
-	  errmax = max(errmax,abs(volr))
+	  errmax = max(errmax,volr)
 	  !write(115,*) ib,volf,vole,vold,volr
 	end do
 
 	if( errmax .gt. eps ) then
-	  write(6,*) '*** errmax 2d: ',errmax,eps
-	else if( bdebug ) then
+	  if( bw ) write(6,*) '*** errmax 2d: ',errmax,eps
+	else if( bdebug .and. bw ) then
 	  write(6,*) 'errmax 2d: ',errmax,eps
 	end if
 
-	if( bmasserror ) then
+	if( bmasserror .and. bw ) then
 	  write(601,*) 'boxes mass errmax 2d: ',errmax,eps,nbox
 	  do ib=1,nbox
 	    write(601,*) ib,errv(ib),errd(ib)
@@ -2642,9 +2776,9 @@ c computes mass balance
 
 c******************************************************************
 
-	subroutine boxes_mass_balance_3d(dtbox,bvolume
+	subroutine boxes_mass_balance_3d(dtbox,bvol2d
      +					,nblayers,nslayers
-     +					,fluxes,fluxes_ob
+     +					,fluxesg,fluxesg_ob
      +					,voldif,wflux)
 
 c computes mass balance
@@ -2652,17 +2786,18 @@ c computes mass balance
 	use basin
 	use levels
 	use box
+	use shympi
 
 	implicit none
 
-	real dtbox
-	double precision bvolume(nbox)
+	double precision dtbox
+	double precision bvol2d(nbox)
 	integer nblayers(nbox)
 	integer nslayers(nsect)		!number of layers in section
-	double precision fluxes(0:nlvdi,3,nsect)
-	double precision fluxes_ob(0:1,3,nbc_ob)
+	double precision fluxesg(0:nlv_global,3,nsect)
+	double precision fluxesg_ob(0:nlv_global,3,nbc_ob)
 	double precision voldif(nbox)			!volume difference due to eta
-	double precision wflux(0:nlvdi,nbox)		!vertical fluxes [m**3/s]
+	double precision wflux(0:nlv_global,nbox)	!vertical fluxes [m**3/s]
 
 	logical bdebug
 	integer ib,is,ib1,ib2
@@ -2690,7 +2825,7 @@ c computes mass balance
 	  ib2 = isects(4,is)
 	  lmax = nslayers(is)
 	  do l=1,lmax
-	    flux = dtbox * fluxes(l,1,is)
+	    flux = dtbox * fluxesg(l,1,is)
 	    if( ib1 > 0 ) vol(l,ib1) = vol(l,ib1) - flux
 	    if( ib2 > 0 ) vol(l,ib2) = vol(l,ib2) + flux
 	    if( bdebug .and. abs(flux) > 0. ) then
@@ -2706,7 +2841,7 @@ c computes mass balance
 	do is=1,nbc_ob
 	  ib1 = iscbnd(3,is)
 	  ib2 = iscbnd(4,is)
-	  flux = dtbox * fluxes_ob(1,1,is)
+	  flux = dtbox * fluxesg_ob(1,1,is)
 	  !if( ib1 > 0 ) vol(1,ib1) = vol(1,ib1) - flux
 	  !if( ib2 > 0 ) vol(1,ib2) = vol(1,ib2) + flux
 	end do
@@ -2730,7 +2865,7 @@ c computes mass balance
 	    end if
 	  end do
 	  
-	  volb = bvolume(ib)
+	  volb = bvol2d(ib)
 	  if( volb <= 0. ) cycle
 
 	  do l=1,ltot
@@ -2783,10 +2918,15 @@ c******************************************************************
 	double precision da_out(4)
 
 	integer i
-	character*80 chflx(nsect)
+	!character*80 chflx(nsect)
+	character*80, allocatable :: chflx(:)
+	character*80 string
+
+	allocate(chflx(nsect))
 
 	do i=1,nsect
-	  write(chflx(i),'(a,i5)') 'internal box section ',i
+	  write(string,'(a,i5)') 'internal box section ',i
+	  chflx(i) = string
 	end do
 
 c-----------------------------------------------------------------
@@ -2800,26 +2940,48 @@ c-----------------------------------------------------------------
 
 c******************************************************************
 
-	subroutine box_flx_write(atime,nbbox,ivar,nlvddi,flux_local)
+	subroutine box_flx_collect(nlvddi,flux_local,flux_global)
 
 	use box
 	use box_arrays
+	use shympi
+
+	implicit none
+
+	integer nlvddi
+        double precision flux_local(0:nlvddi,3,nsect)
+        double precision flux_global(0:nlv_global,3,nsect)
+
+        integer n
+
+	n = 3*nsect
+
+	call flx_collect_3d(nlvddi,n,flux_local,flux_global)
+
+	end
+
+c******************************************************************
+
+	subroutine box_flx_write(atime,nbflx,ivar,flux_global)
+
+	use box
+	use box_arrays
+	use shympi
 
 	implicit none
 
         double precision atime
-	integer nbbox
+	integer nbflx
         integer ivar
-	integer nlvddi
-        double precision flux_local(0:nlvddi,3,nsect)
+        double precision flux_global(0:nlv_global,3,nsect)
 
         integer nl,ns
 
-        nl = nlvddi
+        nl = nlv_global
         ns = nsect
 
-        call flux_write(nbbox,atime,ivar,nl,ns
-     +                          ,nslayers,flux_local)
+        call flux_write(nbflx,atime,ivar,nl,ns
+     +                          ,nslayers,flux_global)
 
 	end
 
@@ -2836,11 +2998,14 @@ c******************************************************************
 	double precision val(n)
 
 	integer iuaux,ib
+	double precision valtot
 
-	return
+	!return
 
+	valtot = shympi_sum(val)
+	
 	iuaux = iubase + my_id
-	write(iuaux,*) '--- ',trim(text),' ---'
+	write(iuaux,*) '--- ',trim(text),' ---',valtot
 	do ib=1,n
 	  write(iuaux,*) ib,val(ib)
 	end do
@@ -2913,9 +3078,9 @@ c******************************************************************
 	  lmax = nblayers(ib)
 	  val = 0.
 	  do l=1,lmax
-	    val = val + bvol(l,ib)
+	    val = val + bvol3d(l,ib)
 	  end do
-	  val0 = bvol(0,ib)
+	  val0 = bvol3d(0,ib)
 	  dval = abs(val-val0)
 	  rval = dval / val
 	  write(6,2000) iv,ib,val,val0,dval,rval
@@ -2961,6 +3126,202 @@ c******************************************************************
 	write(6,*) 'assert error for eps = ',eps
 	write(6,2000) iv,ib,val,val0,dval,rval
 	stop 'error stop assert_values'
+	end
+
+c******************************************************************
+
+	subroutine write_matrix_boxes
+
+	use basin
+	use levels
+	use box
+	use box_arrays
+	use shympi
+
+	implicit none
+
+	integer ia,ie,ib,iu
+	integer nblayers_domain(nbox,n_threads)
+	integer ibox(nbox),lbox(nbox),header(nbox)
+	integer ibox_domain(nbox,n_threads)
+	integer lbox_domain(nbox,n_threads)
+	integer nlv_domain(n_threads)
+
+	do ib=1,nbox
+	  header(ib) = mod(ib,10)
+	end do
+
+	nlv_domain = 0
+	call shympi_gather(nlv,nlv_domain)
+
+	nblayers_domain = 0
+	call shympi_gather(nblayers,nblayers_domain)
+
+	ibox = 0
+	lbox = 0
+	do ie=1,nel
+	  ib = iboxes(ie)
+	  if( ib < 1 .or. ib > nbox ) stop 'error stop dddddd'
+	  ibox(ib) = 1
+	  lbox(ib) = max(lbox(ib),ilhv(ie))
+	end do
+
+	ibox_domain = 0
+	call shympi_gather(ibox,ibox_domain)
+	lbox_domain = 0
+	call shympi_gather(lbox,lbox_domain)
+
+	if( my_id /= 0 ) return
+
+	open(iu,file='boxes_matrix.txt',status='unknown',form='formatted')
+
+	write(iu,1000) 0,header(:)
+	write(iu,*) '---------------------------------'
+
+	do ia=1,n_threads
+	  write(iu,1000) ia,nblayers_domain(:,ia)
+	end do
+	
+	write(iu,*) '---------------------------------'
+	do ia=1,n_threads
+	  write(iu,1000) ia,ibox_domain(:,ia)
+	end do
+
+	write(iu,*) '---------------------------------'
+	do ia=1,n_threads
+	  write(iu,1000) ia,lbox_domain(:,ia)
+	end do
+
+	write(iu,*) '---------------------------------'
+	do ia=1,n_threads
+	  write(iu,1000) ia,nlv_domain(ia)
+	end do
+
+	write(iu,*) '---------------------------------'
+	close(iu)
+
+ 1000	format(i5,20i3)
+	end
+
+c******************************************************************
+
+	subroutine flx_print(iu,text,nsect,nlvddi,fluxes)
+
+	implicit none
+
+	integer iu
+	character*(*) text
+	integer nsect,nlvddi
+	double precision fluxes(0:nlvddi,3,nsect)
+
+	integer is,l
+
+	write(iu,*) '-------------'
+	write(iu,*) trim(text),nsect,nlvddi
+	write(iu,*) '-------------'
+
+	do is=1,nsect
+	  write(iu,1000) is,0,fluxes(0,:,is)
+	  do l=1,nlvddi
+	    !write(iu,1000) is,l,fluxes(l,:,is)
+	  end do
+	end do
+
+	flush(iu)
+
+ 1000	format(2i5,3g16.8)
+	end
+
+c******************************************************************
+
+	subroutine print_2d(nbox,barea,bvol2d,eta_act,eta_old)
+
+	use box, only : b777
+	use shympi
+
+	implicit none
+
+	integer nbox
+	double precision barea(nbox)
+	double precision bvol2d(nbox)
+	double precision eta_act(nbox)
+	double precision eta_old(nbox)
+
+	integer iu,ib
+
+	if( .not. b777 ) return
+	if( my_id /= 0 ) return
+
+	iu = 777
+	write(iu,*) 3
+	write(iu,*) '==========================='
+	write(iu,*) 'print_2d:'
+	write(iu,*) '==========================='
+	write(iu,*) nbox,2,5
+
+	do ib=1,nbox
+	  write(iu,1000) ib,barea(ib),bvol2d(ib),eta_act(ib),eta_old(ib)
+	end do
+
+	flush(iu)
+
+	return
+ 1000	format(i5,4g18.10)
+	end
+
+c******************************************************************
+
+	subroutine print_3d_flx(nsect,nbc_ob,dtbox,fluxesg,fluxesg_ob)
+
+	use box, only : b777
+	use shympi
+
+	implicit none
+
+	integer nsect,nbc_ob
+	double precision dtbox
+	double precision fluxesg(0:nlv_global,3,nsect)
+	double precision fluxesg_ob(0:nlv_global,3,nbc_ob)
+
+	logical b3d
+	integer is,l,iu,nm
+
+	b3d = .false.
+	nm = 1
+	if( b3d ) nm = nlv_global + 1
+
+	if( .not. b777 ) return
+	if( my_id /= 0 ) return
+
+	iu = 777
+	write(iu,*) 3
+	write(iu,*) '==========================='
+	write(iu,*) 'print_3d_flx: ',dtbox
+	write(iu,*) '==========================='
+	write(iu,*) nsect*nm,3,5
+
+	do is=1,nsect
+	  write(iu,1000) is,0,fluxesg(0,:,is)
+	  do l=1,nlv_global
+	    if( b3d ) write(iu,*) is,l,fluxesg(l,:,is)
+	  end do
+	end do
+
+	write(iu,*) 1
+	write(iu,*) '---------------------------'
+	write(iu,*) nbc_ob*nm,3,5
+
+	do is=1,nbc_ob
+	  write(iu,1000) is,0,fluxesg_ob(0,:,is)
+	  do l=1,nlv_global
+	    if( b3d ) write(iu,*) is,l,fluxesg_ob(l,:,is)
+	  end do
+	end do
+
+	flush(iu)
+
+	return
+ 1000	format(2i5,3g20.10)
 	end
 
 c******************************************************************

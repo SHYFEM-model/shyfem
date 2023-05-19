@@ -32,6 +32,7 @@ c
 c 28.05.2022	ggu	copied from subflxa.f
 c 19.01.2023	ggu	new routine gather_sum_d3()
 c 21.04.2023	ggu	problems in gather_sum_d3() ... not yet solved
+c 18.05.2023	ggu	flux_write() changed, new routine flx_collect_3d()
 c
 c******************************************************************
 c******************************************************************
@@ -245,34 +246,27 @@ c******************************************************************
 !******************************************************************
 
 	subroutine flux_write(nbflx,atime,ivar,nlvddi,nsect
-     +				,nlayers,flux_local)
+     +				,nlayers,flux_global)
 
 	use shympi
 
 	implicit none
 
-	integer nbflx
+	integer nbflx			!unit number
 	double precision atime
 	integer ivar
 	integer nlvddi
 	integer nsect
 	integer nlayers(nsect)
-	double precision flux_local(0:nlvddi,3,nsect)
+	double precision flux_global(0:nlv_global,3,nsect)
 
-	integer nvers,nl
-	integer ns,nt,n
+	integer nvers
 	integer ierr
-	double precision flux_final(0:nlv_global,3,nsect)
 	real flux_real(0:nlv_global,3,nsect)
 
-	if( nlvddi > nlv_global ) stop 'error stop flx_write: (1)'
+	if( nlvddi /= nlv_global ) stop 'error stop flx_write: (1)'
 
-	ns = 1+nlvddi
-	nt = 1+nlv_global
-	n = 3*nsect
-	!call gather_sum_dr(ns,nt,n,flux_local,flux_real)
-	call gather_sum_dd(ns,nt,n,flux_local,flux_final)
-	flux_real = flux_final
+	flux_real = flux_global
 
 	nvers = 0
 
@@ -306,6 +300,29 @@ c******************************************************************
 
 	call shympi_gather(flux2d,flux_domain)
 	flux2d(:) = SUM(flux_domain,dim=2)
+	
+	end
+
+!******************************************************************
+
+	subroutine flx_collect_3d(nlvddi,n,flux3d,flux3dg)
+
+	use shympi
+
+	implicit none
+
+	integer nlvddi
+	integer n
+	double precision, intent(in) :: flux3d(0:nlvddi,n)
+	double precision, intent(out) :: flux3dg(0:nlv_global,n)
+
+	double precision flux_domain(0:nlv_global,n,n_threads)
+	double precision flux_aux(0:nlv_global,n)
+
+	flux_aux = 0.
+	flux_aux(0:nlvddi,:) = flux3d
+	call shympi_gather(flux_aux,flux_domain)
+	flux3dg(:,:) = SUM(flux_domain,dim=3)
 	
 	end
 
@@ -419,7 +436,7 @@ c******************************************************************
 
 !******************************************************************
 
-	subroutine gather_sum_d(n,vals)
+	subroutine gather_sum_d2(n,vals)
 
 	use shympi
 

@@ -2009,6 +2009,7 @@ subbnds.o: ../femlib/mod/intp_fem_file.mod \
 subboxa.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
+		../femlib/mod/mod_debug.mod \
 		../femlib/mod/mod_depth.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_geom_dynamic.mod \
@@ -2096,7 +2097,7 @@ subflxa.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_sediment.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/nls.mod \
-		modules.h simul.h 
+		../femlib/mod/shympi.mod modules.h simul.h 
 subflxm.o: ../femlib/mod/shympi.mod simul.h
 subflxu.o: ../femlib/mod/levels.mod ../femlib/mod/mod_geom.mod
 subfvl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
@@ -2284,7 +2285,8 @@ substress.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_hydro.mod \
 		../femlib/mod/mod_parwaves.mod \
 		../femlib/mod/mod_ts.mod \
-		../femlib/mod/mod_waves.mod pkonst.h 
+		../femlib/mod/mod_waves.mod \
+		../femlib/mod/shympi.mod pkonst.h 
 subsys.o: ../femlib/mod/para.mod
 subtide.o: ../femlib/mod/basin.mod ../femlib/mod/coordinates.mod \
 		../femlib/mod/iso8601.mod \

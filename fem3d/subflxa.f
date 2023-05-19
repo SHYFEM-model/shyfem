@@ -102,6 +102,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.03.2020	ggu	new flux0d, get_barotropic_flux()
 c 27.05.2022	ggu	changed to be used with mpi, fluxes now double
 c 30.05.2022	ggu	more changes for mpi
+c 18.05.2023	ggu	in flx_write() call flx_collect_3d()
 c
 c notes :
 c
@@ -155,6 +156,17 @@ c		flx_write
 c			flux_write
 c				flx_write_record
 c		fluxes_init_d
+c
+c
+c there are 3 fluxes given for every section: fluxes(3,ns)
+c
+c	fluxes(1,is)		total flux
+c	fluxes(2,is)		positive flux
+c	fluxes(3,is)		negative flux
+c
+c in three 3D the definition is: fluxes(0:nlv,3,ns)
+c
+c in fluxes(0,:,:) the verticall integrated flux is stored
 c
 c******************************************************************
 c******************************************************************
@@ -864,21 +876,26 @@ c-----------------------------------------------------------------
 	subroutine flx_write(atime,ivar,flux_local)
 
 	use flux
+	use shympi
 
 	implicit none
 
 	double precision atime
 	integer ivar
 	double precision flux_local(0:nl_flux,3,ns_flux)
+	double precision flux_global(0:nlv_global,3,ns_flux)
 
-	integer nbflx,nl,ns
+	integer nbflx,nl,ns,n,ng
 
 	nbflx = da_out(4)
 	nl = nl_flux
+	ng = nlv_global
 	ns = ns_flux
+	n = 3*ns
 
-        call flux_write(nbflx,atime,ivar,nl,ns
-     +                          ,nlayers,flux_local)
+	call flx_collect_3d(nl,n,flux_local,flux_global)
+        call flux_write(nbflx,atime,ivar,ng,ns
+     +                          ,nlayers,flux_global)
 
 	end
 

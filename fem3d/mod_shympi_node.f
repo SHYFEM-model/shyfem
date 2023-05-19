@@ -74,6 +74,7 @@
 ! 13.04.2023    ggu     introduced bnode, belem (distinguish calls to node/elem)
 ! 19.04.2023    ggu     potential bugs fixed with passing belem
 ! 03.05.2023    ggu     new routine shympi_bdebug()
+! 18.05.2023    ggu     in shympi_gather_array() eliminate rectify array
 !
 !******************************************************************
 
@@ -1595,17 +1596,24 @@
 
 	integer ni1,ni2,no1,no2
 	integer ni,no
+	integer, allocatable :: aux(:,:)
 
 	ni1 = size(val,1)
 	ni2 = size(val,2)
 	no1 = size(vals,1)
 	no2 = size(vals,2)
 
-	ni = ni1 * ni2
+	allocate(aux(no1,ni2))
+	aux = 0.
+	aux(1:ni1,:) = val(:,:)
+
+	!ni = ni1 * ni2
+	ni = no1 * ni2
 	no = no1 * no2
 
-	call shympi_allgather_i_internal(ni,no,val,vals)
-	call shympi_rectify_internal_i(no1,no2,vals)
+	call shympi_allgather_i_internal(ni,no,aux,vals)
+	!call shympi_allgather_i_internal(ni,no,val,vals)
+	!call shympi_rectify_internal_i(no1,no2,vals)
 
 	end subroutine shympi_gather_array_3d_i
 
@@ -1618,17 +1626,24 @@
 
 	integer ni1,ni2,no1,no2
 	integer ni,no
+	real, allocatable :: aux(:,:)
 
 	ni1 = size(val,1)
 	ni2 = size(val,2)
 	no1 = size(vals,1)
 	no2 = size(vals,2)
 
-	ni = ni1 * ni2
+	allocate(aux(no1,ni2))
+	aux = 0.
+	aux(1:ni1,:) = val(:,:)
+
+	!ni = ni1 * ni2
+	ni = no1 * ni2
 	no = no1 * no2
 
-	call shympi_allgather_r_internal(ni,no,val,vals)
-	call shympi_rectify_internal_r(no1,no2,vals)
+	call shympi_allgather_r_internal(ni,no,aux,vals)
+	!call shympi_allgather_r_internal(ni,no,val,vals)
+	!call shympi_rectify_internal_r(no1,no2,vals)
 
 	end subroutine shympi_gather_array_3d_r
 
@@ -1641,17 +1656,24 @@
 
 	integer ni1,ni2,no1,no2
 	integer ni,no
+	double precision, allocatable :: aux(:,:)
 
 	ni1 = size(val,1)
 	ni2 = size(val,2)
 	no1 = size(vals,1)
 	no2 = size(vals,2)
 
-	ni = ni1 * ni2
+	allocate(aux(no1,ni2))
+	aux = 0.
+	aux(1:ni1,:) = val(:,:)
+
+	!ni = ni1 * ni2
+	ni = no1 * ni2
 	no = no1 * no2
 
-	call shympi_allgather_d_internal(ni,no,val,vals)
-	call shympi_rectify_internal_d(no1,no2,vals)
+	call shympi_allgather_d_internal(ni,no,aux,vals)
+	!call shympi_allgather_d_internal(ni,no,val,vals)
+	!call shympi_rectify_internal_d(no1,no2,vals)
 
 	end subroutine shympi_gather_array_3d_d
 

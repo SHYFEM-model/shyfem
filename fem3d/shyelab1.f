@@ -430,6 +430,8 @@
          if( nread < rmin ) cycle
          if( mod(nread-rmin,rfreq) /= 0 ) cycle
 
+	 nelab = nelab + 1
+
 	 call shy_make_zeta(ftype)
 	 call shy_make_volume		!comment for constant volume
 
@@ -457,8 +459,6 @@
 	  belem = ( bhydro .and. iv > 1 )
 
 	  cv3(:,:) = cv3all(:,:,iv)
-
-	  if( iv == 1 ) nelab = nelab + 1
 
 	  if( bverb .and. iv == 1 ) then
 	    call shy_write_time(.true.,dtime,atime,0)
@@ -583,7 +583,7 @@
 	write(6,*) ifile, ' file(s) read'
 	!write(6,*) nrec,  ' data records read'
 	write(6,*) nread, ' time records read'
-	!write(6,*) nelab, ' time records elaborated'
+	write(6,*) nelab, ' time records elaborated'
 	!write(6,*) nwrite,' data records written'
 	if( nwtime > 0 ) write(6,*) nwtime,' time records written'
 	write(6,*)
