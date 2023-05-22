@@ -1,5 +1,15 @@
 ============================================================
 
+Mon May 22 16:49:19 CEST 2023
+
+compiler warnings with closing
+
+ fem3d/newclose.f   |  2 +-
+ fem3d/subfemintp.f | 47 ++++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 4 deletions(-)
+
+============================================================
+
 Mon May 22 16:30:43 CEST 2023
 
 closing routines (still error with intel)

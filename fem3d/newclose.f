@@ -579,7 +579,7 @@
         call get_new_mode(id,dtime,iact,imode,bnewmode)
 	!if( bnewmode ) call print_closing_info(id,'***')
 
-        if ( bcfile ) call iff_ts_intp(idfile,dtime,fclose)
+        if ( bcfile ) call iff_ts_intp1(idfile,dtime,fclose)
 
 	write(nb13,*)
 	write(nb13,'(1x,a,4i5)') 'id,iact,imode,ioper :'

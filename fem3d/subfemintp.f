@@ -107,6 +107,7 @@
 ! 03.12.2022    ggu     some debug code, bug fix GORO
 ! 27.04.2023    ggu     avoid creating automatic temporary array
 ! 09.05.2023    lrp     introduce top layer index variable
+! 22.05.2023    ggu     new routine iff_ts_intp1()
 !
 !****************************************************************
 !
@@ -2931,11 +2932,18 @@ c opens and inititializes file
 
 	integer id
 	double precision dtime
-        real values(*)            !interpolated values
+        real values(:)            !interpolated values
 
-	integer ldim,ndim,ivar,nvar
+	real valaux(1,1)
+	integer ldim,ndim,ivar,nvar,nsize
 
+	nsize = size(values)
 	nvar = iff_get_nvar(id)
+
+	if( nvar > nsize ) then
+	  write(6,*) 'nvar,nsize: ',nvar,nsize
+	  stop 'error stop iff_ts_intp: nvar>nsize'
+	end if
 
 	ldim = 1
 	ndim = 1
@@ -2945,10 +2953,43 @@ c opens and inititializes file
 	end if
 
 	do ivar=1,nvar
-	  call iff_time_interpolate(id,dtime,ivar,ndim,ldim,values(ivar))
+	  call iff_time_interpolate(id,dtime,ivar,ndim,ldim,valaux)
+	  values(ivar) = valaux(1,1)
 	end do
 
         end
+
+!****************************************************************
+
+        subroutine iff_ts_intp1(id,dtime,value)
+
+	use intp_fem_file
+
+	implicit none
+
+	integer id
+	double precision dtime
+        real value            !interpolated value
+
+	integer ldim,ndim,ivar
+	real valaux(1,1)
+
+	ldim = 1
+	ndim = 1
+	ivar = 1
+
+        if( iff_must_read(id,dtime) ) then
+          call iff_read_and_interpolate(id,dtime)
+	end if
+
+	call iff_time_interpolate(id,dtime,ivar,ndim,ldim,valaux)
+	value = valaux(1,1)
+
+        end
+
+!****************************************************************
+!****************************************************************
+!****************************************************************
 
 !****************************************************************
 ! next are dummy routines that can be deleted somewhen...
