@@ -110,7 +110,7 @@
 
         end type entry
 
-	integer, save :: iclose = 0	!total number of closing sects
+	integer, save :: iclose = 0	!closing enabled?
 
 	integer, save :: nclose = 0	!total number of closing sects
 	integer, save :: nb13 = 0	!unit for output
@@ -241,6 +241,7 @@
 	binit = .true.
 
 	iclose = nint(getpar('iclose'))
+        if(iclose.le.0) return          !no closing enabled
 
 	nbc = nbnds()
 	call makehkv_minmax(hkv,0)		!get average depths
@@ -440,7 +441,7 @@
 
 !******************************************************************
 
-	subroutine sp136(ic)
+	subroutine close_handle(ic)
 
 !---------------------------------------------------------------------------
 !
@@ -540,8 +541,6 @@
 !	----------------------------------------------
 !	initialize
 !	----------------------------------------------
-
-	call close_init			!internally called only once
 
 	ic=0				!&&&&   do not compute new uv-matrix
 	nsc = nclose

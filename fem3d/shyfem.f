@@ -175,6 +175,7 @@ c 12.04.2022    ggu     message to show if mpi support is available
 c 18.05.2022    ggu     cpu_time routines introduced
 c 10.03.2023    ggu     do not use bmpirun anymore
 c 28.04.2023    ggu     update function calls for belem
+c 22.05.2023    ggu     new names for closing: close_init, close_handle
 c
 c*****************************************************************
 c
@@ -419,7 +420,7 @@ c-----------------------------------------------------------
         call diffweight
         call set_diffusivity
 	call tidefini
-	call sp136(ic)
+	call close_init
         call shdist(rdistv)
 	call tracer_init
         call qhdist(qdistv) !DWNH

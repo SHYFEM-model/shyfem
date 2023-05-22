@@ -1,0 +1,19 @@
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2020  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+
+# general info commands
+
+git remote -v
+
+git branch -ar -v
+
+git branch --set-upstream-to=origin/main main
+git pull --allow-unrelated-histories
+

@@ -1,5 +1,21 @@
 ============================================================
 
+Mon May 22 16:30:43 CEST 2023
+
+closing routines (still error with intel)
+
+ fem3d/new3di.f                    |  2 +-
+ fem3d/newclose.f                  |  7 +++---
+ fem3d/shyfem.f                    |  3 ++-
+ fembin/git_info/git_info_info.txt | 19 ++++++++++++++++
+ fembin/git_info/git_info_new.txt  | 48 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 73 insertions(+), 6 deletions(-)
+ new file:
+   fembin/git_info/git_info_info.txt
+   fembin/git_info/git_info_new.txt
+
+============================================================
+
 Fri May 19 14:32:36 CEST 2023
 
 box model and closing routines
