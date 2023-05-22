@@ -45,6 +45,7 @@ c 09.05.2017	ggu	changed VERS_7_5_26
 c 26.05.2017	ccf	handle particles on open boundary
 c 25.10.2018	ggu	changed VERS_7_5_51
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 22.05.2023	ggu	get_layer_thickness() was missing an argument
 c
 c******************************************************
 
@@ -184,7 +185,7 @@ c computes layer thickness for element ie
 	end do
 	z = z / 6.
 
-        call get_layer_thickness(lmax,nsigma,hsigma,z,h,hlv,hl)
+        call get_layer_thickness(lmax,1,nsigma,hsigma,z,h,hlv,hl)
 	htot = h
 	htotz = h + z
 

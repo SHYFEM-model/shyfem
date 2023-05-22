@@ -68,6 +68,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2020    ggu     better handle copyright notice
 c 13.07.2020    ggu     honor noopti flag, stack poisoning eliminated
 c 06.05.2023    ggu     some enhancements and better error handeling
+c 22.05.2023    ggu     locate is defined in module
 c
 c notes :
 c
@@ -786,7 +787,7 @@ c changing extern with intern node numbers in element index
         integer index(nkn)
 
         integer ie,ii,i,kn
-        integer locate
+        !integer locate
 
         do ie=1,nel
           do ii=1,3
@@ -1494,7 +1495,7 @@ c depth by elements
         real hm3v(3,nel),hev(nel)
 
         integer ie,i,iel,ii
-        integer locate
+        !integer locate
 
         do ie=1,nel
           iaux(ie)=0
@@ -1559,7 +1560,7 @@ c depth by nodes
         real hm3v(3,nel),hkv(nkn)
 
         integer ie,ii,i,k,kn
-        integer locate
+        !integer locate
 	real h,hflag
 
 	hflag = -999.

@@ -1,5 +1,19 @@
 ============================================================
 
+Mon May 22 17:23:49 CEST 2023
+
+compiler error intel fixed
+
+ fem3d/lagrange_vertical.f |  3 ++-
+ fem3d/shypre.f            |  7 ++++---
+ fem3d/subfemintp.f        |  5 +++--
+ fem3d/subflxa.f           | 10 ++++++++--
+ femplot/shyplot.f         |  3 ++-
+ femplot/supdep.f          |  6 ++++--
+ 6 files changed, 23 insertions(+), 11 deletions(-)
+
+============================================================
+
 Mon May 22 16:49:19 CEST 2023
 
 compiler warnings with closing

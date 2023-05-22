@@ -2932,13 +2932,14 @@ c opens and inititializes file
 
 	integer id
 	double precision dtime
-        real values(:)            !interpolated values
+        real values(*)            !interpolated values
 
 	real valaux(1,1)
 	integer ldim,ndim,ivar,nvar,nsize
 
-	nsize = size(values)
 	nvar = iff_get_nvar(id)
+	!nsize = size(values)
+	nsize = nvar		!HACK
 
 	if( nvar > nsize ) then
 	  write(6,*) 'nvar,nsize: ',nvar,nsize

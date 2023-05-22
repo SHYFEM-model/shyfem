@@ -64,6 +64,7 @@ c 25.10.2018	ggu	changed VERS_7_5_51
 c 18.12.2018	ggu	changed VERS_7_5_52
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
+c 22.05.2023	ggu	get_layer_thickness() was missing an argument
 c
 c******************************************************************
 
@@ -111,7 +112,8 @@ c-------------------------------------------------------------------
 	do ie=1,nel
 	  lmax = ilhv(ie)
 	  call compute_levels_on_element(ie,zenv,zeta)
-	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv,hl)
+	  call get_layer_thickness(lmax,1,nsigma
+     +			,hsigma,zeta,hev(ie),hlv,hl)
 	  hetv(ie) = hlthick(level,lmax,hl)
 	end do
 
@@ -175,7 +177,7 @@ c-------------------------------------------------------------------
 	do ie=1,nel
 	  lmax = ilhv(ie)
 	  call compute_levels_on_element(ie,zenv,zeta)
-	  call get_layer_thickness(lmax,nsigma,hsigma,zeta,hev(ie),hlv
+	  call get_layer_thickness(lmax,1,nsigma,hsigma,zeta,hev(ie),hlv
      +				,het3v(1,ie))
 !	  call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma
 !     +				,het3v(1,ie))

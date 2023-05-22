@@ -103,6 +103,7 @@ c 06.03.2020	ggu	new flux0d, get_barotropic_flux()
 c 27.05.2022	ggu	changed to be used with mpi, fluxes now double
 c 30.05.2022	ggu	more changes for mpi
 c 18.05.2023	ggu	in flx_write() call flx_collect_3d()
+c 22.05.2023	ggu	need fluxes_r for write
 c
 c notes :
 c
@@ -205,6 +206,8 @@ c******************************************************************
         double precision, save, allocatable :: conzt(:,:,:)
         double precision, save, allocatable :: ssctt(:,:,:)
 
+        real, save, allocatable :: fluxes_r(:,:,:)
+
 !==================================================================
         contains
 !==================================================================
@@ -269,6 +272,7 @@ c******************************************************************
           deallocate(nlayers)
           deallocate(nlayers_global)
           deallocate(fluxes)
+          deallocate(fluxes_r)
           deallocate(flux0d)
           deallocate(masst)
           deallocate(saltt)
@@ -285,6 +289,7 @@ c******************************************************************
         allocate(nlayers(ns))
         allocate(nlayers_global(ns))
         allocate(fluxes(0:nl,3,ns))
+        allocate(fluxes_r(0:nl,3,ns))
         allocate(flux0d(ns))
 
         allocate(masst(0:nl,3,ns))
@@ -819,8 +824,9 @@ c-----------------------------------------------------------------
 	  ivar = ivbase + i
 	  call fluxes_aver_d(nlvdi,nsect,nlayers,trs(i)
      +			,scalt(0,1,1,i),fluxes)
+	  fluxes_r = fluxes
           call flx_write_record(nbflx,nvers,atime,nlvdi,nsect,ivar
-     +                          ,nlayers,fluxes,ierr)
+     +                          ,nlayers,fluxes_r,ierr)
           if( ierr /= 0 ) goto 97
 	end do
 
@@ -829,7 +835,7 @@ c-----------------------------------------------------------------
 !	-------------------------------------------------------
 
 	do i=1,nscal
-	  call fluxes_init(nlvdi,nsect,nlayers,trs(i)
+	  call fluxes_init_d(nlvdi,nsect,nlayers,trs(i)
      +			,scalt(0,1,1,i))
 	end do
 
