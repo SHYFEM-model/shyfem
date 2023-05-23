@@ -1,5 +1,16 @@
 ============================================================
 
+Tue May 23 17:11:14 CEST 2023
+
+mpi bug in subdry.f
+
+ fem3d/subdry.f       | 6 ++++--
+ fem3d/submpi_ghost.f | 3 ---
+ grid/gridhs.c        | 2 +-
+ 3 files changed, 5 insertions(+), 6 deletions(-)
+
+============================================================
+
 Mon May 22 17:23:49 CEST 2023
 
 compiler error intel fixed

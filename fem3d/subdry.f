@@ -85,6 +85,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 06.11.2019	ggu	eliminated femtime
+c 23.05.2023	ggu	in setznv() loop over ie_mpi
 c
 c*****************************************************************
 
@@ -628,7 +629,7 @@ c sets array znv from zenv
 	include 'mkonst.h'
 
 c local
-        integer ie,ii,k
+        integer ie,ii,k,ie_mpi
         integer ntot
 	real z,area
 	real v1v(nkn),v2v(nkn)
@@ -647,7 +648,8 @@ c-------------------------------------------------------------
 c set znv and accumulate
 c-------------------------------------------------------------
 
-        do ie=1,nel
+        do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
           if( iwegv(ie) .eq. 0 ) then		!element is in system
             do ii=1,3
 	      k = nen3v(ii,ie)
