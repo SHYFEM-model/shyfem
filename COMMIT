@@ -1,5 +1,15 @@
 ============================================================
 
+Wed May 24 18:52:04 CEST 2023
+
+bug fix in momentum_viscous_stability (mpi)
+
+ fem3d/newexpl.f | 33 ++++++++++++++++++++++++++++++++-
+ fem3d/newstab.f | 16 ++++++++++++++++
+ 2 files changed, 48 insertions(+), 1 deletion(-)
+
+============================================================
+
 Tue May 23 17:11:14 CEST 2023
 
 mpi bug in subdry.f
