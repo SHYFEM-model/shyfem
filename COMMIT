@@ -1,5 +1,15 @@
 ============================================================
 
+Wed May 31 21:10:24 CEST 2023
+
+minor, new profile.f
+
+ fem3d/subbnd.f             |  56 ++++++++++++++++++-
+ femutil/femfiles/profile.f | 133 +++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 181 insertions(+), 8 deletions(-)
+
+============================================================
+
 Wed May 31 21:05:25 CEST 2023
 
 bug fix mpi for conzstab

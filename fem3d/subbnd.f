@@ -143,6 +143,7 @@ c 18.12.2018	ggu	changed VERS_7_5_52
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 20.03.2023	ggu	relax condition of no holes for ibtyp == 3
+c 24.05.2023	ggu	in ckbnds() more debug, new boundary_debug()
 c
 c************************************************************************
 
@@ -653,6 +654,8 @@ c checks boundary information read from STR
 
 	bstop = .false.
 
+	call shympi_syncronize
+
 	do i=1,nbc
 
 	 ibc = i
@@ -779,13 +782,14 @@ c checks boundary information read from STR
      +			,kranf,krend,kmanf,kmend
            if( shympi_is_parallel() ) then
              if( istop == krtot ) then
-               write(6,*) 'boundary completely in one domain... ok'
+               !write(6,*) 'boundary not in this domain... ok'
                call set_bnd_ipar(ibc,'ibtyp',0)
              else if( istop == krtot-kmtot ) then
                write(6,*) 'boundary in more than one domain... ok'
              else
 	       if( ibtyp == 1 .or. ibtyp == 2 ) then	!no holes allowed
-	         write(6,*) krtot,kmtot,istop,krtot-kmtot
+	         write(6,*) my_id,krtot,kmtot,istop,krtot-kmtot
+	         call boundary_debug(ibc)
 	         stop 'error stop ckbnds: internal error'
 	       end if
              end if
@@ -796,8 +800,54 @@ c checks boundary information read from STR
 
 	end do
 
-	!call shympi_exit(0)
+	call shympi_syncronize
 	if( bstop ) stop 'error stop: ckbnds'
+
+	end
+
+c********************************************************************
+
+	subroutine boundary_debug(ibc)
+
+	use mod_bnd
+	use mod_bound_geom
+	use shympi
+
+	implicit none
+
+	integer ibc
+
+	integer k,kranf,krend,kmanf,kmend,knode
+	integer id,iu
+	integer ipint
+
+	iu = 600 + my_id
+
+	write(iu,*) '==============================='
+	write(iu,*) 'boundary_debug: ',my_id
+	write(iu,*) '==============================='
+
+         call get_bnd_ipar(ibc,'kranf',kranf)
+         call get_bnd_ipar(ibc,'krend',krend)
+         call get_bnd_ipar(ibc,'kmanf',kmanf)
+         call get_bnd_ipar(ibc,'kmend',kmend)
+
+	write(iu,*) 'boundary_debug: ',kranf,krend
+	write(iu,*) 'boundary_debug: ',kmanf,kmend
+
+	do k=kranf,krend
+	   if( k == 0 ) cycle
+	   knode=irv(k)		!$$EXTINW
+	   id = -1
+	   if( knode > 0 ) id = id_node(knode)
+	   write(iu,*) k,knode,id
+	end do
+
+	write(iu,*) '==============================='
+	write(iu,*) 'end of boundary_debug: ',my_id
+	write(iu,*) '==============================='
+
+	flush(6)
 
 	end
 
