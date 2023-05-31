@@ -1,5 +1,16 @@
 ============================================================
 
+Wed May 31 21:05:25 CEST 2023
+
+bug fix mpi for conzstab
+
+ fem3d/newcon.f  |  9 ++++++---
+ fem3d/shyfem.f  | 49 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subboxa.f | 12 +++++++++---
+ 3 files changed, 64 insertions(+), 6 deletions(-)
+
+============================================================
+
 Wed May 24 18:52:04 CEST 2023
 
 bug fix in momentum_viscous_stability (mpi)

@@ -97,6 +97,7 @@
 ! 01.04.2023	ggu	debugging code
 ! 21.04.2023	ggu	changes in writing OB fluxes and boxes_3d_aver()
 ! 18.05.2023	ggu	tons of changes to get 2D mass check right
+! 29.05.2023	ggu	bug fix: all section arrays have same dimension (ns)
 !
 ! notes :
 !
@@ -300,6 +301,11 @@
 
 	integer nlv,nlvg,nbc,nb,ns,nn
 
+	if( nbc > ns ) then
+	  write(6,*) 'nbc,ns: ',nbc,ns
+	  stop 'error stop box_arrays_alloc: nbc>ns'
+	end if
+
 	allocate(fluxes(0:nlv,3,ns))
 	allocate(aux2d(nb))
 	allocate(aux3d(0:nlv,nb))
@@ -310,9 +316,9 @@
 	allocate(tempt(0:nlv,3,ns))
 	allocate(conzt(0:nlv,3,ns))
 
-	allocate(nslayers_ob(nbc))
-	allocate(fluxes_ob(0:nlv,3,nbc))
-	allocate(masst_ob(0:nlv,3,nbc))
+	allocate(nslayers_ob(ns))
+	allocate(fluxes_ob(0:nlv,3,ns))
+	allocate(masst_ob(0:nlv,3,ns))
 
 	allocate(nblayers(nb))
 	allocate(bvol2d(nb))			!static volume - no eta

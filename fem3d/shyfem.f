@@ -1588,3 +1588,52 @@ c*****************************************************************
 
 c*****************************************************************
 
+	subroutine test_scalar_debug(text,ip,dtime,scal)
+
+! test routine for problems in temp
+
+	use basin
+	use levels
+	use mod_hydro
+	use mod_ts
+	use mod_diff_visc_fric
+	use shympi
+
+	implicit none
+
+	character*(*) text
+	integer ip
+	double precision dtime
+	real scal(nlvdi,nkn)
+
+	integer k,l
+	integer iu,nkng,nlvg,ifreq
+
+	real, allocatable :: rauxg(:,:)
+
+	if( dtime <= 3600. ) return
+	if( dtime > 3700. ) return
+
+	allocate(rauxg(nlv_global,nkn_global))
+
+	call shympi_l2g_array(scal,rauxg)
+	
+	iu = 456
+	nkng = nkn_global
+	nlvg = nlv_global
+	ifreq = nkng/100
+	ifreq = nkng/30
+
+	write(iu,*) dtime,ip
+
+	do k=1,nkng,ifreq
+	  !do l=1,nlvg,3
+	  do l=1,1
+	    write(iu,*) trim(text),ip,k,l,rauxg(l,k)
+	  end do
+	end do
+
+	end
+
+c*****************************************************************
+

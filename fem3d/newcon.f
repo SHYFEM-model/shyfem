@@ -268,6 +268,7 @@ c 06.04.2022	ggu	adapted to regular assembling over elems (ie_mpi)
 c 07.04.2022	ggu	debug code (kdebug)
 c 03.05.2022	ggu	exchanging twice around bndo_setbc() -> improve
 c 09.05.2023    lrp     introduce top layer index variable
+c 31.05.2023    ggu     in conzstab, use ie_mpi, run over nkn_unique (bug fix)
 c
 c*********************************************************************
 
@@ -1642,7 +1643,7 @@ c common
 	include 'mkonst.h'
 c local
 	logical bdebug,bdebug1
-	integer k,ie,ii,l,iii,id
+	integer k,ie,ii,l,iii,id,ie_mpi
 	integer lstart
 	integer ilevel,jlevel
 	logical berror
@@ -1820,7 +1821,9 @@ c-----------------------------------------------------------------
 c loop over elements
 c-----------------------------------------------------------------
 
-        do ie=1,nel
+        do ie_mpi=1,nel
+
+	ie = ip_sort_elem(ie_mpi)
 
 	do ii=1,3
           k=nen3v(ii,ie)
@@ -2010,7 +2013,7 @@ c-----------------------------------------------------------------
         stabpoint = 0.		!point source max stability index
         kstab = 0		!node with highest stabind
 
-	do k=1,nkn
+	do k=1,nkn_unique
 	  bdebug1 = k .eq. -1
 	  ilevel = ilhkv(k)
 	  jlevel = jlhkv(k)
