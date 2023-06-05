@@ -34,6 +34,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 13.03.2019	ggu	changed VERS_7_5_61
 ! 31.10.2019	ggu	introduced bdry, bugfix for wave bottom stress (depth<0)
+! 18.05.2023	ggu	forgot to exchange taubot in bottom_stress()
 !
 !*****************************************************************
 
@@ -148,6 +149,7 @@
 ! computes bottom stress at nodes (current + waves)
 
         use basin
+	use shympi
 
         implicit none
 
@@ -176,6 +178,8 @@
           taubot(k) = tm
         end do
 
+	call shympi_exchange_2d_node(taubot)
+
         end
 
 !***********************************************************
@@ -191,6 +195,7 @@
 	use mod_geom_dynamic
         use mod_ts
         use mod_bstress
+        use shympi
 
         implicit none
 
@@ -198,7 +203,7 @@
 
         real, intent(out)	:: taucur(nkn)
 
-        integer 		:: ie,k,ii,lmax
+        integer 		:: ie,ie_mpi,k,ii,lmax
         real 			:: area,rho,bnstress
         real, allocatable	:: aux(:)
 
@@ -209,7 +214,8 @@
         taucur = 0.
         aux = 0.
 
-        do ie=1,nel
+        do ie_mpi=1,nel
+	  ie = ip_sort_elem(ie_mpi)
           lmax = ilhv(ie)
           area = ev(10,ie)
           bnstress = bnstressv(ie)

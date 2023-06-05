@@ -98,9 +98,6 @@
 
 	integer ipext,ieext
 
-	!iu = 300+my_id
-	!write(iu,*) 'new version of ghost...',my_id
-
 !	--------------------------------------------------
 !	find total number of neibor ghost areas
 !	--------------------------------------------------

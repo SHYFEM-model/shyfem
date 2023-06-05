@@ -70,6 +70,7 @@ c 01.06.2022	ggu	in gravity_wave_stability() set hz to min 0
 c 29.03.2023	ggu	exchange rindex,tindex,gindex, write to info file
 c 02.04.2023    ggu     only master writes to iuinfo
 c 09.05.2023    lrp     introduce top layer index variable
+c 24.05.2023    ggu     debug section introduced in hydro_internal_stability()
 c
 c*****************************************************************
 c*****************************************************************
@@ -403,8 +404,10 @@ c mode = 2		eliminate elements with r>rindex
         real dt			!time step to be used
         real rindex		!stability index (return)
 
+	logical bdebug
 	integer ie,l,lmax,lmin,iweg,ilin,ibarcl,iu
 	integer, save :: iuinfo = 0
+	integer, save :: icall = 0
         real rkpar,azpar,ahpar,rlin
 	real dindex,aindex,tindex,sindex,gindex
 	real rmax
@@ -492,6 +495,19 @@ c mode = 2		eliminate elements with r>rindex
 	rindex = tindex
 
 	deallocate(sauxe1,sauxe2,sauxe3,sauxe)
+
+	bdebug = .false.
+	if( bdebug ) then
+	  icall = icall + 1
+	  iu = 230 + my_id
+	  !write(iu,*) icall,my_id,tindex,aindex,dindex,gindex
+	  write(iu,*) icall,my_id,tindex,aindex,dindex
+	  flush(iu)
+	  if( my_id == 0 ) then
+	  write(220,*) icall,my_id,tindex,aindex,dindex
+	  flush(220)
+	  end if
+	end if
 
 	if( iuinfo > 0 ) then
 	  write(iuinfo,*) 'rindex: ',tindex,aindex,dindex,gindex

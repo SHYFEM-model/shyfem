@@ -107,6 +107,7 @@ c 27.03.2023	ggu	tripple point routines in new file submpi_tripple.f
 c 29.03.2023	ggu	handle tripple points, new horizontal diffusion routine
 c 29.03.2023	ggu	exchange rindex between domains
 c 09.05.2023    lrp     introduce top layer index variable
+c 24.05.2023    ggu     momentum_viscous_stability(): must run over nel_unique
 c
 c notes :
 c
@@ -297,6 +298,7 @@ c stability is computed for dt == 1
 
 	integer ie,ii,iei,l,lmax,lmin,lmaxi
 	integer itr
+	integer, save :: icall = 0
 	real u,v,ui,vi
 	real anu,ax,ay
 	real area,areai
@@ -304,13 +306,22 @@ c stability is computed for dt == 1
 	real a,ai,amax,afact,r
 	real al(nlvdi)
 
+	!real, allocatable :: dstab2d(:),dstab2dg(:),rdistvg(:)
+	!real, allocatable :: raux(:),rauxg(:)
+	!integer, allocatable :: iext(:),iextg(:)
+
 	rindex = 0.
 	if( ahpar .le. 0 ) return
 
 	amax = 0.
 	dstab = 0.
 
-	do ie=1,nel
+	!allocate(dstab2d(nel),dstab2dg(nel_global))
+	!allocate(iext(nel),iextg(nel_global))
+	!allocate(raux(nel),rauxg(nel_global))
+	!allocate(rdistvg(nel_global))
+
+	do ie=1,nel_unique
 
 	  lmax = ilhv(ie)
           lmin = jlhv(ie)
@@ -342,11 +353,31 @@ c stability is computed for dt == 1
 	  al(1:lmax) = r * al(1:lmax)
 	  dstab(1:lmax,ie) = al(1:lmax)
 	  a = maxval(al(1:lmax))
+	  !dstab2d(ie) = a
+	  !raux(ie) = maxval(difhv(:,ie))
 	  amax = max(amax,a)
 
 	end do
 
 	rindex = shympi_max(amax)
+
+! debug section
+
+	icall = icall + 1
+	if( icall > 0 ) return
+
+	do ie=1,nel
+	  !iext(ie) = ipev(ie)
+	end do
+	!call shympi_l2g_array(dstab2d,dstab2dg)
+	!call shympi_l2g_array(iext,iextg)
+	!call shympi_l2g_array(rdistv,rdistvg)
+	if( my_id == 0 ) then
+	do ie=1,nel_global
+	  !write(270,*) icall,ie,iextg(ie),dstab2dg(ie)
+	  !write(270,*) icall,ie,iextg(ie),dstab2dg(ie),rdistvg(ie)
+	end do
+	end if
 
 	end
 
