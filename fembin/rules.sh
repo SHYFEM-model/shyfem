@@ -12,6 +12,7 @@ ShowTargets()
   echo "  mpi		set mpi on nodes"
   echo "  omp		set omp"
   echo "  petsc		set petsc solver"
+  echo "  intel		set intel compiler"
   echo "  ww3		set ww3 wave model"
   echo "local targets:"
   echo "  nemunas	use nemunas server settings"
@@ -58,6 +59,9 @@ do
     make rules_dist
   elif [ $target = "netcdf" ]; then
     SetMacro NETCDF true
+  elif [ $target = "intel" ]; then
+    SetMacro FORTRAN_COMPILER INTEL
+    SetMacro C_COMPILER INTEL
   elif [ $target = "mpi" ]; then
     SetMacro PARALLEL_MPI NODE
     SetMacro PARTS METIS

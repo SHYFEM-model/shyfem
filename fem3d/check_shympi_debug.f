@@ -39,6 +39,7 @@
 ! 05.10.2022    ggu     handle different initial time and header
 ! 28.03.2023    ggu     code refactorying, new options -summary
 ! 13.04.2023    ggu     avoid compiler errors for d/i/r_info
+! 05.06.2023    ggu     handle exceptions, show records with highest errrors
 
 ! note :
 !
@@ -80,6 +81,11 @@
 	double precision, save :: maxdiff = 0.	!maximum difference for error
 
 	integer, parameter :: imax = 20		!number of errors shown
+
+	integer :: ifill
+	integer :: index(imax)
+	double precision :: diffmin
+	double precision :: diffs(imax)
 
 	integer, allocatable :: ival1(:),ival2(:)
 	real, allocatable :: rval1(:),rval2(:)
@@ -261,7 +267,7 @@
 
 	character*60 name_one,name_two
 	character*80 text1,text2,text
-	logical bshowdiff,bheader
+	logical bshowdiff,bheader,blcheck
 	integer nt1,nt2,nt
 	integer nh1,nh2,nh
 	integer nv1,nv2,nv
@@ -327,7 +333,10 @@
 
 	    idiff = 0
 
-	    if( .not. bcheck ) then
+	    blcheck = bcheck		!local check
+	    call handle_exception(text,ntime,blcheck)
+
+	    if( .not. blcheck ) then
 	      read(1)
 	      read(2)
 	      if( bverbose ) write(6,*) nrec,nh,nv,nt,idiff,trim(text)
@@ -718,9 +727,9 @@
 	character*(*) text
 
 	logical belem
-	integer i,ih,iv,ierr
+	integer i,ih,iv,ierr,j
 	integer ipvv(nh)
-	double precision maxdif
+	double precision maxdif,diff
 	character*80 textk,texte,text1,text2
 
 	if( nh == size(ipv) ) then
@@ -745,15 +754,21 @@
 
 	ierr = 0
 	maxdif = 0.
+	ifill = 0
 	do i=1,nh*nv
 	  if( val1(i) /= val2(i) ) then
-	    maxdif = max(maxdif,abs(val1(i)-val2(i)))
+	    diff = abs(val1(i)-val2(i))
+	    call insert_diffs(i,diff)
+	    maxdif = max(maxdif,diff)
 	    ierr = ierr + 1
-	    if( imax > 0 .and. ierr > imax ) cycle
-	    iv = 1 + mod((i-1),nv)
-	    ih = 1 + (i-1)/nv
-	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	  end if
+	end do
+
+	do j=1,ifill
+	  i = index(j)
+	  iv = 1 + mod((i-1),nv)
+	  ih = 1 + (i-1)/nv
+	  write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	end do
 	write(6,*) 'maximum difference: ',maxdif
 
@@ -776,9 +791,9 @@
 	character*(*) text
 
 	logical belem
-	integer i,ih,iv,ierr
+	integer i,ih,iv,ierr,j
 	integer ipvv(nh)
-	double precision maxdif
+	double precision maxdif,diff
 	character*80 textk,texte,text1,text2
 
 	if( nh == size(ipv) ) then
@@ -803,15 +818,21 @@
 
 	ierr = 0
 	maxdif = 0.
+	ifill = 0
 	do i=1,nh*nv
 	  if( val1(i) /= val2(i) ) then
-	    maxdif = max(maxdif,abs(val1(i)-val2(i)))
+	    diff = abs(val1(i)-val2(i))
+	    call insert_diffs(i,diff)
+	    maxdif = max(maxdif,diff)
 	    ierr = ierr + 1
-	    if( imax > 0 .and. ierr > imax ) cycle
-	    iv = 1 + mod((i-1),nv)
-	    ih = 1 + (i-1)/nv
-	    write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	  end if
+	end do
+
+	do j=1,ifill
+	  i = index(j)
+	  iv = 1 + mod((i-1),nv)
+	  ih = 1 + (i-1)/nv
+	  write(6,1000) 'diff: ',i,ih,iv,ipvv(ih),val1(i),val2(i)
 	end do
 	write(6,*) 'maximum difference: ',maxdif
 
@@ -1074,6 +1095,68 @@
 
 	end
 
+!*******************************************************************
+
+	subroutine handle_exception(text,ntime,blcheck)
+
+	implicit none
+
+	character*(*) text
+	integer ntime
+	logical blcheck
+
+	logical bignore
+
+	if( ntime > 2 ) return		!only do for first data record
+
+	bignore = .false.
+
+	if( trim(text) == 'zov' ) bignore = .true.
+	if( trim(text) == 'fxv' ) bignore = .true.
+	if( trim(text) == 'fyv' ) bignore = .true.
+
+	if( bignore ) then
+	  blcheck = .false.
+	  write(6,*) 'ignoring ',trim(text),' in time record ',ntime
+	end if
+
+	end
+
+!*******************************************************************
+
+	subroutine insert_diffs(i,diff)
+
+	use mod_shympi_debug
+
+	implicit none
+
+	integer i
+	double precision diff
+
+	integer jmin,j
+	!integer :: ifill
+	!integer :: index(imax)
+	!double precision :: diffs(imax)
+
+	if( diff == 0 ) return
+
+	if( ifill < imax ) then
+	  ifill = ifill + 1
+	  diffs(ifill) = diff
+	  index(ifill) = i
+	  diffmin = minval(diffs(1:ifill))
+	else if( diff > diffmin ) then
+	  jmin = 0
+	  do j=1,imax
+	    if( diffs(j) == diffmin ) jmin = j
+	  end do
+	  if( jmin == 0 ) stop 'error stop: jmin == 0'
+	  diffs(jmin) = diff
+	  index(jmin) = i
+	  diffmin = minval(diffs)
+	end if
+	
+	end
 
 !*******************************************************************
 !*******************************************************************

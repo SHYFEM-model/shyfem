@@ -75,6 +75,7 @@ c 07.04.2022	ggu	ie_mpi for bnstress, exchange visv,difv, debug code
 c 09.04.2022	ggu	lots of debug code added
 c 02.05.2023    ggu     fix mpi bug for nlv==1
 c 09.05.2023    lrp     introduce top layer index variable
+c 06.06.2023    ggu     minor change writing n2max
 c
 c**************************************************************
 
@@ -1070,7 +1071,7 @@ c bug fix in computation of shearf2 -> abs() statements to avoid negative vals
 	if( nfreq .gt. 0. ) nperiod = 1. / nfreq
 	if( iuinfo .le. 0 ) call getinfo(iuinfo)
 	if(shympi_is_master()) then
-	  write(iuinfo,*) 'n2max: ',it,n2max,nfreq,nperiod
+	  write(iuinfo,*) 'n2max: ',n2max,nfreq,nperiod
 	end if
 
 	end

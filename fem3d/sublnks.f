@@ -64,6 +64,7 @@ c 03.04.2018	ggu	changed VERS_7_5_43
 c 11.05.2018	ggu	changed VERS_7_5_47
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 06.11.2019	ggu	eliminated femtime
+c 06.06.2023	ggu	do not write newlnk - not working in MPI
 c
 c*****************************************************************
 
@@ -175,9 +176,12 @@ c local
 c function
         integer iround,ifileo
 c save
-        integer, save :: n88 = 0
+        integer, save :: iuinfo = 0
+	logical, save :: binfo = .false.
 
-        if(n88.eq.0) call getinfo(n88)          !get unit number
+	if( .not. binfo ) return			!not working with MPI
+
+        if(iuinfo.eq.0) call getinfo(iuinfo)		!get unit number
 
         call setnod
 
@@ -192,7 +196,7 @@ c save
         nnnel=2*nnkn-nnbn+2*(nnnis-nnar)-nnod
 
         if(shympi_is_master()) then
-          write(n88,'(a,10i6)') ' newlnk: '
+          write(iuinfo,'(a,10i6)') ' newlnk: '
      +          ,nnkn,nnel,nnbn,nnli,nnis,nnod,nnar
      +          ,nnnis,nnnel-nnel,nel_global-nnel
 	end if
