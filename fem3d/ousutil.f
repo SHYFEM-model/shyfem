@@ -108,8 +108,8 @@ c transforms transports at elements to velocities at nodes
 	  lmax = ilhv(ie)
 	  lmin = 1
 	  call compute_levels_on_element(ie,zenv,zeta)
-	  call get_layer_thickness(lmax,lmin,nsigma,
-     +				   hsigma,zeta,hev(ie),hlv,hl)
+	  call get_layer_thickness(lmax,lmin,nsigma,0,
+     +				   hsigma,0.,zeta,hev(ie),hlv,hl)
 	  !call get_layer_thickness_e(ie,lmax,bzeta,nsigma,hsigma,hl)
 
 	  do l=1,lmax

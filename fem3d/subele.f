@@ -126,6 +126,7 @@ c 06.04.2022	ggu	area and depth routines adapted with ie_mpi
 c 11.10.2022	ggu	new routine initialize_layer_depth
 c 02.04.2023	ggu	to compute total mass only run over nkn_inner
 c 09.05.2023    lrp     introduce top layer index variable
+c 05.06.2023    lrp     introduce z-star
 c
 c****************************************************************
 
@@ -947,6 +948,13 @@ c sets up depth array for nodes
 	real areael,areafv
 	real areaele
 
+	integer lmin3v(3)
+	integer nadapt(4)    !number of adaptive sigma level
+        integer ladapt(4)    !level of last adaptive sigma level	
+        real hadapt(4)       !depth of last adaptive sigma level
+        real cadapt(levdim,3) !coefficients of adaptive sigma level
+	real hzad,hnod
+
         bdebug = .false.
 	hmin = -99999.
 	hmin = 0.
@@ -979,6 +987,14 @@ c----------------------------------------------------------------
 	  lmin = jlhv(ie)
 	  hm = hev(ie)
 	  zmed = 0.
+	  do ii=1,n
+	    k = nen3v(ii,ie)
+	    lmin3v(ii) = jlhkv(k)
+ 	  end do	  
+
+          call compute_zadaptive_info(ie,nlv,lmin3v,lmax,
+     +		hlv,zenv(:,ie),hm3v(:,ie),nadapt,ladapt,hadapt,cadapt)
+	  call set_zadapt_info(ie,nadapt,hadapt)
 
 c	  -------------------------------------------------------
 c	  nodal values
@@ -990,19 +1006,24 @@ c	  -------------------------------------------------------
 	    lmink = jlhkv(k)
 	    htot = hm3v(ii,ie)
 	    z = zenv(ii,ie)
-	    hsig = min(htot,hsigma) + z		!total depth of sigma layers
 	    zmed = zmed + z
+	    hsig = min(htot,hsigma) + z		!total depth sigma layers
+	    hzad = hadapt(ii) + z		!total depth z-surface-adaptive layers
+            if ( ladapt(ii).eq.lmax ) hzad = htot + z	!z-surface-adaptive bottom layer	
 
 	    do l=1,nsigma
 	      hdkn(l,k) = - hsig * hldv(l)	!these have already depth
 	    end do
+            do l=lmink,ladapt(ii)
+              hdkn(l,k) = hdkn(l,k) - hzad * cadapt(l,ii) * areafv
+  	    end do
 
-	    if( lmax .gt. nsigma ) then
+	    if( lmax .gt. (nsigma+ladapt(ii)) ) then
 	      if( lmax .eq. lmin ) then
 	        h = htot + z
 	        hdkn(lmin,k) = hdkn(lmin,k) + areafv * h
 	      else
-	        levmin = nsigma + lmink
+	        levmin = nsigma + nadapt(ii) + lmink
 	        do l=levmin,lmax-1
 	          hdkn(l,k) = hdkn(l,k) + areafv * hldv(l)
 	        end do
@@ -1046,12 +1067,22 @@ c	  -------------------------------------------------------
 	  do l=1,nsigma
 	    hden(l,ie) = - hsig * hldv(l)
 	  end do
+          do l=lmin,ladapt(4) 
+	    do ii=1,n
+              hzad = hadapt(ii) + zenv(ii,ie)
+              if ( ladapt(ii).eq.lmax ) hzad = htot + zenv(ii,ie)   !bottom layer
+	      call get_zadaptivelayer_thickness(l,lmin,hzad,ladapt(ii),
+     +			cadapt(l,ii),hldv(l),hlv(l-1),zenv(ii,ie),hnod)
+	      hden(l,ie) = hden(l,ie) + hnod  
+	    end do
+	    hden(l,ie) = hden(l,ie)/n  
+	  end do
 
-	  if( lmax .gt. nsigma ) then
+	  if( lmax .gt. (nsigma+ladapt(4)) ) then
 	    if( lmax .eq. lmin ) then
 	      hden(lmin,ie) = htot + zmed
 	    else
-	      levmin = nsigma + lmin
+	      levmin = nsigma + nadapt(4) + lmin
 	      do l=levmin,lmax-1
 	        hden(l,ie) = hldv(l)
 	      end do

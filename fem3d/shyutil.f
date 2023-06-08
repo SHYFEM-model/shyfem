@@ -55,6 +55,7 @@
 ! 22.09.2020    ggu     correct warnings for PGI compiler
 ! 28.04.2023    ggu     update function calls for belem
 ! 09.05.2023    lrp     introduce top layer index variable
+! 05.06.2023    lrp     introduce z-star
 !
 !***************************************************************
 
@@ -516,8 +517,8 @@
 	implicit none
 
 	logical bvolwrite,bdebug
-	integer ie,ii,k,l,lmax,lmin,nsigma,nlvaux,ks
-	real z,h,hsigma,zeps
+	integer ie,ii,k,l,lmax,lmin,nsigma,nadapt,nlvaux,ks
+	real z,h,hsigma,hadapt,zeps
 	double precision ak,vk,ve
 	double precision, allocatable :: vole(:,:),volk(:,:)
 	real hl(nlv)		!aux vector for layer thickness
@@ -545,9 +546,10 @@
 	  z = shy_zeta(ie)
 	  if( h+z < zeps ) z = zeps - h	!make volume positive
 	  lmax = ilhv(ie)
-	  lmin = 1
 	  !write(6,*) ie,lmax,nlv,nlvdi
-	  call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,h,hlv,hl)
+	  call compute_zadapt_info(z,hlv,nsigma,lmax,lmin,nadapt,hadapt)
+	  call get_layer_thickness(lmax,lmin,nsigma,nadapt,
+     +				   hsigma,hadapt,z,h,hlv,hl)
 	  do l=1,lmax
 	    vk = ak * hl(l)
 	    ve = 3. * vk

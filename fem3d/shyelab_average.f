@@ -30,7 +30,8 @@
 ! 07.10.2017	ggu	started
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 09.05.2023    lrp     introduce top layer index variable
-!
+! 05.06.2023    lrp     introduce z-star
+
 !***********************************************************
 
 	subroutine average_vertical_node(lmax,hlv,z,htot,values,aver)
@@ -46,8 +47,8 @@
 	real aver		!return
 
 	integer l,lmin
-	integer nlvaux,nsigma
-	real hsigma
+	integer nlvaux,nsigma,nadapt
+	real hsigma,hadapt
 	real h
 	real hd(lmax)
 	double precision vaccum,haccum
@@ -57,8 +58,9 @@
 	if( lmax <= 1 ) return
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
-	lmin = 1
-        call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,htot,hlv,hd)
+        call compute_zadapt_info(z,hlv,nsigma,lmax,lmin,nadapt,hadapt)
+        call get_layer_thickness(lmax,lmin,nsigma,nadapt,
+     +				 hsigma,hadapt,z,htot,hlv,hd)
 
 	vaccum = 0.
 	haccum = 0.

@@ -829,6 +829,21 @@ c		layer. (Default 0.25)
 	call addpar('ilytyp',3.00)	!type of depth adjustment
 	call addpar('hlvmin',0.25)	!min percentage of last layer thickness
 
+c With zeta layers the treatment of the free-surface must be addressed.
+c What happen if the water level falls below the first zeta-level? 
+c A zstar deformation of the top layers is deployed
+c The next parameters deals with the treatment of the surface layer.
+c
+c |rzmov|    	parameter that controls the set of surface layers that are deformed 
+c		is: { l : -z_{l-1/2}+rzmov*dz_{l} < zeta } with
+c		z_{l-1/2} the upper interface of layer l with thickness
+c		dz_{l} = z_{l-1/2}-z_{l+1/2}. zeta free-surface.
+c		= 0.0  		        zeta - default
+c		= z_{n+1/2}/hdlv(n)	zstar (above layer n) on top of zeta (below n)
+c		> z_{nlv+1/2}/hdlv(nlv) zstar
+
+        call addpar('rzmov',0.0)      !% zstar parameter
+
 c The above parameters are dealing with zeta layers, where every layer
 c has constant thickness, except the surface layer which is varying with
 c the water level. The next parameters deal with sigma layers where all

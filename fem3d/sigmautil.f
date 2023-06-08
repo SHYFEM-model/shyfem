@@ -63,6 +63,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 29.04.2022	ggu	in compute_sigma_info() check for nlv<1
 c 09.05.2023    lrp     introduce top layer index variable
+c 05.06.2023    lrp     introduce z-star
 c
 c notes :
 c
@@ -230,8 +231,8 @@ c---------------------------------------------------------
 
 c******************************************************************
 
-	subroutine get_layer_thickness(lmax,lmin,nsigma,
-     +				       hsigma,z,h,hlv,hdl)
+	subroutine get_layer_thickness(lmax,lmin,nsigma,nadapt,
+     +				       hsigma,hadapt,z,h,hlv,hdl)
 
 c returns layer thickness - works also for lmax higher than actual layers
 c
@@ -243,7 +244,9 @@ c in this case the last values for hl are 0
 	integer lmax		!index of bottom layer
 	integer lmin		!index of surface layer
 	integer nsigma		!total number of sigma layers
+        integer nadapt          !number of z-surface-adaptive layers
 	real hsigma		!closing depth of hybrid layers
+	real hadapt		!closing depth of z-surface-adaptive layers
 	real z			!water level
 	real h			!total depth
 	real hlv(lmax)		!layer structure
@@ -252,21 +255,21 @@ c in this case the last values for hl are 0
 	logical bdebug,berror
 	integer ii,l
 	real zmed
-	real htot,hsig,htop,hbot
+	real htot,hsig,hzad,htop,hbot,den
 
 	bdebug = .true.
 	bdebug = .false.
 	berror = .false.
 
+	zmed = z
+	htot = h
+	hdl = 0.
+
 c---------------------------------------------------------
 c compute level structure of sigma levels
 c---------------------------------------------------------
 
-	zmed = z
-	htot = h
 	hsig = min(htot,hsigma) + zmed
-
-	hdl = 0.
 
 	hbot = 0.
 	do l=1,nsigma
@@ -276,21 +279,41 @@ c---------------------------------------------------------
 	  hdl(l) = -hsig * (hbot-htop)
 	end do
 
-	if( bdebug ) write(6,*) l,hsig,lmax,nsigma
+c---------------------------------------------------------
+c compute level structure of z-surface-adaptive levels
+c---------------------------------------------------------
+
+        hzad = hadapt + zmed
+	den  = hadapt - hlv(lmin-1)		!zstar def
+	if (nadapt+lmin-1.eq.lmax) then 
+	  hzad = htot + zmed
+          den  = htot - hlv(lmin-1)	
+	end if
+
+        hbot = 0.	
+        do l=lmin,lmin+nadapt-1
+          htop = hbot
+          hbot = hlv(l)
+	  if( l .eq. lmax ) hbot = htot 
+          hdl(l) = hzad * (hbot-htop)/den
+        end do
+
+	if( bdebug ) write(6,*) l,hsig,hzad,lmax,nsigma,nadapt
 	if( bdebug ) write(6,*) 'hdl: ',hdl
 
 c---------------------------------------------------------
 c compute level structure of zeta and/or hybrid levels
 c---------------------------------------------------------
 
-	if( lmax .gt. nsigma ) then		!also zeta coordinates
+	if( lmax .gt. (nsigma+nadapt) ) then	!also zeta coordinates
 	  if( lmax .eq. lmin ) then		!just one layer
 	    hdl(lmin) = htot + zmed
 	  else
-	    hbot = hsigma
-	    if( nsigma .eq. 0 ) hbot = -zmed
+	    if( nsigma .ne. 0 ) hbot = hsigma
+	    if( nadapt .ne. 0 ) hbot = hadapt
+	    if( nsigma .eq. 0 .and.  nadapt .eq. 0 ) hbot = -zmed
 	    if( bdebug ) write(6,*) nsigma,lmax,zmed,hbot
-	    do l=nsigma+lmin,lmax
+	    do l=nsigma+nadapt+lmin,lmax
 	      if( hbot == htot ) exit	!no more layers
 	      htop = hbot
 	      hbot = hlv(l)
@@ -369,7 +392,7 @@ c******************************************************************
 
 	do ie=1,nel
 	  h = hev(ie)
-	  call get_layer_thickness(nlv,1,nsigma,hsigma,z,h,hlv,hdl)
+	  call get_layer_thickness(nlv,1,nsigma,0,hsigma,0.,z,h,hlv,hdl)
 	  do l=1,nlv
 	    if( hdl(l) == 0. ) exit
 	  end do
@@ -423,11 +446,11 @@ c******************************************************************
 	h = 4.2
 
 	lmax = 5
-	call get_layer_thickness(lmax,1,nsigma,hsigma,z,h,hlv,hdl)
+	call get_layer_thickness(lmax,1,nsigma,0,hsigma,0.,z,h,hlv,hdl)
 	write(6,*) lmax,hdl
 
 	lmax = 2
-	call get_layer_thickness(lmax,1,nsigma,hsigma,z,h,hlv,hdl)
+	call get_layer_thickness(lmax,1,nsigma,0,hsigma,0.,z,h,hlv,hdl)
 	write(6,*) lmax,hdl
 
 	end

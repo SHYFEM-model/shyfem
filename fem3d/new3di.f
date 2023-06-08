@@ -1109,10 +1109,6 @@ c
 c in case of a layer that does not exist (i-1 of first layer) give any
 c ...value because the corrisponding a/b/c will be 0
 c
-c l starts from 1: for practical implementation reasons
-c we keep in the matrix removed top layers (with identity sub-matrix)
-c For such layers, momentum update is fake: IU=0 -> U=0  
-c By the way the solution is unused
 c-------------------------------------------------------------
 
 	do l=1,ilevel
@@ -1720,7 +1716,7 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 		write(670,*) hdknv(l,k),hdkov(l,k)
 	    end if
 	  end do
-	  dz = dt * wlnv(0,k) / va(1,k)
+	  dz = dt * wlnv(lmin-1,k) / va(lmin,k)
 	  dzmax = max(dzmax,abs(dz))
 	  wlnv(lmin-1,k) = 0.	! ensure no flux across surface - is very small
 	  dzeta(k) = dz

@@ -108,6 +108,7 @@
 ! 27.04.2023    ggu     avoid creating automatic temporary array
 ! 09.05.2023    lrp     introduce top layer index variable
 ! 22.05.2023    ggu     new routine iff_ts_intp1()
+! 05.06.2023    lrp     introduce z-star
 !
 !****************************************************************
 !
@@ -2105,10 +2106,10 @@ c interpolates in space all variables in data set id
 	logical bdebug
 	integer l,lmin
 	integer ivar,nvar
-	integer nsigma
+	integer nsigma,nadapt
 	double precision acum,htot
 	real z
-	real hsigma
+	real hsigma,hadapt
 	real value,hlayer
 	real hl(pinfo(id)%lmax)
 
@@ -2120,10 +2121,12 @@ c interpolates in space all variables in data set id
 	if( h < -990. ) h = pinfo(id)%hlv_file(lmax)	!take from hlv array
 	if( h < 0. ) h = 1.				!hlv is sigma -> any h
 	z = 0.
-	lmin=1
+	lmin=1						!file layer structure: lmin   always ==1
+	nadapt=0					!file layer structure: nadapt always == 0
+	hadapt=0.			
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
-	call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,h
-     +					,pinfo(id)%hlv_file,hl)
+	call get_layer_thickness(lmax,lmin,nsigma,nadapt,
+     +				 hsigma,hadapt,z,h,pinfo(id)%hlv_file,hl)
 
 	do ivar=1,nvar
 	  acum = 0.
@@ -2190,11 +2193,11 @@ c global lmax and lexp are > 1
 	logical bcenter,bcons
 	integer l,ipl,lfem,lmin
 	integer ivar,nvar
-	integer nsigma
+	integer nsigma,nadapt
 	integer iu
 	double precision acum,htot
 	real z,hfem,hfile
-	real hsigma
+	real hsigma,hadapt
 	real value,hlayer
 	real hl(pinfo(id)%lmax)
 	real hz_file(0:pinfo(id)%lmax+1)
@@ -2240,18 +2243,21 @@ c global lmax and lexp are > 1
 	hfile = h
 	if( hfile < -990. ) hfile = pinfo(id)%hlv_file(lmax) !take from hlv
 	if( hfile == -1. ) hfile = hfem 		!hlv is sigma -> hfem
-	lmin = 1
 	!write(6,*) 'ggu: ',lmax,lfem,ipl,hfem,hfile
 
+	lmin=1						!file layer structure: lmin always 1
+	nadapt=0					!file layer structure: nadapt always 0
+	hadapt=0.			
 	call compute_sigma_info(lmax,pinfo(id)%hlv_file,nsigma,hsigma)
-	call get_layer_thickness(lmax,lmin,nsigma,hsigma,z,hfile
-     +					,pinfo(id)%hlv_file,hl)
+	call get_layer_thickness(lmax,lmin,nsigma,nadapt,
+     +				 hsigma,hadapt,z,hfile,pinfo(id)%hlv_file,hl)
 	call get_depth_of_layer(bcenter,lmax,z,hl,hz_file(1))
 	hz_file(0) = z
 
 	call compute_sigma_info(lfem,hlv_fem,nsigma,hsigma)
-	call get_layer_thickness(lfem,lmin,nsigma,hsigma,z,hfem
-     +					,hlv_fem,hl_fem)
+	call compute_zadapt_info(z,hlv_fem,nsigma,lfem,lmin,nadapt,hadapt)
+	call get_layer_thickness(lfem,lmin,nsigma,nadapt,
+     +				 hsigma,hadapt,z,hfem,hlv_fem,hl_fem)
 	call get_depth_of_layer(bcenter,lfem,z,hl_fem,hz_fem(1))
 	hz_fem(0) = z
 
