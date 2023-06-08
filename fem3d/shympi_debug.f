@@ -33,6 +33,7 @@
 ! 09.10.2022	ggu	enable debug 3d arrays nlv+1
 ! 11.10.2022    ggu     new routines to deal with fixed first dimension
 ! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     make sure shympi_write_debug_init() is called
 !
 !******************************************************************
 
@@ -110,6 +111,8 @@
 	double precision dtime
 
 	if( .not. shympi_is_master() ) return
+
+	call shympi_write_debug_init
 
 	write(iu_debug) dtime
 

@@ -276,6 +276,7 @@ c 08.06.2022    ggu	debug routines inserted (ggu_vertical)
 c 11.10.2022    ggu	debug section inserted in wlnv computing
 c 02.05.2023    ggu     fix mpi bug for nlv==1
 c 09.05.2023    lrp     introduce top layer index variable
+c 08.06.2023    ggu     new zeta_debug(), cleaned, call to compute_dry_elements
 c
 c******************************************************************
 
@@ -336,14 +337,6 @@ c-----------------------------------------------------------------
 	  call system_set_explicit
 	else if( azpar == 1. .and. ampar == 0. ) then
 	  call system_set_explicit
-	else if( shympi_is_parallel() ) then
-	  !if( shympi_is_master() ) then
-	  !  write(6,*) 'system is not solved explicitly'
-	  !  write(6,*) 'cannot solve semi-implicitly with MPI'
-	  !  write(6,*) 'azpar,ampar: ',azpar,ampar
-	  !  write(6,*) 'please use azpar=1 and ampar=0'
-	  !end if
-	  !call shympi_stop('no semi-implicit solution')
 	end if
 
 c-----------------------------------------------------------------
@@ -354,12 +347,8 @@ c-----------------------------------------------------------------
 	call close_handle(iw)
 
 c-----------------------------------------------------------------
-c copy variables to old time level
+c set diffusivity
 c-----------------------------------------------------------------
-
-	!call copy_uvz		!copies uvz to old time level
-	!call nonhydro_copy	!copies non hydrostatic pressure terms
-	!call copy_depth	!copies layer depth to old
 
 	call set_diffusivity	!horizontal viscosity/diffusivity (needs uvprv)
 
@@ -381,6 +370,8 @@ c-----------------------------------------------------------------
 
 	  iloop = iloop + 1
 
+	  call compute_dry_elements(iloop)
+
 	  call hydro_transports		!compute intermediate transports
 
 	  call setnod			!set info on dry nodes
@@ -394,14 +385,12 @@ c-----------------------------------------------------------------
 	  call cpu_time_end(3)
 	  call system_get(nkn,znv)	!copies solution to new z
 
-	  if(trim(solver_type) /= 'PETSc')then
+	  if( trim(solver_type) /= 'PETSc' ) then
             call shympi_exchange_2d_node(znv)
           endif
 
 	  call setweg(1,iw)		!controll intertidal flats
-	  !write(6,*) 'hydro: iw = ',iw,iloop,my_id
 	  iw = shympi_sum(iw)
-	  !if( iw > 0 .and. shympi_is_parallel() ) goto 99
 	  if( iw == 0 ) exit
 
 	end do
@@ -431,7 +420,6 @@ c-----------------------------------------------------------------
 
 	call hydro_vertical(dzeta)		!compute vertical velocities
 
-	!if (bnohyd) call nh_handle_output(dtime)
 	if (bnohyd .or. (iwvel .eq. 1)) then
 	  call nh_handle_output(dtime)!DWNH
 	end if
@@ -572,6 +560,7 @@ c-------------------------------------------------------------
 c-------------------------------------------------------------
 c loop over elements
 c-------------------------------------------------------------
+
         if(trim(solver_type)=='PETSc')then
           nel_loop=nel_unique
         else
@@ -1926,6 +1915,139 @@ c******************************************************************
 	  write(6,*) 'hia',hia
 	  write(6,*) 'hik',hik
 	end if
+
+	end
+
+c******************************************************************
+c******************************************************************
+c******************************************************************
+
+	subroutine zeta_debug(iloop,iwhat,dtime)
+
+	use shympi
+	use shympi_debug
+	use basin
+	use levels
+	use mod_hydro
+	use mod_geom_dynamic
+	use mod_bound_dynamic
+	use mod_diff_visc_fric
+
+	implicit none
+
+	integer iloop
+	integer iwhat
+	double precision dtime
+
+	integer iu,k,ie,iext,lmax
+	real rnode(nkn)
+	real relem(nel)
+	double precision daux
+
+	integer ieint
+
+	real, allocatable :: raux(:,:)
+
+	if( dtime < 28700 ) return
+	if( dtime > 28700 ) return
+	!return
+
+	allocate(raux(nlvdi,nel))
+
+	iu = 555
+
+	call debug_test_node_array(iu,iloop,iwhat,znv)
+	call debug_test_node_array(iu,iloop,iwhat,rqv)
+	call debug_test_node_array(iu,iloop,iwhat,rqdsv)
+	
+	call debug_test_elem_array(iu,iloop,iwhat,3,zenv)
+	
+	rnode = inodv
+	call debug_test_node_array(iu,iloop,iwhat,rnode)
+
+	relem = iwegv
+	call debug_test_elem_array(iu,iloop,iwhat,1,relem)
+	relem = iwetv
+	call debug_test_elem_array(iu,iloop,iwhat,1,relem)
+
+	iu = 580 + my_id
+	iext = 10066
+	ie = ieint(iext)
+	if( ie > 0 ) then
+	lmax = ilhv(ie)
+	write(iu,*) iext,ie,lmax,iloop,iwhat
+	write(iu,*) id_elem(:,ie)
+	write(iu,1000) utlnv(1:lmax,ie)
+	write(iu,1000) vtlnv(1:lmax,ie)
+	flush(iu)
+ 1000	format(10e16.8)
+	end if
+
+	daux = dtime - 50 + 10*iloop + iwhat
+	call shympi_write_debug_time(daux)
+        call shympi_write_debug_elem('utlnv',utlnv)
+        call shympi_write_debug_elem('vtlnv',vtlnv)
+        call shympi_write_debug_elem('fxv',fxv)
+        call shympi_write_debug_elem('fyv',fyv)
+        call shympi_write_debug_elem('rfricv',rfricv)
+        call shympi_write_debug_elem('rcdv',rcdv)
+        call shympi_write_debug_elem('bnstressv',bnstressv)
+
+	call shympi_write_debug_final
+
+	end
+
+c******************************************************************
+
+	subroutine debug_test_node_array(iu,iloop,iwhat,ra)
+
+	use shympi
+	use basin
+
+	implicit none
+
+	integer iu,iloop,iwhat
+	real ra(nkn)
+
+	integer ng,i
+	real, allocatable :: rag(:)
+
+	iu = iu + 1
+
+	ng = nkn_global
+	allocate(rag(ng))
+	call shympi_l2g_array(ra,rag)
+
+	do i=1,ng
+	  write(iu,*) i,iloop,iwhat,rag(i)
+	end do
+
+	end
+
+c******************************************************************
+
+	subroutine debug_test_elem_array(iu,iloop,iwhat,ifix,ra)
+
+	use shympi
+	use basin
+
+	implicit none
+
+	integer iu,iloop,iwhat,ifix
+	real ra(ifix,nel)
+
+	integer ng,i
+	real, allocatable :: rag(:,:)
+
+	iu = iu + 1
+
+	ng = nel_global
+	allocate(rag(ifix,ng))
+	call shympi_l2g_array(ifix,ra,rag)
+
+	do i=1,ng
+	  write(iu,*) i,iloop,iwhat,rag(:,i)
+	end do
 
 	end
 

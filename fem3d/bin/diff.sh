@@ -24,7 +24,7 @@ FullUsage()
   echo "  -h|-help         this help"
   echo "  -compare         compare files interactively"
   echo "  -compile         compile files locally and remotely"
-  echo "  -auto            automatic accept copying files"
+  echo "  -auto            automatic accept copying and compiling files"
 }
 
 HandleOptions()

@@ -1,5 +1,21 @@
 ============================================================
 
+Thu Jun  8 10:08:04 CEST 2023
+
+bug fix for tripple points with more iterations
+
+ fem3d/bin/diff.sh                   |   2 +-
+ fem3d/new3di.f                      | 156 ++++++++++++++++++++++++++++++++----
+ fem3d/shyfem.f                      |   9 +++
+ fem3d/shympi_debug.f                |   3 +
+ fem3d/subdry.f                      |  34 +++++++-
+ fem3d/submpi_tripple.f              |   5 +-
+ fembin/git_info/git_info_branch.txt |   4 +
+ fembin/strparse.pl                  |  19 ++++-
+ 8 files changed, 209 insertions(+), 23 deletions(-)
+
+============================================================
+
 Tue Jun  6 11:06:33 CEST 2023
 
 minor changes, better check_shympi_debug.f

@@ -12,6 +12,7 @@
 #
 # possible command line options: see subroutine FullUsage
 #
+# version       1.4     07.06.2023      use ScriptPath() to determine path
 # version       1.3     09.05.2023      handle also boxes and only bas files
 # version       1.2     30.03.2023      restructured and -collect, -reduce
 # version       1.1     ?
@@ -62,6 +63,8 @@ $::reduce = "" unless $::reduce;
 #-------------------------------------------------------------
 
 my $file = $ARGV[0];
+
+$::scriptpath = ScriptPath();
 
 my $str = new str;
 $str->{quiet} = $::quiet;
@@ -117,7 +120,6 @@ if( $::h or $::help ) {
   Usage();
 }
 
-
 #------------------------------------------------------------
 
 sub Usage {
@@ -151,6 +153,19 @@ sub FullUsage {
 }
 
 #------------------------------------------------------------
+
+sub ScriptPath {
+
+  my $script = `realpath $0`;
+  chomp $script;
+  my $scriptpath = `dirname $script`;
+  chomp $scriptpath;
+
+  #print STDERR "$script\n";
+  #print STDERR "$scriptpath\n";
+
+  return $scriptpath;
+}
 
 sub show_flux_nodes {
 
@@ -614,7 +629,7 @@ sub collect_str {
       system("cp $file $input");
       $item->{"newdir"} = "$newinput/";
     } else {
-      my $type = `shyfile $file`;
+      my $type = `$::scriptpath/shyfile $file`;
       chomp($type);
       if( $type eq "FEM" ) {
         print STDERR "  reducing ($type) $file to $input as $filename\n";

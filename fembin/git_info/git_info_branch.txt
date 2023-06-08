@@ -7,6 +7,10 @@
 #
 #------------------------------------------------------------------------
 
+git branch				#see all local branches
+git branch -r				#see all remote branches
+git branch -a				#see all branches (local and remote)
+git branch -v				#verbose
 
 git branch new_branch			#creates new branch
 git checkout new_branch			#switches to new branch

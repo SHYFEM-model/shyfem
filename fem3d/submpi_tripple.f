@@ -37,6 +37,7 @@
 ! 02.04.2023	ggu	bug fix looking for internal element
 ! 03.04.2023	ggu	new bug fix looking for internal element
 ! 12.04.2023	ggu	fill buffer_in only if my_id == id_from
+! 07.06.2023	ggu	in exchange_elem_info() use utlov not utlnv (bug-fix)
 !
 !******************************************************************
 
@@ -360,8 +361,8 @@
         if( id_from == my_id ) then
 	  buffer_in(1) = lmax
 	  buffer_in(2) = 12. * ev(10,iint)
-	  buffer_in(3:lmax+2) = utlnv(1:lmax,iint)
-	  buffer_in(lmax+3:2*lmax+2) = vtlnv(1:lmax,iint)
+	  buffer_in(3:lmax+2) = utlov(1:lmax,iint)
+	  buffer_in(lmax+3:2*lmax+2) = vtlov(1:lmax,iint)
 	end if
 
 	if( n > nmax ) then
