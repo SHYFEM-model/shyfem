@@ -1619,8 +1619,9 @@ new3di.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_system.mod \
 		../femlib/mod/mod_waves.mod \
 		../femlib/mod/mod_zeta_system.mod \
-		../femlib/mod/shympi.mod ../femlib/mod/tide.mod \
-		mkonst.h pkonst.h 
+		../femlib/mod/shympi.mod \
+		../femlib/mod/shympi_debug.mod \
+		../femlib/mod/tide.mod mkonst.h pkonst.h 
 newbcl.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_diff_visc_fric.mod \
 		../femlib/mod/mod_hydro.mod \
@@ -1924,6 +1925,7 @@ shyfem.o: ../femlib/mod/basin.mod ../femlib/mod/clo.mod \
 		../femlib/mod/mod_test_zeta.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/mod_tvd.mod \
 		../femlib/mod/mod_waves.mod \
+		../femlib/mod/mod_zeta_system.mod \
 		../femlib/mod/projection.mod \
 		../femlib/mod/shympi.mod \
 		../femlib/mod/shympi_debug.mod \
