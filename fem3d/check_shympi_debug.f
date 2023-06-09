@@ -40,6 +40,7 @@
 ! 28.03.2023    ggu     code refactorying, new options -summary
 ! 13.04.2023    ggu     avoid compiler errors for d/i/r_info
 ! 05.06.2023    ggu     handle exceptions, show records with highest errrors
+! 09.06.2023    ggu     handle non existing files
 
 ! note :
 !
@@ -155,7 +156,10 @@
 
 	open(1,file=name_one,status='old',form='unformatted',iostat=ios)
 
-	if( ios /= 0 ) stop 'error opening file'
+	if( ios /= 0 ) then
+	  write(6,*) 'no such file: ',trim(name_one)
+	  stop 'error opening file'
+	end if
 
 	if( .not. bquiet ) write(6,*) 'file 1: ',trim(name_one)
 
@@ -285,9 +289,15 @@
 	call clo_get_file(2,name_two)
 
 	open(1,file=name_one,status='old',form='unformatted',iostat=ios)
-	if( ios /= 0 ) stop 'error opening file 1'
+	if( ios /= 0 ) then
+	  write(6,*) 'no such file: ',trim(name_one)
+	  stop 'error opening file 1'
+	end if
 	open(2,file=name_two,status='old',form='unformatted',iostat=ios)
-	if( ios /= 0 ) stop 'error opening file 2'
+	if( ios /= 0 ) then
+	  write(6,*) 'no such file: ',trim(name_two)
+	  stop 'error opening file 2'
+	end if
 
 	if( .not. bquiet ) then
 	  write(6,*) 'file 1: ',trim(name_one)

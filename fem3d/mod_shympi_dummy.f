@@ -58,6 +58,7 @@
 ! 27.03.2023    ggu     new routines shympi_receive(), more docs
 ! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
 ! 03.05.2023    ggu     new routine shympi_bdebug()
+! 09.06.2023    ggu     new routine error_stop()
 !
 !******************************************************************
 
@@ -425,6 +426,16 @@
         INTERFACE shympi_exchange_2d_nodes_max
         MODULE PROCEDURE   shympi_exchange_2d_nodes_max_i
      +			  ,shympi_exchange_2d_nodes_max_r
+        END INTERFACE
+
+!-------------------------------------------------------
+!       error handling
+!-------------------------------------------------------
+
+        INTERFACE error_stop
+        MODULE PROCEDURE  error_stop_2
+     +                  , error_stop_1
+     +                  , error_stop_0
         END INTERFACE
 
 !-------------------------------------------------------
@@ -2198,6 +2209,46 @@
         flush(6)
 
         end subroutine shympi_bdebug
+
+!******************************************************************
+
+        subroutine error_stop_2(routine,text)
+
+        implicit none
+
+        character*(*) routine,text
+
+        write(6,*) 'error stop ',routine,': ',text
+        flush(6)
+        call shympi_abort
+
+        end subroutine error_stop_2
+
+!******************************************************************
+
+        subroutine error_stop_1(text)
+
+        implicit none
+
+        character*(*) text
+
+        write(6,*) 'error stop: ',text
+        flush(6)
+        call shympi_abort
+
+        end subroutine error_stop_1
+
+!******************************************************************
+
+        subroutine error_stop_0
+
+        implicit none
+
+        write(6,*) 'error stop'
+        flush(6)
+        call shympi_abort
+
+        end subroutine error_stop_0
 
 !==================================================================
         end module shympi
