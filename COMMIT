@@ -1,5 +1,18 @@
 ============================================================
 
+Mon Jun 26 14:56:13 CEST 2023
+
+new option for grid to plot node type (F)
+
+ fembin/strparse.pl |   8 +++
+ femlib/perl/str.pm |  21 ++++++++
+ grid/grid_fp.h     |   4 +-
+ grid/gridop.c      |  13 +++--
+ grid/gridpl.c      | 140 +++++++++++++++++++++++++++++++++++++++++++++--------
+ 5 files changed, 160 insertions(+), 26 deletions(-)
+
+============================================================
+
 Mon Jun 26 10:48:09 CEST 2023
 
 strparse modified

@@ -184,6 +184,10 @@ sub show_flux_nodes {
   my $grid = new grd;
   $grid->readgrd("$basin.grd");
 
+  unless( $str->has_section("flux") ) {
+    die "*** no flux section found...\n";
+  }
+
   open_nodes_file("flux_str");
 
   foreach my $section (@$sequence) {
@@ -251,6 +255,10 @@ sub show_extra_nodes {
   my $basin = $str->get_basin();
   my $grid = new grd;
   $grid->readgrd("$basin.grd");
+
+  unless( $str->has_section("extra") ) {
+    die "*** no extra section found...\n";
+  }
 
   open_nodes_file("extra_str");
 

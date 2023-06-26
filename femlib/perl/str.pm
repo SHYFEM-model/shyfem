@@ -10,6 +10,7 @@
 #
 # str utility routines
 #
+# version	1.8     26.06.2023      new routine has_section()
 # version	1.7     11.06.2023      parameter nocomment implemented
 # version	1.6     08.06.2023      write extra section with description
 # version	1.5     30.03.2023      prepared new number section
@@ -835,6 +836,26 @@ sub write_unknown_section {	# simply copy
   foreach my $line (@$data) {
     print "$line\n";
   }
+}
+
+#-----------------------------------------------------------------
+# utilities
+#-----------------------------------------------------------------
+
+sub has_section {
+
+  my ($self,$sectname) = @_;
+
+  my $sections = $self->{sections};
+  my $sequence = $self->{sequence};
+
+  foreach my $section (@$sequence) {
+    my $sect = $sections->{$section};
+    my $name = $sect->{name};
+    #print STDERR "section $name\n";
+    return 1 if $name eq $sectname;
+  }
+  return 0;
 }
 
 #-----------------------------------------------------------------
