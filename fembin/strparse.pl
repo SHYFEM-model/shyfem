@@ -12,10 +12,13 @@
 #
 # possible command line options: see subroutine FullUsage
 #
+# version       1.6     11.06.2023      -essential implemented
+# version       1.5     09.06.2023      handle flux/extra section with descrip
 # version       1.4     07.06.2023      use ScriptPath() to determine path
 # version       1.3     09.05.2023      handle also boxes and only bas files
 # version       1.2     30.03.2023      restructured and -collect, -reduce
-# version       1.1     ?
+# version       1.1     24.03.2023     handle extra and flux sections
+# version       1.0     ?              old version, partially functional
 #
 #--------------------------------------------------------
 
@@ -37,6 +40,7 @@ $::extra = 0 unless $::extra;
 $::flux = 0 unless $::flux;
 $::zip = 0 unless $::zip;
 $::rewrite = 0 unless $::rewrite;
+$::essential = 0 unless $::essential;
 $::sect = "" unless $::sect;
 $::txt = 0 unless $::txt;
 $::debug = 0 unless $::debug;
@@ -68,6 +72,7 @@ $::scriptpath = ScriptPath();
 
 my $str = new str;
 $str->{quiet} = $::quiet;
+$str->{nocomment} = $::essential;
 $str->read_str($file) if $file;
 
 if( $::h or $::help ) {
@@ -140,6 +145,7 @@ sub FullUsage {
   print STDERR "    -flux         extract flux nodes\n";
   print STDERR "    -zip          zips forcing files, grid, str in one file\n";
   print STDERR "    -rewrite      rewrite the str file\n";
+  print STDERR "    -essential    only write active sections, no comments\n";
   print STDERR "    -value=var    show value of var ([sect:]var)\n";
   print STDERR "    -replace=val  replace value of var with val and rewrite\n";
   print STDERR "    -simtime      prints start and end time of simulation\n";
@@ -184,11 +190,14 @@ sub show_flux_nodes {
     my $sect = $sections->{$section};
 
     if( $sect->{name} eq "flux" ) {
-      my ($rlist) = parse_flux_nodes($str,$sect);
+      my ($rlist,$dlist) = get_node_list($str,$sect);
+      my $slist = make_sections($rlist);
       my $n = 0;
-      foreach my $ra (@$rlist) {
+      foreach my $ra (@$slist) {
         $n++;
-        write_line($n,$grid,$ra);
+        write_line($n,-1,$grid,$ra);
+	my $descr = shift(@$dlist);
+        print_section($n,$ra,$descr);
       }
     }
   }
@@ -196,13 +205,40 @@ sub show_flux_nodes {
   close_nodes_file();
 }
 
-sub parse_flux_nodes {
+sub print_section {
 
-  my ($str,$sect) = @_;
+  my ($n,$ra,$descr) = @_;
 
-  my $sect_name = $sect->{name}; 
+  $descr = "" unless $descr;
+  my $na = @$ra;
 
-  return($sect->{fluxsection});
+  print STDERR "section $n ($na)  $descr\n";
+  foreach my $n (@$ra) {
+    print STDERR "  $n";
+  }
+  print STDERR "\n";
+}
+
+sub make_sections {
+
+  my $rlist = shift;
+
+  my @slist = ();
+  my @list = ();
+
+  foreach my $n (@$rlist) {
+    if( $n == 0 ) {
+      my $nl = @list;
+      next if $nl == 0;
+      my @new = @list;
+      push(@slist,\@new);
+      @list = ();
+    } else {
+      push(@list,$n);
+    }
+  }
+
+  return \@slist;
 }
 
 sub show_extra_nodes {
@@ -223,21 +259,44 @@ sub show_extra_nodes {
 
     if( $sect->{name} eq "extra" ) {
       my $ra = $sect->{array};
-      my ($rlist) = parse_extra_nodes($str,$sect);
+      my ($rlist,$dlist) = get_node_list($str,$sect);
       write_nodes(-1,$grid,$rlist);
+      print_nodes($rlist,$dlist);
     }
   }
 
   close_nodes_file();
 }
 
-sub parse_extra_nodes {
+sub get_node_list {
 
   my ($str,$sect) = @_;
 
   my $sect_name = $sect->{name}; 
 
-  return($sect->{array});
+  return($sect->{array},$sect->{description});
+}
+
+sub print_nodes {
+
+  my ($rlist,$dlist) = @_;
+
+  my $na = @$rlist;
+  my $nd = @$dlist;
+
+  print STDERR "node list: $na $nd\n";
+
+  foreach my $n (@$rlist) {
+    print STDERR "$n ";
+  }
+  print STDERR "\n";
+
+  return unless $nd;
+
+  foreach my $n (@$rlist) {
+    my $descr = shift(@$dlist);
+    print STDERR "  $n   $descr\n";
+  }
 }
 
 sub show_bnd_nodes {
@@ -313,12 +372,12 @@ sub close_nodes_file {
 
 sub write_line {
 
-  my ($itype,$grid,$rlist) = @_;
+  my ($nline,$itype,$grid,$rlist) = @_;
 
   if( $::txt ) {
     write_line_to_txt($itype,$rlist);
   } else {
-    write_line_to_grd($itype,$grid,$rlist);
+    write_line_to_grd($nline,$itype,$grid,$rlist);
   }
 }
 
@@ -334,7 +393,9 @@ sub write_line_to_txt {
 
 sub write_line_to_grd {
 
-  my ($ibtyp,$grid,$list) = @_;
+  my ($nline,$ibtyp,$grid,$list) = @_;
+
+  my $nval = 5;                 # how many values on one line
 
   my $n = 0;
   #return if( $ibtyp == 0 );
@@ -348,6 +409,15 @@ sub write_line_to_grd {
     $type = $n if $ibtyp < 0;
     print OUT "1 $node 0 $x $y\n";
   }
+  my $j = 0;
+  $type = $n if $ibtyp < 0;
+  print OUT "3 $nline $type $n\n";
+  foreach my $nn (@$list) {
+    $j++;
+    print OUT "  $nn";
+    print OUT "\n" if $j%$nval == 0;
+  }
+  print OUT "\n" if not $j%$nval == 0;
 }
 
 sub write_nodes {

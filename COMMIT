@@ -1,5 +1,16 @@
 ============================================================
 
+Mon Jun 26 10:48:09 CEST 2023
+
+strparse modified
+
+ fem3d/subbnd.f     |   7 +--
+ fembin/strparse.pl |  98 +++++++++++++++++++++++++++++++++------
+ femlib/perl/str.pm | 132 ++++++++++++++++++++++++++++++++++++-----------------
+ 3 files changed, 177 insertions(+), 60 deletions(-)
+
+============================================================
+
 Thu Jun  8 10:08:04 CEST 2023
 
 bug fix for tripple points with more iterations

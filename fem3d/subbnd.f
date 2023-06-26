@@ -789,19 +789,20 @@ c checks boundary information read from STR
              else
 	       if( ibtyp == 1 .or. ibtyp == 2 ) then	!no holes allowed
 	         write(6,*) my_id,krtot,kmtot,istop,krtot-kmtot
+	         write(6,*) 'there are holes in the node list'
 	         call boundary_debug(ibc)
-	         stop 'error stop ckbnds: internal error'
+		 call error_stop('ckbnds','internal error (1)')
 	       end if
              end if
            else
-	     stop 'error stop ckbnds: no MPI and missing nodes'
+	     call error_stop('ckbnds','no MPI and missing nodes')
            end if
          end if
 
 	end do
 
 	call shympi_syncronize
-	if( bstop ) stop 'error stop: ckbnds'
+	if( bstop ) call error_stop('ckbnds','general error')
 
 	end
 
