@@ -44,7 +44,7 @@
     https://github.com/SHYFEM-model/
 
     Comments and issues should be posted in the Issues section 
-    on the abovementioned GitHub repository
+    on the above mentioned GitHub repository
 
 #------------------------------------------------------------------------
 
@@ -64,8 +64,8 @@
 	Christian Ferrarin, renewal times, sediment transport
 	Marco Bajo, system solvers, assimilation
 	Debora Bellafiore, non-hydrostatic modeling, fluid mud
-	Michol Ghezzo, ecological modeling, lagrangian model
-	Francesca De Pascalis, lagrangian model
+	Michol Ghezzo, ecological modeling, lagrangian model, connectivity module
+	Francesca De Pascalis, lagrangian model, connectivity module
 	William McKiver, non-hydrostatic modeling
 
     CNR - IAS (Istituto di Ambiente Marino Costiero)
