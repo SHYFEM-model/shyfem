@@ -518,7 +518,8 @@ SOBJS   = \
 	  unitutils.o lagrange_read.o sub2linear.o \
 	  $(MPI_OBJ) mod_arrays.o subtimeutil.o subutil.o \
 	  $(PARTS_OBJ) basutil_part.o shyparts_util.o sublnkmpi.o \
-	  nodelist.o
+	  nodelist.o mod_connect.o subcolor.o \
+	  mod_flood.o queue.o
 
 # general objects for 3D model shyfem
 
@@ -576,7 +577,7 @@ HTOBJS = \
 	subtimeutil.o subicemodel.o subice.o subtsutil.o \
 	subturbine.o \
 	$(PARTS_OBJ) basutil_part.o sublnkmpi.o \
-	nodelist.o
+	nodelist.o mod_connect.o
 
 # objects for pre-processor shypre
 
@@ -614,7 +615,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  $(GRDOBJS) subsrt.o subgeo.o substrings.o subiso8601.o \
 	  $(MPI_OBJ)
 
-PARTOBJS = subfloodfill.o shyparts_util.o sublnkmpi.o
+PARTOBJS = subfloodfill.o shyparts_util.o sublnkmpi.o mod_connect.o \
+	  subcolor.o mod_flood.o queue.o
 TSOBJS = subtsfile1.o
 TSOBJS = subtsfile.o
 
@@ -1280,11 +1282,14 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/mod_bound_geom.mod: mod_bound_geom.o
 ../femlib/mod/mod_bstress.mod: substress.o
 ../femlib/mod/mod_check_debug.mod: check_debug.o
+../femlib/mod/mod_color.mod: subcolor.o
+../femlib/mod/mod_connect.mod: mod_connect.o
 ../femlib/mod/mod_conz.mod: mod_conz.o
 ../femlib/mod/mod_debug.mod: debug.o
 ../femlib/mod/mod_depth.mod: mod_depth.o
 ../femlib/mod/mod_diff_aux.mod: mod_diff_aux.o
 ../femlib/mod/mod_diff_visc_fric.mod: mod_diff_visc_fric.o
+../femlib/mod/mod_flood.mod: mod_flood.o
 ../femlib/mod/mod_fluidmud.mod: mod_fluidmud.o
 ../femlib/mod/mod_geom.mod: mod_geom.o
 ../femlib/mod/mod_geom_dynamic.mod: mod_geom_dynamic.o
@@ -1340,6 +1345,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 		aquabc_II_pelagic_model.o 
 ../femlib/mod/poisson.mod: newpoi.o
 ../femlib/mod/projection.mod: subproj.o
+../femlib/mod/queue.mod: queue.o
 ../femlib/mod/regular.mod: subreg.o
 ../femlib/mod/scan_string.mod: subscn.o
 ../femlib/mod/semi_implicit.mod: subnsh.o
@@ -1560,6 +1566,7 @@ mod_bndo.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 mod_conz.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_restart.mod \
 		../femlib/mod/shympi.mod 
+mod_flood.o: ../femlib/mod/mod_connect.mod ../femlib/mod/queue.mod
 mod_gotm_aux.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_restart.mod 
 mod_petsc_global.o: ../femlib/mod/basin.mod \
@@ -1942,7 +1949,9 @@ shyparts.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \
 		../femlib/mod/clo.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/grd.mod ../femlib/mod/mod_geom.mod \
 		../femlib/mod/shympi.mod 
-shyparts_dummy.o: ../femlib/mod/basin.mod
+shyparts_dummy.o: ../femlib/mod/basin.mod \
+		../femlib/mod/mod_color.mod \
+		../femlib/mod/mod_flood.mod 
 shyparts_metis_util.o: ../femlib/mod/basin.mod \
 		../femlib/mod/mod_geom.mod 
 shyparts_orig.o: ../femlib/mod/basin.mod ../femlib/mod/basutil.mod \

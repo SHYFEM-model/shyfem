@@ -1,5 +1,28 @@
 ============================================================
 
+Sat Jul 15 18:15:50 CEST 2023
+
+working on connection and flood fill (coloring)
+
+ fem3d/Makefile         |  17 +-
+ fem3d/mod_connect.f    | 717 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/mod_flood.f      | 202 ++++++++++++++
+ fem3d/queue.f          | 455 +++++++++++++++++++++++++++++++
+ fem3d/shyparts_dummy.f | 273 ++++++++++++++++++-
+ fem3d/subcolor.f       | 365 +++++++++++++++++++++++++
+ fem3d/subqfxt.f        |  34 ++-
+ fem3d/subsys.f         |   3 +
+ femplot/shyplot.f      |   5 +-
+ femplot/supsim.f       |  45 +++-
+ 10 files changed, 2096 insertions(+), 20 deletions(-)
+ new file:
+   fem3d/mod_connect.f
+   fem3d/mod_flood.f
+   fem3d/queue.f
+   fem3d/subcolor.f
+
+============================================================
+
 Mon Jun 26 14:56:13 CEST 2023
 
 new option for grid to plot node type (F)

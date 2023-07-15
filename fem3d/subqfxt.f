@@ -204,7 +204,7 @@ c computes new temperature (forced by heat flux) - 3d version
         real qs,ta,tb,uw,cc,ur,p,e,r,q
         real ddlon,ddlat  
         real dp,uuw,vvw  
-	real qsens,qlat,qlong,evap,qrad,qsdown
+	real qsens,qlat,qlong,evap,qrad,qsdown,qsens_orig
         real qswa,qice,qsurface,qsolar
 	real cice,fice_free,fice_cover
 	real ev,eeff
@@ -478,6 +478,7 @@ c---------------------------------------------------------
 	    call getuv(lmin,k,u,v)
 	    uv = sqrt(u*u+v*v)		!current speed
 	    call ice_water_exchange(tm,tice,uv,qice)
+	    if( abs(qice) > 100000. ) goto 99
 	    if( .not. bheat ) qice = 0.
 	  end if
 
@@ -487,6 +488,7 @@ c---------------------------------------------------------
 
 	  qlong = fice_free * qlong
 	  qlat = fice_free * qlat
+	  qsens_orig = qsens
 	  qsens = fice_free * qsens + fice_cover * qice
           qrad =  - ( qlong + qlat + qsens )
 	  qtot = qss + qrad
@@ -538,7 +540,7 @@ c---------------------------------------------------------
               write(6,*) 'Use isolp = 0 (hdecay) or 1 (Jerlov t-I)'
               stop 'error stop qflux3d: isolp'
             end if
-	    if( abs(qsurface) > 10000. ) goto 99
+	    if( abs(qsurface) > 100000. ) goto 99
             call heat2t(dt,hm,qss-qsbottom,qsurface,tm,tnew)
             if (bdebug) call check_heat2(k,l,qss,qsbottom,qsurface,
      +                                   albedo,tm,tnew)
@@ -628,12 +630,14 @@ c---------------------------------------------------------
 	return
    99	continue
 	write(6,*) 'error in heat flux'
-	write(6,*) k,ipext(k),iheat
-	write(6,*) l,lmin,lmax,hm
-	write(6,*) qsurface,qrad
-	write(6,*) qlong,qlat,qsens,qss
-	write(6,*) fice_free,fice_cover
-	write(6,*) ta,p,uw,ur,cc,tm
+	write(6,*) 'k',k,ipext(k),iheat
+	write(6,*) 'l',l,lmin,lmax,hm
+	write(6,*) 'qurf',qsurface,qrad
+	write(6,*) 'qlong',qlong,qlat,qsens,qss
+	write(6,*) 'qice',qsens_orig,qice
+	write(6,*) 'fice',fice_free,fice_cover
+	write(6,*) 'ta',ta,p,uw,ur,cc
+	write(6,*) 'tm',tm,tws(k),r
 	flush(6)
 	stop 'error stop qflux3d: impossible heat flux'
 	end
@@ -657,9 +661,10 @@ c*****************************************************************************
 
 	implicit none
 
-	real tw,ti
-	real uv
-	real qice
+	real tw			!temperature of water
+	real ti			!temperature of ice
+	real uv			!current speed
+	real qice		!ice heat flux (return)
 
 	real ustar
 
@@ -670,6 +675,13 @@ c*****************************************************************************
 
 	ustar = sqrt(cdw)*uv
 	qice = rhow*cw*ch*ustar*(tw-ti)
+
+	if( abs(qice) > 100000. ) then
+	  write(6,*) tw,ti,uv,qice
+	  write(6,*) rhow,cw,ch,cdw
+	  write(6,*) ustar,tw-ti,sqrt(cdw)
+	  stop 'error stop ice_water_exchange: qice'
+	end if
 
 	end
 
