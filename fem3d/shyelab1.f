@@ -75,6 +75,7 @@
 ! 21.12.2022    ggu     new options -rmin,-rmax,-rfreq implemented
 ! 10.03.2023    ggu     map renamed to influencemap
 ! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     array simpar introduced
 !
 !**************************************************************
 
@@ -132,6 +133,7 @@
 	character*20 aline
 	real rnull
 	real cmin,cmax,cmed,cstd,atot,vtot
+	real simpar(3)
 	double precision dtime,dtstart,dtnew,ddtime
 	double precision atfirst,atlast
 	double precision atime,atstart,atnew,atold
@@ -196,6 +198,8 @@
 	!--------------------------------------------------------------
 
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
+	call shy_get_simpar(id,simpar)
+	call set_rzmov_info(simpar(3))
 	call shy_get_ftype(id,ftype)
 
 	if( .not. bquiet ) call shy_info(id)

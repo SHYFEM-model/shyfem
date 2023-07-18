@@ -67,6 +67,7 @@
 ! 11.10.2022	ggu	subst shympi_exchange_array_3 with shympi_l2g_array
 ! 18.10.2022	ggu	bug fix in call to shy_write_record() (GGU7)
 ! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     array simpar introduced
 !
 ! contents :
 !
@@ -599,6 +600,8 @@
 	include 'simul.h'
 
 	integer date,time
+	real simpar(3)
+	real hzmin,hzoff,rzmov
 	character*80 title
 	character*80 femver
 	double precision dgetpar
@@ -607,12 +610,18 @@
 
         date = nint(dgetpar('date'))
         time = nint(dgetpar('time'))
+	hzmin = dgetpar('hzmin')
+	hzoff = dgetpar('hzoff')
+	rzmov = dgetpar('rzmov')
         title = descrp
         call get_shyfem_version_and_commit(femver)
+
+	simpar = (/hzmin,hzoff,rzmov/)
 
         call shy_set_date(id,date,time)
         call shy_set_title(id,title)
         call shy_set_femver(id,femver)
+        call shy_set_simpar(id,simpar)
 
 	end
 

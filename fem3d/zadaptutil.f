@@ -29,6 +29,7 @@ c
 c revision log :
 c
 c 05.06.2023    lrp     introduce z-star
+c 18.07.2023	lrp	rzmov read from shy
 c
 c notes:
 c this file is used also in:      
@@ -51,7 +52,7 @@ c******************************************************************
 
         integer, save, allocatable :: nadapt_com(:,:) !number of adaptive layers
         real   , save, allocatable :: hadapt_com(:,:) !closing depth of adaptive layers
-	real   , save :: rzmov_com		      !...
+	real   , save :: rzmov_com		      !parameter for moving surface layers
 
 !==================================================================
         end module zadapt
@@ -161,7 +162,7 @@ c---------------------------------------------------------
 c lowest index of adaptive deforming layers
 c--------------------------------------------------------- 
 
-          rgridmov = 0.0 !getpar('rzmov')
+          call get_rzmov_info(rgridmov) !getpar('rzmov')
           do l=lmin,lmax-1 !-1 to skip bottom layer
             if(z.le.(-hlv(l)+rgridmov*(hlv(l)-hlv(l-1)))) then
               levmax = l+1

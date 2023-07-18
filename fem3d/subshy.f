@@ -62,6 +62,7 @@
 ! 23.06.2021    ggu     more documentation
 ! 15.10.2021    ggu     some checks for vertical dim in shy_write_record()
 ! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     new version 13 - simpar introduced
 !
 !**************************************************************
 !**************************************************************
@@ -202,6 +203,13 @@
 !	...
 !	call shy_read_record()		!read nvar variable of time record
 !	end subroutine
+!
+! versions:
+!
+!	< 11	not supported
+!	11	stable version
+!	12	insert empty record after header
+!	13	new values simpar
 
 !==================================================================
 	module shyfile
@@ -212,7 +220,7 @@
 	integer, parameter, private :: idshy = 1617
 
 	integer, parameter, private :: minvers = 11
-	integer, parameter, private :: maxvers = 12
+	integer, parameter, private :: maxvers = 13
 
 	integer, parameter, private ::  no_type = 0
 	integer, parameter, private :: ous_type = 1
@@ -221,6 +229,8 @@
 	integer, parameter, private :: ext_type = 4
 	integer, parameter, private :: flx_type = 5
 
+	integer, parameter :: nsimpar = 3		!size of simpar array
+
 	type, private :: entry
 
 	  integer :: iunit
@@ -228,6 +238,8 @@
 	  integer :: ftype
 	  integer :: nkn,nel,npr,nlv,nvar
 	  integer :: date,time
+	  integer :: nsimpar
+	  real :: simpar(nsimpar)
 	  character*80 :: title
 	  character*80 :: femver
           integer, allocatable :: nen3v(:,:)
@@ -323,6 +335,8 @@
 	pentry(id)%nvar = 0
 	pentry(id)%date = 0
 	pentry(id)%time = 0
+	pentry(id)%nsimpar = nsimpar
+	pentry(id)%simpar(:) = 0
 	pentry(id)%title = ' '
 	pentry(id)%femver = ' '
 
@@ -705,6 +719,8 @@
         write(6,*) 'nvar:     ',pentry(id)%nvar
         write(6,*) 'date:     ',pentry(id)%date
         write(6,*) 'time:     ',pentry(id)%time
+        write(6,*) 'nsimpar:  ',pentry(id)%nsimpar
+        write(6,*) 'simpar:   ',pentry(id)%simpar(:)
         write(6,*) 'title:    ',trim(pentry(id)%title)
         write(6,*) 'femver:   ',trim(pentry(id)%femver)
 
@@ -998,6 +1014,26 @@
 
 !************************************************************
 
+	subroutine shy_get_simpar(id,simpar)
+	integer id
+	real simpar(:)
+	integer nsp
+	nsp = size(simpar)
+	if( nsp /= nsimpar ) stop 'error stopshy_get_simpar: nsp/=nsimpar'
+	simpar(:) = pentry(id)%simpar(:)
+	end subroutine shy_get_simpar
+
+	subroutine shy_set_simpar(id,simpar)
+	integer id
+	real simpar(:)
+	integer nsp
+	nsp = size(simpar)
+	if( nsp /= nsimpar ) stop 'error stopshy_set_simpar: nsp/=nsimpar'
+	pentry(id)%simpar(:) = simpar(:)
+	end subroutine shy_set_simpar
+
+!************************************************************
+
 	subroutine shy_get_femver(id,femver)
 	integer id
 	character*(*) femver
@@ -1166,6 +1202,8 @@
 	integer ftype
 	integer nkn,nel,npr,nlv,nvar
 	integer date,time
+	integer nsp
+	real simpar(nsimpar)
 	character*80 title
 	character*80 femver
 
@@ -1196,18 +1234,28 @@
 	if( ios /= 0 ) return
 	call shy_set_date(id,date,time)
 
-	ierr = 5
+        if( nvers >= 13 ) then          !simpar
+        ierr = 5
+        read(iunit,iostat=ios) nsp
+        if( ios /= 0 ) return
+        if( nsp /= nsimpar ) return
+        read(iunit,iostat=ios) simpar(1:nsp)
+        if( ios /= 0 ) return
+        call shy_set_simpar(id,simpar)
+        end if
+
+	ierr = 6
         read(iunit,iostat=ios) title
 	if( ios /= 0 ) return
 	call shy_set_title(id,title)
 
-	ierr = 6
+	ierr = 7
         read(iunit,iostat=ios) femver
 	if( ios /= 0 ) return
 	call shy_set_femver(id,femver)
 
-	if( nvers > 11 ) then
-	  ierr = 7
+	if( nvers >= 12 ) then		!empty record to close header
+	  ierr = 99
           read(iunit,iostat=ios) 
 	  if( ios /= 0 ) return
 	end if
@@ -1435,6 +1483,7 @@
 	integer ftype
 	integer nkn,nel,npr,nlv,nvar
 	integer date,time
+	real simpar(nsimpar)
 	character*80 title
 	character*80 femver
 
@@ -1449,11 +1498,14 @@
 	call shy_get_date(id,date,time)
 	call shy_get_title(id,title)
 	call shy_get_femver(id,femver)
+	call shy_get_simpar(id,simpar)
 
         write(iunit,err=99) idshy,nvers
         write(iunit,err=99) ftype
         write(iunit,err=99) nkn,nel,npr,nlv,nvar
         write(iunit,err=99) date,time
+        write(iunit,err=99) nsimpar
+        write(iunit,err=99) simpar(:)
         write(iunit,err=99) title
         write(iunit,err=99) femver
         write(iunit,err=99) 
