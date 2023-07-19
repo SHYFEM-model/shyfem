@@ -312,49 +312,6 @@ c---------------------------------------------------------
 
 c******************************************************************
 
-        subroutine get_zadaptivelayer_thickness(l,lmin,hzad,levz,hldv,
-     +                          		hdl,hlv,z,hnod)
-
-c returns nodal layer thickness for a z-surface-adaptive layer
-
-       	implicit none
-
-	integer l            !layer index
-        integer lmin         !top layer index	
-	real hzad	     !closing depth of adaptive layer 
-	integer levz	     !lowest index of adaptive layers
-	real hldv	     !coefficient of adaptive layer
-        real hdl             !z-layer thickness
-	real hlv	     !layer structure
-	real z		     !water level
-	real hnod	     !nodal layer thickness computed (return)
-
-c---------------------------------------------------------
-c adaptive z-layer found
-c---------------------------------------------------------
-
-        if (l.le.levz) then
-	  hnod = - hzad * hldv
-
-c---------------------------------------------------------
-c fixed z-layer found
-c---------------------------------------------------------
-
-	else
-          hnod = hdl
- 	  if( l .eq. lmin ) then
-            hnod = hnod + hlv + z
-          end if
-        end if
-
-c---------------------------------------------------------
-c end of routine
-c---------------------------------------------------------	
-
-	end
-
-c*****************************************************************	
-
         subroutine init_zadaptation
 
         use levels, only : nlvdi
@@ -368,6 +325,7 @@ c*****************************************************************
 
         nadapt_com  = 0
 	hadapt_com  = 0.	
+	rzmov_com   = 0
 
 	end
 

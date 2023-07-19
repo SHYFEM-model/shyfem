@@ -953,6 +953,7 @@ c sets up depth array for nodes
         integer ladapt(4)    !level of last adaptive sigma level	
         real hadapt(4)       !depth of last adaptive sigma level
         real cadapt(levdim,3) !coefficients of adaptive sigma level
+	real hl(levdim,3)
 	real hzad,hnod
 
         bdebug = .false.
@@ -1009,30 +1010,34 @@ c	  -------------------------------------------------------
 	    zmed = zmed + z
 	    hsig = min(htot,hsigma) + z		!total depth sigma layers
 	    hzad = hadapt(ii) + z		!total depth z-surface-adaptive layers
-            if ( ladapt(ii).eq.lmax ) hzad = htot + z	!z-surface-adaptive bottom layer	
+            if ( ladapt(ii).eq.lmax ) hzad = htot + z	!z-surface-adaptive bottom layer
 
 	    do l=1,nsigma
-	      hdkn(l,k) = - hsig * hldv(l)	!these have already depth
+	      hl(l,ii) = - hsig * hldv(l)
+	      hdkn(l,k) = hl(l,ii)		!these have already depth
 	    end do
             do l=lmink,ladapt(ii)
-              hdkn(l,k) = hdkn(l,k) - hzad * cadapt(l,ii) * areafv
+	      hl(l,ii) = - hzad * cadapt(l,ii)
+              hdkn(l,k) = hdkn(l,k) + areafv * hl(l,ii)
   	    end do
 
 	    if( lmax .gt. (nsigma+ladapt(ii)) ) then
 	      if( lmax .eq. lmin ) then
-	        h = htot + z
-	        hdkn(lmin,k) = hdkn(lmin,k) + areafv * h
+		hl(lmin,ii) = htot + z
+	        hdkn(lmin,k) = hdkn(lmin,k) + areafv * hl(lmin,ii)
 	      else
 	        levmin = nsigma + nadapt(ii) + lmink
 	        do l=levmin,lmax-1
-	          hdkn(l,k) = hdkn(l,k) + areafv * hldv(l)
+		  hl(l,ii) = hldv(l)
+	          hdkn(l,k) = hdkn(l,k) + areafv * hl(l,ii)
 	        end do
 	        if( levmin .eq. lmink ) then
+		  hl(lmink,ii) = hl(lmink,ii) + z
 		  hdkn(lmink,k) = hdkn(lmink,k) + areafv * z
 		end if
-	        hlast = htot - hlv(lmax-1)
+		hl(lmax,ii) = htot - hlv(lmax-1)
 		if( hlast .lt. 0. ) goto 77
-	        hdkn(lmax,k) = hdkn(lmax,k) + areafv * hlast
+	        hdkn(lmax,k) = hdkn(lmax,k) + areafv * hl(lmax,ii)
 	      end if
 	    end if
 
@@ -1069,11 +1074,7 @@ c	  -------------------------------------------------------
 	  end do
           do l=lmin,ladapt(4) 
 	    do ii=1,n
-              hzad = hadapt(ii) + zenv(ii,ie)
-              if ( ladapt(ii).eq.lmax ) hzad = htot + zenv(ii,ie)   !bottom layer
-	      call get_zadaptivelayer_thickness(l,lmin,hzad,ladapt(ii),
-     +			cadapt(l,ii),hldv(l),hlv(l-1),zenv(ii,ie),hnod)
-	      hden(l,ie) = hden(l,ie) + hnod  
+	      hden(l,ie) = hden(l,ie) + hl(l,ii) 
 	    end do
 	    hden(l,ie) = hden(l,ie)/n  
 	  end do
