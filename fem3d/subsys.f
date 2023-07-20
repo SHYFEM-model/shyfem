@@ -227,6 +227,7 @@ c 30.03.2021	ggu	new parameters idtdbg,itmdbg
 c 23.04.2021	clr	new parameters petsc_zcfg and amgx_zcfg
 c 15.02.2022	ggu	new parameter iage
 c 15.02.2022	ggu	new parameters for limiting_scalar
+c 20.07.2023    lrp     new parameter nzadapt
 c
 c************************************************************************
 
@@ -829,20 +830,22 @@ c		layer. (Default 0.25)
 	call addpar('ilytyp',3.00)	!type of depth adjustment
 	call addpar('hlvmin',0.25)	!min percentage of last layer thickness
 
-c With zeta layers the treatment of the free-surface must be addressed.
-c What happen if the water level falls below the first zeta-level? 
-c A zstar deformation of the top layers is deployed
-c The next parameters deals with the treatment of the surface layer.
-c
-c |rzmov|    	parameter that controls the set of surface layers that are deformed 
-c		is: { l : -z_{l-1/2}+rzmov*dz_{l} < zeta } with
-c		z_{l-1/2} the upper interface of layer l with thickness
-c		dz_{l} = z_{l-1/2}-z_{l+1/2}. zeta free-surface.
-c		= 0.0  		        zeta - default
-c		= z_{n+1/2}/hdlv(n)	zstar (above layer n) on top of zeta (below n)
-c		> z_{nlv+1/2}/hdlv(nlv) zstar
+c With $z-$layers the treatment of the free-surface must be addressed.
+c What happen if the water level falls below the first $z$-level? 
+c A $z-$star type vertical grid deformation can be deployed.
+c The next parameter specify the number of surface layers that are moving.
 
-        call addpar('rzmov',0.0)      !% zstar parameter
+c |nzadapt|	Parameter that controls the number of surface $z-$layers that are moving.
+c		The value of $|nzadapt|= 0$ corresponds to $z-$layers (Default). Then, some care
+c		is needed to define the first interface sufficiently deep to avoid
+c		the well-known "drying" of the first of the layer. 
+c		The value of $|nzadapt| = N_{tot}$, with $N_{tot}$ the total number 
+c		of $z$-layers, means that all layers are moving. This is $z-$star.
+c		The value of $|nzadapt| = N$ corresponds to move, at minimum, the first $N$
+c		surface layers with $z-$star when the free-surface moves downward. 
+c		These features are still experimental.
+
+        call addpar('nzadapt',0.)      ! z-layers parameter
 
 c The above parameters are dealing with zeta layers, where every layer
 c has constant thickness, except the surface layer which is varying with

@@ -68,6 +68,7 @@
 ! 18.10.2022	ggu	bug fix in call to shy_write_record() (GGU7)
 ! 28.04.2023    ggu     update function calls for belem
 ! 07.06.2023    ggu     array simpar introduced
+! 20.07.2023    lrp     new paramter nzadapt
 !
 ! contents :
 !
@@ -601,7 +602,7 @@
 
 	integer date,time
 	real simpar(3)
-	real hzmin,hzoff,rzmov
+	real hzmin,hzoff,nzadapt
 	character*80 title
 	character*80 femver
 	double precision dgetpar
@@ -612,11 +613,11 @@
         time = nint(dgetpar('time'))
 	hzmin = dgetpar('hzmin')
 	hzoff = dgetpar('hzoff')
-	rzmov = dgetpar('rzmov')
+	nzadapt = dgetpar('nzadapt')
         title = descrp
         call get_shyfem_version_and_commit(femver)
 
-	simpar = (/hzmin,hzoff,rzmov/)
+	simpar = (/hzmin,hzoff,nzadapt/)
 
         call shy_set_date(id,date,time)
         call shy_set_title(id,title)

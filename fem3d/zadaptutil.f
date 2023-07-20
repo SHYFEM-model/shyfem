@@ -30,14 +30,18 @@ c revision log :
 c
 c 05.06.2023    lrp     introduce z-star
 c 18.07.2023	lrp	rzmov read from shy
+c 20.07.2023	lrp	new parameter nzadapt
 c
 c notes:
 c this file is used also in:      
 c      
 c	compute_zadaptive_info (subele.f)
-c	get_zadapt_info (newexpl.f)
+c       get_rzmov_info (newexpl.f)
+c       set_rzmov_info (subele.f)
+c	init_rzmov_info (shyelab1.f)
+c	get_zadapt_info (newexpl.f,lagrange_vertical.f)
 c	set_zadapt_info (subele.f)
-c	get_zadaptivelayer_thickness (subele.f)
+c       compute_zadaptive_info (shyelab_average.f,shyelab_utils.f,shyelab_nodes.f,shyutil.f,subfemintp.f)
 c	init_zadaptation (shyfem.f)
 c
 c******************************************************************
@@ -83,6 +87,48 @@ c******************************************************************
         real rzmov
 
         rzmov_com = rzmov
+
+        end
+
+c******************************************************************
+
+	subroutine compute_rzmov_info(nlv,nzadapt,hlv,rzmov)
+
+	use zadapt
+
+	implicit none
+
+        integer nlv             !total number of layers
+	integer nzadapt		!number of surface moving layers
+        real hlv(nlv)           !layer structure
+	real rzmov 		!parameter for moving surface layers (return)
+
+	if (nzadapt .le. 0) then		!z-layers
+	  rzmov = 0.
+	else if (nzadapt .ge. nlv) then		!z-star
+	  rzmov = 10000.
+	else 					!z + z-star
+	  rzmov = hlv(nzadapt-1) / ( hlv(nzadapt)-hlv(nzadapt-1) )
+	end if
+
+	write(6,'(a)') 'Initializing z-layers parameters ...'
+        write(6,*) ' nzadapt,rzmov: ', nzadapt,rzmov
+	
+	end 
+
+c******************************************************************
+
+        subroutine init_rzmov_info(nlv,nzadapt,hlv,rzmov)
+
+        implicit none
+
+        integer nlv
+	integer nzadapt
+        real hlv(nlv)
+	real rzmov
+
+        call compute_rzmov_info(nlv,nzadapt,hlv,rzmov)
+        call set_rzmov_info(rzmov)
 
         end
 
@@ -139,7 +185,7 @@ c returns relevant info for z-surface-adaptive layers
 	real hzad		!closing depth of z-adaptive layers (return)
 
 	integer l,levmax
-	real getpar,rgridtop,rgridmov
+	real rgridtop,rgridmov
 
         lmin = 1
         levmax = 0       !no adapation -> all to zero	
@@ -154,15 +200,15 @@ c         !for now commented: lmin = 1
 
 c         rgridtop = getpar('rztop')
 c      	  do l=1,lmax              !a threshold is used
-c            if((-hlv(l)+rgridtop*(hlv(l)-hlv(l-1))).le.z) exit
-c          end do
-c          lmin=min(l,lmax)         !safety min: jlhv>=ilhv    
+c           if((-hlv(l)+rgridtop*(hlv(l)-hlv(l-1))).le.z) exit
+c         end do
+c         lmin=min(l,lmax)         !safety min: jlhv>=ilhv    
 
 c---------------------------------------------------------
 c lowest index of adaptive deforming layers
 c--------------------------------------------------------- 
 
-          call get_rzmov_info(rgridmov) !getpar('rzmov')
+          call get_rzmov_info(rgridmov)
           do l=lmin,lmax-1 !-1 to skip bottom layer
             if(z.le.(-hlv(l)+rgridmov*(hlv(l)-hlv(l-1)))) then
               levmax = l+1
@@ -208,7 +254,7 @@ c coefficients of adaptive layers
 	real hdl(nlv,3)         !coefficient (return)
 
 	integer l,ii,levmax,lmine,nsigma,nlev
-	real getpar,r,hsigma,htop,hbot
+	real r,hsigma,htop,hbot
 	real den,check
         logical bsigma
 
@@ -217,8 +263,7 @@ c coefficients of adaptive layers
 	hadapt = 0	   !no adaptation -> all to zero	
 	hdl = 0.           !no adaptation -> all to zero
 
-	r = getpar('rzmov')
-
+	call get_rzmov_info(r)
         call get_sigma_info(nlev,nsigma,hsigma)
         bsigma = nsigma .gt. 0
 
@@ -314,18 +359,23 @@ c******************************************************************
 
         subroutine init_zadaptation
 
-        use levels, only : nlvdi
+        use levels, only : nlvdi,hlv
         use basin, only : nkn,nel		
 	use zadapt
 
 	implicit none		
 
+	integer nzadapt
+	real getpar,rzmov,rzmovv
+
         allocate(nadapt_com(4,nel))
         allocate(hadapt_com(4,nel))	
 
         nadapt_com  = 0
-	hadapt_com  = 0.	
-	rzmov_com   = 0
+	hadapt_com  = 0.
+
+	nzadapt = nint(getpar('nzadapt'))
+	call init_rzmov_info(nlvdi,nzadapt,hlv,rzmov)
 
 	end
 
