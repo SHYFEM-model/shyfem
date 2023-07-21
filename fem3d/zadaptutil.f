@@ -36,8 +36,6 @@ c notes:
 c this file is used also in:      
 c      
 c	compute_zadaptive_info (subele.f)
-c       get_rzmov_info (newexpl.f)
-c       set_rzmov_info (subele.f)
 c	init_rzmov_info (shyelab1.f)
 c	get_zadapt_info (newexpl.f,lagrange_vertical.f)
 c	set_zadapt_info (subele.f)
@@ -103,17 +101,18 @@ c******************************************************************
         real hlv(nlv)           !layer structure
 	real rzmov 		!parameter for moving surface layers (return)
 
+	real maxz
+	
+	maxz = 0.0				!estimate of max water level
+
 	if (nzadapt .le. 0) then		!z-layers
 	  rzmov = 0.
 	else if (nzadapt .ge. nlv) then		!z-star
 	  rzmov = 10000.
 	else 					!z + z-star
-	  rzmov = hlv(nzadapt-1) / ( hlv(nzadapt)-hlv(nzadapt-1) )
+          rzmov = (maxz+hlv(nzadapt-1)) / (hlv(nzadapt)-hlv(nzadapt-1))
 	end if
 
-	write(6,'(a)') 'Initializing z-layers parameters ...'
-        write(6,*) ' nzadapt,rzmov: ', nzadapt,rzmov
-	
 	end 
 
 c******************************************************************
@@ -170,6 +169,38 @@ c******************************************************************
 
 c******************************************************************
 
+	subroutine compute_nadapt_info(z,hlv,lmax,lmin,nadapt)
+
+c returns lowest index of adaptive deforming layers
+
+	implicit none
+
+        real z                  !water level
+        real hlv(lmax)          !layer structure
+        integer lmax            !bottom layer  index
+        integer lmin            !surface layer  index
+        integer nadapt          !number of z-adaptive layers (return)
+
+        integer l
+        real rgridmov
+
+        call get_rzmov_info(rgridmov)
+        
+	nadapt = 0		!no adapation -> all to zero
+	do l=lmin,lmax-1 	!-1 to skip bottom layer
+
+          if(z.le.(-hlv(l)+rgridmov*(hlv(l)-hlv(l-1)))) then
+            nadapt = l+1
+          else
+            exit
+          end if
+
+        end do
+
+	end
+
+c******************************************************************
+
 	subroutine compute_zadapt_info(z,hlv,nsig,lmax,lmin,nzad,hzad)
 
 c returns relevant info for z-surface-adaptive layers
@@ -184,8 +215,8 @@ c returns relevant info for z-surface-adaptive layers
 	integer nzad		!number of z-adaptive layers (return)
 	real hzad		!closing depth of z-adaptive layers (return)
 
-	integer l,levmax
-	real rgridtop,rgridmov
+	integer levmax
+	real rgridtop
 
         lmin = 1
         levmax = 0       !no adapation -> all to zero	
@@ -208,14 +239,7 @@ c---------------------------------------------------------
 c lowest index of adaptive deforming layers
 c--------------------------------------------------------- 
 
-          call get_rzmov_info(rgridmov)
-          do l=lmin,lmax-1 !-1 to skip bottom layer
-            if(z.le.(-hlv(l)+rgridmov*(hlv(l)-hlv(l-1)))) then
-              levmax = l+1
-            else
-              exit
-            end if
-          end do
+	  call compute_nadapt_info(z,hlv,lmax,lmin,levmax)
 
 	end if 
 
@@ -254,7 +278,7 @@ c coefficients of adaptive layers
 	real hdl(nlv,3)         !coefficient (return)
 
 	integer l,ii,levmax,lmine,nsigma,nlev
-	real r,hsigma,htop,hbot
+	real hsigma,htop,hbot
 	real den,check
         logical bsigma
 
@@ -263,7 +287,6 @@ c coefficients of adaptive layers
 	hadapt = 0	   !no adaptation -> all to zero	
 	hdl = 0.           !no adaptation -> all to zero
 
-	call get_rzmov_info(r)
         call get_sigma_info(nlev,nsigma,hsigma)
         bsigma = nsigma .gt. 0
 
@@ -276,24 +299,12 @@ c loop over nodes: adaptation is node-driven
 c---------------------------------------------------------
 
 	do ii=1,3
-	  levmax = 0       !no adapation -> all to zero
-	  do l=lmin(ii),lmax-1 !-1 to skip bottom layer
 
 c---------------------------------------------------------
 c lowest index of adaptive deforming layers
-c---------------------------------------------------------	  
-	  
-            if(z(ii).le.(-hlv(l)+r*(hlv(l)-hlv(l-1)))) then 
-              levmax = l+1
+c---------------------------------------------------------       
 
-c---------------------------------------------------------
-c no deformation
-c--------------------------------------------------------- 
-
-	    else  
-	      exit 
-	    end if  
-          end do
+          call compute_nadapt_info(z(ii),hlv,lmax,lmin(ii),levmax)
 
 c---------------------------------------------------------
 c compute nadapt, ladapt, hadapt 
@@ -365,8 +376,8 @@ c******************************************************************
 
 	implicit none		
 
-	integer nzadapt
-	real getpar,rzmov,rzmovv
+	integer lmin,nzadapt
+	real getpar,rzmov,testz
 
         allocate(nadapt_com(4,nel))
         allocate(hadapt_com(4,nel))	
@@ -376,6 +387,28 @@ c******************************************************************
 
 	nzadapt = nint(getpar('nzadapt'))
 	call init_rzmov_info(nlvdi,nzadapt,hlv,rzmov)
+
+        write(6,'(a)') 'Initializing z-layers parameters ...'
+        write(6,*) ' nzadapt,rzmov: ', nzadapt,rzmov
+
+	if (nzadapt > 0) then
+	  lmin = 1
+          testz = -0.0
+          call compute_nadapt_info(testz,hlv,nlvdi,lmin,nzadapt)
+          write(6,*) ' z nzadapt: ', testz,nzadapt
+
+	  testz = -0.5
+          call compute_nadapt_info(testz,hlv,nlvdi,lmin,nzadapt)
+          write(6,*) ' z nzadapt: ', testz,nzadapt
+
+          testz = -1.0
+          call compute_nadapt_info(testz,hlv,nlvdi,lmin,nzadapt)
+          write(6,*) ' z nzadapt: ', testz,nzadapt
+
+          testz = -1.5
+          call compute_nadapt_info(testz,hlv,nlvdi,lmin,nzadapt)
+          write(6,*) ' z nzadapt: ', testz,nzadapt
+	end if
 
 	end
 
