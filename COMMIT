@@ -1,5 +1,125 @@
 ============================================================
 
+Tue Jun  6 11:06:33 CEST 2023
+
+minor changes, better check_shympi_debug.f
+
+ Makefile                   |   3 ++
+ fem3d/check_shympi_debug.f | 115 ++++++++++++++++++++++++++++++++++++++-------
+ fem3d/subgotm.f            |   3 +-
+ fem3d/sublnks.f            |  10 ++--
+ fembin/rules.sh            |   4 ++
+ 5 files changed, 115 insertions(+), 20 deletions(-)
+
+============================================================
+
+Wed May 31 21:10:24 CEST 2023
+
+minor, new profile.f
+
+ fem3d/subbnd.f             |  56 ++++++++++++++++++-
+ femutil/femfiles/profile.f | 133 +++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 181 insertions(+), 8 deletions(-)
+
+============================================================
+
+Wed May 31 21:05:25 CEST 2023
+
+bug fix mpi for conzstab
+
+ fem3d/newcon.f  |  9 ++++++---
+ fem3d/shyfem.f  | 49 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/subboxa.f | 12 +++++++++---
+ 3 files changed, 64 insertions(+), 6 deletions(-)
+
+============================================================
+
+Wed May 24 18:52:04 CEST 2023
+
+bug fix in momentum_viscous_stability (mpi)
+
+ fem3d/newexpl.f | 33 ++++++++++++++++++++++++++++++++-
+ fem3d/newstab.f | 16 ++++++++++++++++
+ 2 files changed, 48 insertions(+), 1 deletion(-)
+
+============================================================
+
+Tue May 23 17:11:14 CEST 2023
+
+mpi bug in subdry.f
+
+ fem3d/subdry.f       | 6 ++++--
+ fem3d/submpi_ghost.f | 3 ---
+ grid/gridhs.c        | 2 +-
+ 3 files changed, 5 insertions(+), 6 deletions(-)
+
+============================================================
+
+Mon May 22 17:23:49 CEST 2023
+
+compiler error intel fixed
+
+ fem3d/lagrange_vertical.f |  3 ++-
+ fem3d/shypre.f            |  7 ++++---
+ fem3d/subfemintp.f        |  5 +++--
+ fem3d/subflxa.f           | 10 ++++++++--
+ femplot/shyplot.f         |  3 ++-
+ femplot/supdep.f          |  6 ++++--
+ 6 files changed, 23 insertions(+), 11 deletions(-)
+
+============================================================
+
+Mon May 22 16:49:19 CEST 2023
+
+compiler warnings with closing
+
+ fem3d/newclose.f   |  2 +-
+ fem3d/subfemintp.f | 47 ++++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 4 deletions(-)
+
+============================================================
+
+Mon May 22 16:30:43 CEST 2023
+
+closing routines (still error with intel)
+
+ fem3d/new3di.f                    |  2 +-
+ fem3d/newclose.f                  |  7 +++---
+ fem3d/shyfem.f                    |  3 ++-
+ fembin/git_info/git_info_info.txt | 19 ++++++++++++++++
+ fembin/git_info/git_info_new.txt  | 48 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 73 insertions(+), 6 deletions(-)
+ new file:
+   fembin/git_info/git_info_info.txt
+   fembin/git_info/git_info_new.txt
+
+============================================================
+
+Fri May 19 14:32:36 CEST 2023
+
+box model and closing routines
+
+ fem3d/newclose.f | 129 +++++++++++++++++++++++++++++++++++++++----------------
+ fem3d/subboxa.f  |  16 +------
+ 2 files changed, 92 insertions(+), 53 deletions(-)
+
+============================================================
+
+Fri May 19 12:06:40 CEST 2023
+
+bug fix for box model (changes in flux computation)
+
+ fem3d/Makefile          |   6 +-
+ fem3d/mod_shympi_node.f |  40 ++-
+ fem3d/shyelab1.f        |   6 +-
+ fem3d/subboxa.f         | 709 ++++++++++++++++++++++++++++++++++++------------
+ fem3d/subflxa.f         |  23 +-
+ fem3d/subflxm.f         |  45 ++-
+ fem3d/substress.f       |  10 +-
+ 7 files changed, 632 insertions(+), 207 deletions(-)
+
+============================================================
+
 Tue May  9 16:16:52 CEST 2023
 
 forgotten make depend

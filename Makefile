@@ -429,6 +429,9 @@ rules_omp:
 rules_petsc:
 	bin/rules.sh petsc
 
+rules_intel:
+	bin/rules.sh intel
+
 #------------------------------------------------------------
 
 dist: cleandist
