@@ -720,8 +720,9 @@
         write(6,*) 'date:     ',pentry(id)%date
         write(6,*) 'time:     ',pentry(id)%time
         write(6,*) 'nsimpar:  ',pentry(id)%nsimpar
-        write(6,*) 'simpar:   ',pentry(id)%simpar(:)
-        write(6,*) 'title:    ',trim(pentry(id)%title)
+        write(6,*) 'hzmin/off:',pentry(id)%simpar(1:2)
+        write(6,*) 'nzadapt:  ',nint(pentry(id)%simpar(3))        
+	write(6,*) 'title:    ',trim(pentry(id)%title)
         write(6,*) 'femver:   ',trim(pentry(id)%femver)
 
         write(6,*) 'allocated:',pentry(id)%is_allocated

@@ -108,7 +108,7 @@ c elaborates ext file
 	real rnull
 	real cmin,cmax,cmed,vtot
 	real vmin,vmax,vmed
-	real href,hzmin
+	real href,hzmin,nzadapt,rzmov
 	real s,d
 	double precision atime,atfirst,atlast,atold,atnew,atwrite,atime0
 	character*10 :: short
@@ -186,7 +186,7 @@ c--------------------------------------------------------------
 
 	call ext_read_header2(nin,nvers,knausm,lmax
      +                          ,atime0
-     +                          ,href,hzmin,title,femver
+     +                          ,href,hzmin,nzadapt,title,femver
      +                          ,knaus,hdep,il,x,y,strings,hl
      +				,ierr)
 	if( ierr /= 0 ) goto 93
@@ -198,6 +198,7 @@ c--------------------------------------------------------------
           write(6,*) 'lmax       : ',lmax
           write(6,*) 'nvar       : ',nvar
           write(6,*) 'href,hzmin : ',href,hzmin
+	  write(6,*) 'nzadapt    : ',nint(nzadapt)
           write(6,*) 'title      : ',trim(title)
 	  write(6,*) 'Nodes contained in file:'
           write(6,*) ' i    node  il      hdep' //
@@ -255,7 +256,7 @@ c--------------------------------------------------------------
 
 	nlv = lmax
 	call init_sigma_info(nlv,hl)
-
+	call init_rzmov_info(nlv,nint(nzadapt),hl,rzmov)
 	!call elabutil_set_averaging(nvar)
 
 	btrans = .false.
@@ -289,7 +290,7 @@ c--------------------------------------------------------------
 	  if( ierr /= 0 ) goto 99
           call ext_write_header2(nb,0,knausm,lmax
      +				,atime0
-     +                          ,href,hzmin,title,femver
+     +                          ,href,hzmin,nzadapt,title,femver
      +                          ,knaus,hdep,il,x,y,strings,hl
      +                          ,ierr)
 	  if( ierr /= 0 ) goto 99
