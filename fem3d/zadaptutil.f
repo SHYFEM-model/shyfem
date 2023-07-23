@@ -52,9 +52,10 @@ c******************************************************************
 
 	implicit none
 
-        integer, save, allocatable :: nadapt_com(:,:) !number of adaptive layers
-        real   , save, allocatable :: hadapt_com(:,:) !closing depth of adaptive layers
-	real   , save :: rzmov_com		      !parameter for moving surface layers
+        integer, save, allocatable :: nadapt_com(:,:) !local number of adaptive layers
+        real   , save, allocatable :: hadapt_com(:,:) !local closing depth of adaptive layers
+	real   , save :: nzadapt_com		      !minimum number of adaptive layers
+	integer, save :: rzmov_com		      !parameter for moving surface layers
 
 !==================================================================
         end module zadapt
@@ -128,6 +129,34 @@ c******************************************************************
 
         call compute_rzmov_info(nlv,nzadapt,hlv,rzmov)
         call set_rzmov_info(rzmov)
+
+        end
+
+c******************************************************************
+
+        subroutine get_nzadapt_info(nzadapt)
+
+        use zadapt
+
+        implicit none
+
+        integer nzadapt
+
+        nzadapt = nzadapt_com
+
+        end
+
+c******************************************************************
+
+        subroutine set_nzadapt_info(nzadapt)
+
+        use zadapt
+
+        implicit none
+
+        integer nzadapt
+
+        nzadapt_com = nzadapt
 
         end
 
@@ -277,10 +306,10 @@ c coefficients of adaptive layers
         real hadapt(4)          !closing depth of adaptive layers(return)
 	real hdl(nlv,3)         !coefficient (return)
 
-	integer l,ii,levmax,lmine,nsigma,nlev
+	integer l,ii,levmax,lmine,nsigma,nzadapt,nlev
 	real hsigma,htop,hbot
 	real den,check
-        logical bsigma
+        logical bsigma,bzstandard
 
 	nadapt = 0         !no adaptation -> all to zero
 	ladapt = 0	   !no adaptation -> all to zero
@@ -288,11 +317,13 @@ c coefficients of adaptive layers
 	hdl = 0.           !no adaptation -> all to zero
 
         call get_sigma_info(nlev,nsigma,hsigma)
-        bsigma = nsigma .gt. 0
+        bsigma = nsigma .gt. 0		!sigma or sigma+z
+	call get_nzadapt_info(nzadapt)
+	bzstandard = nzadapt .eq. 0	!z
 
 	lmine = maxval(lmin)
 
-        if( .not.bsigma ) then
+        if( .not.bsigma .and. .not.bzstandard) then
 
 c---------------------------------------------------------
 c loop over nodes: adaptation is node-driven
@@ -386,6 +417,7 @@ c******************************************************************
 	hadapt_com  = 0.
 
 	nzadapt = nint(getpar('nzadapt'))
+	call set_nzadapt_info(nzadapt)
 	call init_rzmov_info(nlvdi,nzadapt,hlv,rzmov)
 
         write(6,'(a)') 'Initializing z-layers parameters ...'

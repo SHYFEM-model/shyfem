@@ -1265,7 +1265,7 @@ c---------- DEB SIG
 c---------- DEB SIG
 
 	logical bdebug,bdebugggu
-	logical bsigma,badapt,bmoveinterface,bsigadjust
+	logical bsigma,bzadapt,badapt,bmoveinterface,bsigadjust
 	integer iudbg,iedbg
         integer k,l,ie,ii,lmax,lmin,nsigma,ie_mpi
 	real hsigma,hdep,htot
@@ -1280,6 +1280,7 @@ c---------- DEB SIG
 	double precision dtime
 
 	integer ipext,ieext
+	integer nzadapt
 	integer nadapt(4)
 	real hadapt(4)
 
@@ -1294,6 +1295,9 @@ c---------- DEB SIG
 
 	call get_sigma(nsigma,hsigma)
 	bsigma = nsigma .gt. 0
+	call get_nzadapt_info(nzadapt)
+	bzadapt = nzadapt .gt. 0
+	bmoveinterface = bsigma .or. badapt	!interfaces not aligned to geopotentials
 
         raux=grav/rowass
 	psigma = 0.
@@ -1303,8 +1307,7 @@ c---------- DEB SIG
 	!allocate(aux3d(nlvdi,nkn))
 	!allocate(aux2d(nkn))
 
-						!FIXME lrp: removed if for badapt case, this is not optimized
-c	if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
+	if( bmoveinterface .and. bsigadjust ) then	!-------------- DEB SIG
 	  do k=1,nkn
 	    lmax=ilhkv(k)
 	    hkko(0,k)=-zov(k)	!depth of interface on node
@@ -1317,7 +1320,7 @@ c	if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
 	      hkkom(l,k)=(hkko(l,k)+hkko(l-1,k))/2.
             end do
 	  end do
-c	end if
+	end if
 	 
 	iudbg = 430 + my_id
 	iedbg = 1888
