@@ -54,8 +54,8 @@ c******************************************************************
 
         integer, save, allocatable :: nadapt_com(:,:) !local number of adaptive layers
         real   , save, allocatable :: hadapt_com(:,:) !local closing depth of adaptive layers
-	real   , save :: nzadapt_com		      !minimum number of adaptive layers
-	integer, save :: rzmov_com		      !parameter for moving surface layers
+	integer, save :: nzadapt_com		      !minimum number of adaptive layers
+	real   , save :: rzmov_com		      !parameter for moving surface layers
 
 !==================================================================
         end module zadapt
