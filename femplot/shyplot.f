@@ -75,6 +75,7 @@
 ! 25.06.2021	ggu	in plot_lgr_file() call shympi_init() after basin init
 ! 21.10.2021	ggu	fixed for vertical velocity as overlay
 ! 03.05.2023	ggu	introduced belem (bug fix)
+! 26.07.2023	lrp	introduce zstar in shyplot
 !
 ! notes :
 !
@@ -756,6 +757,7 @@
 	character*80 basnam,simnam,varline
 	real rnull
 	real cmin,cmax,cmed,vtot
+        real simpar(3),rzmov
 	real dx,dy
 	double precision dtime
 	double precision atime
@@ -802,6 +804,7 @@
 	call populate_strings
 
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
+        call shy_get_simpar(id,simpar)
 	call shy_get_ftype(id,ftype)
 
 	if( .not. bquiet ) call shy_info(id)
@@ -871,12 +874,13 @@
 	allocate(ivars(nvar),strings(nvar))
 
 	!--------------------------------------------------------------
-	! set up aux arrays, sigma info and depth values
+	! set up aux arrays, sigma/z info and depth values
 	!--------------------------------------------------------------
 
 	call shyutil_init(nkn,nel,nlv)
 
 	call init_sigma_info(nlv,hlv)
+        call init_rzmov_info(nlv,nint(simpar(3)),hlv,rzmov)
 
 	call shy_make_area
 	call outfile_make_depth(nkn,nel,nen3v,hm3v,hev,hkv)
@@ -2070,7 +2074,7 @@ c*****************************************************************
 	  if( h < -990. ) h = hlv(lm)
 	  !if( h == -1. ) h = 1.
 	  if( h+z<zeps ) z = zeps-h
-          call get_layer_thickness(lm,nsigma,hsigma
+          call get_layer_thickness(lm,nsigma,0,hsigma,0.
      +                          ,z,h,hlv,hl)
 
 	  vacu = 0.
