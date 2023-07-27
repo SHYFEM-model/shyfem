@@ -1028,7 +1028,7 @@
 	 end do
 
 	 call make_vertical_velocity
-	 call extlev(layer,nlvdi+1,n,il,wauxv,wsnv)	!average over layer
+	 call extlev(layer,nlvdi+1,nkn,il,wauxv,wsnv)	!average over layer
 
 	 !------------------------------------------
 	 ! from here plotting
