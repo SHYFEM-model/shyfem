@@ -106,7 +106,7 @@ c******************************************************************
 	
 	maxz = 0.0				!estimate of max water level
 
-	if (nzadapt .le. 0) then		!z-layers
+	if (nzadapt .le. 1) then		!z-layers
 	  rzmov = 0.
 	else if (nzadapt .ge. nlv) then		!z-star
 	  rzmov = 10000.

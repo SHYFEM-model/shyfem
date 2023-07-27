@@ -836,12 +836,12 @@ c A $z-$star type vertical grid deformation can be deployed.
 c The next parameter specify the number of surface layers that are moving.
 
 c |nzadapt|	Parameter that controls the number of surface $z-$layers that are moving.
-c		The value $|nzadapt|= 0$ corresponds to standard $z-$layers (Default). 
+c		The value $|nzadapt|\le 1$ corresponds to standard $z-$layers (Default). 
 c		Then, some care is needed to define the first interface sufficiently 
 c		deep to avoid the well-known "drying" of the first layer. 
 c		The value of $|nzadapt| = N_{tot}$, with $N_{tot}$ the total number 
 c		of $z$-layers, is $z-$star (all layers are moving).
-c		Other values of $0<|nzadapt|<N_{tot}$ corresponds to move, at minimum,
+c		Other values of $1<|nzadapt|<N_{tot}$ corresponds to move, at minimum,
 c		the first |nzadapt| surface layers with $z-$star.  
 c		These feature is still experimental.
 
