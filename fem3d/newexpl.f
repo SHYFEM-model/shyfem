@@ -1296,7 +1296,7 @@ c---------- DEB SIG
 	call get_sigma(nsigma,hsigma)
 	bsigma = nsigma .gt. 0
 	call get_nzadapt_info(nzadapt)
-	bzadapt = nzadapt .gt. 0
+	bzadapt = nzadapt .gt. 1
 	bmoveinterface = bsigma .or. badapt	!interfaces not aligned to geopotentials
 
         raux=grav/rowass

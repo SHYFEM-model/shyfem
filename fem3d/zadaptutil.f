@@ -319,7 +319,7 @@ c coefficients of adaptive layers
         call get_sigma_info(nlev,nsigma,hsigma)
         bsigma = nsigma .gt. 0		!sigma or sigma+z
 	call get_nzadapt_info(nzadapt)
-	bzstandard = nzadapt .eq. 0	!z
+	bzstandard = nzadapt .le. 1	!z
 
 	lmine = maxval(lmin)
 
