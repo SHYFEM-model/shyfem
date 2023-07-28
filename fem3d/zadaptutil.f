@@ -401,7 +401,7 @@ c******************************************************************
 
         subroutine init_zadaptation
 
-        use levels, only : nlvdi,hlv
+        use levels, only : nlv,hlv
         use basin, only : nkn,nel		
 	use zadapt
 
@@ -418,27 +418,34 @@ c******************************************************************
 
 	nzadapt = nint(getpar('nzadapt'))
 	call set_nzadapt_info(nzadapt)
-	call init_rzmov_info(nlvdi,nzadapt,hlv,rzmov)
+	call init_rzmov_info(nlv,nzadapt,hlv,rzmov)
 
-        write(6,'(a)') 'Initializing z-layers parameters ...'
+        write(6,'(a)') ' Initializing z-layers parameters ...'
         write(6,*) ' nzadapt,rzmov: ', nzadapt,rzmov
 
-	if (nzadapt > 0) then
+        if (nzadapt .le. 1) then                !z-layers
+          write(6,*) ' z-layers'
+        else if (nzadapt .ge. nlv) then         !z-star
+          write(6,*) ' z-star layers'
+        else                                    !z + z-star
+          write(6,*) ' z-star + z-layers:'
+          write(6,*) ' z (water level), (nzadapt) number of'
+          write(6,*) ' surface layers moving with z-star:'
 	  lmin = 1
           testz = -0.0
-          call compute_nadapt_info(testz,hlv,nlvdi,lmin,nzadapt)
+          call compute_nadapt_info(testz,hlv,nlv,lmin,nzadapt)
           write(6,*) ' z nzadapt: ', testz,nzadapt
 
 	  testz = -0.5
-          call compute_nadapt_info(testz,hlv,nlvdi,lmin,nzadapt)
+          call compute_nadapt_info(testz,hlv,nlv,lmin,nzadapt)
           write(6,*) ' z nzadapt: ', testz,nzadapt
 
           testz = -1.0
-          call compute_nadapt_info(testz,hlv,nlvdi,lmin,nzadapt)
+          call compute_nadapt_info(testz,hlv,nlv,lmin,nzadapt)
           write(6,*) ' z nzadapt: ', testz,nzadapt
 
           testz = -1.5
-          call compute_nadapt_info(testz,hlv,nlvdi,lmin,nzadapt)
+          call compute_nadapt_info(testz,hlv,nlv,lmin,nzadapt)
           write(6,*) ' z nzadapt: ', testz,nzadapt
 	end if
 
