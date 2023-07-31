@@ -1297,7 +1297,7 @@ c---------- DEB SIG
 	bsigma = nsigma .gt. 0
 	call get_nzadapt_info(nzadapt)
 	bzadapt = nzadapt .gt. 1
-	bmoveinterface = bsigma .or. badapt	!interfaces not aligned to geopotentials
+	bmoveinterface = bsigma .or. bzadapt	!interfaces not aligned to geopotentials
 
         raux=grav/rowass
 	psigma = 0.
@@ -1425,7 +1425,7 @@ c---------- DEB SIG
               b = ev(3+ii,ie)		!gradient in x
               c = ev(6+ii,ie)		!gradient in y
 
-	      if( l .eq. nsigma ) then	!last sigma layer
+	      if( l .eq. nsigma .or. l .eq. nadapt(4) ) then !last mov layer
 	        brl = brl + b * rhop
 	        crl = crl + c * rhop
 	      end if
@@ -1516,7 +1516,7 @@ c---------- DEB SIG
 
 	    brup=br
 	    crup=cr
-	    if( l .eq. nsigma ) then
+	    if( l .eq. nsigma .or. l .eq. nadapt(4) ) then
 	      brup=brl
 	      crup=crl
 	    end if
