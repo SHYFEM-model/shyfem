@@ -1,2 +1,0 @@
-#!/usr/bin/perl -pi.bak
-s/^%%Orientation: Portrait/%%Orientation: Landscape/;

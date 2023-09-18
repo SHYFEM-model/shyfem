@@ -1,2 +1,0 @@
-#!/usr/bin/perl -pi.bak
-print "%%Orientation: Landscape\n" if /^%%EndComments/;

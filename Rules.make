@@ -32,9 +32,9 @@
 #
 ##############################################
 
-COMPILER_PROFILE = NORMAL
+#COMPILER_PROFILE = NORMAL
 #COMPILER_PROFILE = CHECK
-#COMPILER_PROFILE = SPEED
+COMPILER_PROFILE = SPEED
 
 ##############################################
 # Compiler
@@ -60,13 +60,13 @@ COMPILER_PROFILE = NORMAL
 ##############################################
 
 #FORTRAN_COMPILER = GNU_G77
-FORTRAN_COMPILER = GNU_GFORTRAN
-#FORTRAN_COMPILER = INTEL
+#FORTRAN_COMPILER = GNU_GFORTRAN
+FORTRAN_COMPILER = INTEL
 #FORTRAN_COMPILER = PORTLAND
 #FORTRAN_COMPILER = IBM
 
-C_COMPILER = GNU_GCC
-#C_COMPILER = INTEL
+#C_COMPILER = GNU_GCC
+C_COMPILER = INTEL
 #C_COMPILER = IBM
 
 ##############################################
@@ -93,10 +93,19 @@ C_COMPILER = GNU_GCC
 #
 #       export KMP_STACKSIZE=32M
 #
+# There are two ways of parallelizing. One is OMP
+# and the other is MPI. Please note that MPI is
+# highly experimental and not recommended to be used
+# at this stage.
+#
 ##############################################
 
-PARALLEL=false
-#PARALLEL=true
+PARALLEL_OMP = false
+#PARALLEL_OMP = true
+
+#PARALLEL_MPI = NONE
+#PARALLEL_MPI = NODE
+PARALLEL_MPI = ELEM
 
 ##############################################
 # Solver for matrix solution
@@ -123,6 +132,38 @@ SOLVER=SPARSKIT
 #SOLVER=PARDISO
 
 ##############################################
+# Zoltan library
+###############################################
+# Library needs for MPI implementation
+# this library allow to partition the
+# domain between the various processes
+###############################################
+
+#ZOLTAN=false
+ZOLTAN=true
+ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
+  ZOLTANDIR = /zeus/opt/impi19.5/zoltan/3.8/
+endif
+ifeq ($(FORTRAN_COMPILER),INTEL)
+  ZOLTANDIR = /zeus/opt/impi19.5/zoltan/3.8/
+endif
+
+##############################################
+# PETSC library
+##############################################
+# this library are used for parallel execution
+# of the linear system 
+##############################################
+
+#PETSC = false
+PETSC = true
+#PETSCDIR = /users/home/sco116/PETSC/2015/petsc-3.7.4
+#PETSCDIR = /users/home/sco116/PETSC/2015/new/petsc-3.7.6
+#PETSCDIR = /users/home/sco116/PETSC/2015/debug/petsc-3.7.6
+#PETSCDIR = /zeus/opt/impi19.5/petsc/3.7.5-mlx/
+PETSCDIR = /zeus/opt/impi19.5/petsc/3.7.5/
+
+##############################################
 # NetCDF library
 ##############################################
 #
@@ -133,10 +174,9 @@ SOLVER=SPARSKIT
 #
 ##############################################
 
-NETCDF=false
-#NETCDF=true
-#NETCDFDIR = /usr/local/netcdf
-NETCDFDIR = /usr
+NETCDF = false
+#NETCDF = true
+NETCDFDIR = /zeus/opt/intel19.5/netcdf/C_4.7.2-F_4.5.2_CXX_4.3.1
 
 ##############################################
 # GOTM library
@@ -153,8 +193,8 @@ NETCDFDIR = /usr
 #
 ##############################################
 
-#GOTM=false
-GOTM=true
+#GOTM = false
+GOTM = true
 
 ##############################################
 # Ecological models
@@ -197,7 +237,7 @@ FLUID_MUD = false
 # DEFINE VERSION
 ##############################################
 
-RULES_MAKE_VERSION = 1.3
+RULES_MAKE_VERSION = 1.5
 DISTRIBUTION_TYPE = experimental
 
 ##############################################
@@ -206,7 +246,7 @@ DISTRIBUTION_TYPE = experimental
 
 DEFDIR  = $(HOME)
 FEMDIR  = ..
-DIRLIB  = $(FEMDIR)/femlib
+DIRLIB  = $(FEMDIR)/libs
 MODDIR  = 
 MODDIR  = $(DIRLIB)/mod
 
@@ -224,9 +264,13 @@ ifeq ($(FORTRAN_COMPILER),GNU_G77)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
     RULES_MAKE_MESSAGE = "g77 compiler and GOTM=true are incompatible"
   endif
-  ifeq ($(PARALLEL),true)
+  ifeq ($(PARALLEL_OMP),true)
     RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
-    RULES_MAKE_MESSAGE = "g77 compiler and PARALLEL=true are incompatible"
+    RULES_MAKE_MESSAGE = "g77 and PARALLEL_OMP=true are incompatible"
+  endif
+  ifneq ($(PARALLEL_MPI),NONE)
+    RULES_MAKE_PARAMETERS = RULES_MAKE_PARAMETER_ERROR
+    RULES_MAKE_MESSAGE = "g77 and PARALLEL_MPI=true are incompatible"
   endif
 endif
 
@@ -265,8 +309,8 @@ endif
 #PROFILE = true
 PROFILE = false
 
-DEBUG = true
-#DEBUG = false
+#DEBUG = true
+DEBUG = false
 
 OPTIMIZE = MEDIUM
 #OPTIMIZE = HIGH
@@ -334,8 +378,7 @@ ifeq ($(WARNING),true)
   FGNU_WARNING = -Wall -Wtabs -Wno-unused -Wno-uninitialized
   FGNU_WARNING = -Wall -Wtabs -Wno-unused
   FGNU_WARNING = -Wall -Wtabs -Wno-unused \
-			-Wno-conversion -Wno-unused-dummy-argument \
-			-Wno-zerotrip
+			-Wno-conversion -Wno-unused-dummy-argument
 endif
 
 FGNU_BOUNDS = 
@@ -353,16 +396,16 @@ ifeq ($(DEBUG),true)
   FGNU_NOOPT = -g -fbacktrace -ffpe-trap=$(TRAP_LIST) $(FGNU_BOUNDS)
 endif
 
-FGNU_OPT   = -O
+FGNU_OPT   = -O -cpp
 ifeq ($(OPTIMIZE),HIGH)
-  FGNU_OPT   = -O3
+  FGNU_OPT   = -O3 -cpp -march=native -freal-4-real-8 #-fdefault-real-8
 endif
 ifeq ($(OPTIMIZE),NONE)
-  FGNU_OPT   = 
+  FGNU_OPT   = -cpp 
 endif
 
 FGNU_OMP   =
-ifeq ($(PARALLEL),true)
+ifeq ($(PARALLEL_OMP),true)
   FGNU_OMP   =  -fopenmp
 endif
 
@@ -380,8 +423,12 @@ ifeq ($(FORTRAN_COMPILER),GNU_G77)
 endif
 
 ifeq ($(FORTRAN_COMPILER),GNU_GFORTRAN)
-  FGNU		= gfortran
-  FGNU95	= gfortran
+  FGNU		= ~/bin/gfortran
+  FGNU95	= ~/bin/gfortran
+  ifneq ($(PARALLEL_MPI),NONE)
+    FGNU	= mpifort
+    FGNU95	= mpifort
+  endif
   F77		= $(FGNU)
   F95		= $(FGNU95)
   LINKER	= $(F77)
@@ -399,7 +446,7 @@ endif
 # if you use xlf95  "-qnosave" is a default option
 # xlf_r is thread safe
 # all the compiler options are included in FIBM_OMP
-# set PARALLEL = TRUE
+# set PARALLEL_OMP = true
 ##############################################
 
 FIBM_PROFILE = 
@@ -426,7 +473,7 @@ ifeq ($(OPTIMIZE),NONE)
 endif
 
 FIBM_OMP   =
-ifeq ($(PARALLEL),true)
+ifeq ($(PARALLEL_OMP),true)
      FIBM_OMP    = -qsmp=omp -qnosave -q64 -qmaxmem=-1 -NS32648 -qextname -qsource -qcache=auto -qstrict -O3 -qarch=pwr6 -qtune=pwr6
 endif
 
@@ -471,7 +518,7 @@ ifeq ($(OPTIMIZE),NONE)
 endif
 
 FPG_OMP   =
-ifeq ($(PARALLEL),true)
+ifeq ($(PARALLEL_OMP),true)
   FPG_OMP   =  -mp
 endif
 
@@ -544,6 +591,7 @@ ifeq ($(WARNING),true)
   FINTEL_WARNING =
   FINTEL_WARNING = -w
   FINTEL_WARNING = -warn interfaces,nouncalled -gen-interfaces
+  FINTEL_WARNING =
 endif
 
 FINTEL_NOOPT = 
@@ -555,7 +603,6 @@ ifeq ($(DEBUG),true)
   FINTEL_NOOPT = -g -traceback -check uninit -check bounds 
   FINTEL_NOOPT = -g -traceback -check uninit 
   FINTEL_NOOPT = -g -traceback -O0
-  FINTEL_NOOPT = -g -traceback
 endif
 
 # FINTEL_OPT   = -O -g -Mprof=time
@@ -565,29 +612,33 @@ endif
 
 FINTEL_OPT   = -O -mcmodel=large
 FINTEL_OPT   = -O 
+FINTEL_OPT   = -O2 -fpp
+#FINTEL_OPT   = -O3 -fpp -DUSE_MPI 
 ifeq ($(OPTIMIZE),HIGH)
-  FINTEL_OPT   = -O3
-  FINTEL_OPT   = -O3 -xhost
-  #FINTEL_OPT   = -O3 -mcmodel=medium
-  #FINTEL_OPT   = -O3 -mcmodel=large
+  #FINTEL_OPT   = -r8 -O3 -xHost -fp-model source -init=minus_huge,arrays -fpp
+  FINTEL_OPT   = -O3 -DSINGLEP -xHost -fp-model source -fpp
+  FINTEL_OPT   = -O3 -DDEBUGON -xHost -fp-model source -fpp
 endif
 ifeq ($(OPTIMIZE),NONE)
-  FINTEL_OPT   = 
+  FINTEL_OPT   = -fpp 
 endif
 
 FINTEL_OMP   =
-ifeq ($(PARALLEL),true)
+ifeq ($(PARALLEL_OMP),true)
   FINTEL_OMP   = -threads -openmp
   FINTEL_OMP   = -openmp
 endif
 
 ifeq ($(FORTRAN_COMPILER),INTEL)
   FINTEL	= ifort
+  ifneq ($(PARALLEL_MPI),NONE)
+    FINTEL	= mpiifort
+  endif
   F77		= $(FINTEL)
   F95     	= $(F77)
   LINKER	= $(F77)
   LFLAGS	= $(FINTEL_OPT) $(FINTEL_PROFILE) $(FINTEL_OMP)
-  FFLAGS	= $(LFLAGS) $(FINTEL_NOOPT) $(FINTEL_WARNING) $(FINTEL_GENERAL)
+  FFLAGS	= $(LFLAGS) $(FINTEL_GENERAL) $(FINTEL_NOOPT) $(FINTEL_WARNING)
   FINFOFLAGS	= -v
 endif
 
@@ -598,7 +649,7 @@ endif
 ##############################################
 
 ifeq ($(C_COMPILER),GNU_GCC)
-  CC     = gcc
+  CC     = ~/bin/gcc
   CFLAGS = -O -Wall -pedantic
   CFLAGS = -O -Wall -pedantic -std=gnu99  #no warnings for c++ style comments
   LCFLAGS = -O 

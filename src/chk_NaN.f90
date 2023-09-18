@@ -1,0 +1,413 @@
+!
+! $Id: debug.f,v 1.10 2008-12-09 11:38:33 georg Exp $
+!
+! revision log :
+!
+! 27.03.2003    ggu     new routines for NaN check and value test
+! 03.09.2003    ggu     check routines customized
+! 05.12.2003    ggu     in check[12]Dr only check val if vmin!=vmax
+! 06.12.2008    ggu     check for NaN changed (Portland compiler)
+! 15.07.2011    ggu     new routines for checksum (CRC)
+!
+! notes :
+!
+! use of debug routines:
+!
+! in the calling routine you must set or unset the debug:
+!
+! call setdebug
+! call your_routine
+! call cleardebug
+!
+! in the routine where you want to debug:
+!
+! logical isdebug
+! ...
+! if( isdebug() ) then
+!    here write your variables
+! end if
+!
+!***************************************************************
+!---------------------------------------------------------------
+        module chk_NaN
+!---------------------------------------------------------------
+
+	implicit none
+
+	include 'debug_aux1.h'
+
+	data debug / .false. /
+
+!---------------------------------------------------------------
+        contains
+!---------------------------------------------------------------
+
+	subroutine assigndebug(bdebug)
+
+	implicit none
+
+	logical bdebug
+
+	include 'debug_aux1.h'
+
+	debug = bdebug
+
+	end
+
+!***************************************************************
+
+	subroutine setdebug
+
+	implicit none
+
+	include 'debug_aux1.h'
+
+	debug = .true.
+
+	end
+
+!***************************************************************
+
+	subroutine cleardebug
+
+	implicit none
+
+	include 'debug_aux1.h'
+
+	debug = .false.
+
+	end
+
+!***************************************************************
+
+	function isdebug()
+
+	implicit none
+
+	logical isdebug
+
+	include 'debug_aux1.h'
+
+	isdebug = debug
+
+	end
+
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	function is_d_nan(val)
+
+! tests val for NaN
+
+	implicit none
+
+	double precision val
+	logical is_d_nan
+        integer itot
+
+        itot = 0
+
+	if( val .gt. 0. ) itot = itot + 1
+	if( val .lt. 0. ) itot = itot + 1
+	if( val .eq. 0. ) itot = itot + 1
+
+	is_d_nan = itot .ne. 1
+
+	end
+
+!***************************************************************
+
+	function is_r_nan(val)
+
+! tests val for NaN
+
+	implicit none
+
+	double precision val
+	logical is_r_nan
+        integer itot
+
+        itot = 0
+
+	if( val .gt. 0. ) itot = itot + 1
+	if( val .lt. 0. ) itot = itot + 1
+	if( val .eq. 0. ) itot = itot + 1
+
+	is_r_nan = itot .ne. 1
+
+	end
+
+!***************************************************************
+
+	function is_i_nan(val)
+
+! tests val for NaN
+
+	implicit none
+
+	integer val
+	logical is_i_nan
+        integer itot
+
+        itot = 0
+
+	if( val .gt. 0 ) itot = itot + 1
+	if( val .lt. 0 ) itot = itot + 1
+	if( val .eq. 0 ) itot = itot + 1
+
+	is_i_nan = itot .ne. 1
+
+	end
+
+!***************************************************************
+
+	subroutine nantest(n,a,text)
+
+! tests array for nan
+
+	implicit none
+
+	integer n
+	double precision a(n)
+	character*(*) text
+
+	integer i
+
+	do i=1,n
+          if( is_r_nan( a(i) ) ) goto 99
+	end do
+
+	return
+   99	continue
+	write(6,*) 'NAN found while testing ',text
+	write(6,*) n,i,a(i)
+	stop 'error stop nantest: NAN found'
+	end
+
+!***************************************************************
+
+	subroutine valtest(nlv,n,valmin,valmax,a,textgen,text)
+
+! tests array for nan - use other routines below
+
+	implicit none
+
+	integer nlv,n
+	double precision valmin,valmax
+	double precision a(nlv*n)
+	character*(*) textgen,text
+
+	integer i
+	integer ntot,j1,j2
+
+	ntot = nlv*n
+
+!	write(6,*) text,'   ',ntot,valmin,valmax
+
+	do i=1,ntot
+          if( is_r_nan( a(i) ) ) goto 99
+	end do
+
+	return
+   99	continue
+	write(6,*) textgen
+	write(6,*) 'value out of range for ',text
+	write(6,*) 'range: ',valmin,valmax
+	write(6,*) nlv,n,i
+	j1 = mod(i-1,nlv) + 1
+	j2 = 1 + (i-1) / nlv
+	write(6,*) j1,j2,a(i)
+	stop 'error stop valtest: value out of range'
+	end
+
+!***************************************************************
+
+	subroutine check1Dr(n,a,vmin,vmax,textgen,text)
+
+! tests array for nan and strange values
+
+        use shympi
+	implicit none
+
+	integer n
+	double precision a(n)
+	double precision vmin,vmax
+	character*(*) textgen,text
+
+	logical debug,bval
+	integer inan,iout,i
+	double precision val
+
+        bval = vmin .lt. vmax
+	debug = .true.
+	debug = .false.
+	inan = 0
+	iout = 0
+
+	do i=1,n
+	  val = a(i)
+	  if( is_r_nan(val) ) then
+	    inan = inan + 1
+	    if( debug ) write(6,*) 'nan ',inan,i,val
+	    write(999+my_id,*) 'nan: ',inan,i,val
+	  else if( bval .and. (val .lt. vmin .or. val .gt. vmax) ) then
+	    iout = iout + 1
+	    if( debug ) write(6,*) 'out ',iout,i,val
+	    write(999+my_id,*) 'out of range: ',iout,i,val
+	  end if
+	end do
+
+	if( inan .gt. 0 .or. iout .gt. 0 ) then
+	  write(6,*) '*** check1Dr: ',textgen," (",text,") "
+	  write(6,*) 'total number of Nan found:       ',inan
+	  write(6,*) 'total number out of range found: ',iout
+	  write(6,*) 'full list can be found in file fort.999'
+          stop 'error stop check1Dr'
+	end if
+
+	end
+	  
+!***************************************************************
+
+	subroutine check2Dr(ndim,nlv,n,a,vmin,vmax,textgen,text)
+
+! tests array for nan and strange values
+
+	implicit none
+
+	integer ndim,nlv,n
+	double precision a(ndim,n)
+	double precision vmin,vmax
+	character*(*) textgen,text
+
+	logical debug,bval
+	integer inan,iout,i,l
+	double precision val
+
+        bval = vmin .lt. vmax
+	debug = .true.
+	debug = .false.
+	inan = 0
+	iout = 0
+
+	do i=1,n
+	  do l=1,nlv
+	    val = a(l,i)
+	    if( is_r_nan(val) ) then
+	      inan = inan + 1
+	      if( debug ) write(6,*) 'nan: ',inan,l,i,val
+	      write(999,*) 'nan: ',inan,l,i,val
+	    else if( bval .and. (val .lt. vmin .or. val .gt. vmax) ) then
+	      iout = iout + 1
+	      if( debug ) write(6,*) 'out of range: ',iout,l,i,val
+	      write(999,*) 'out of range: ',iout,l,i,val
+	    end if
+	  end do
+	end do
+
+	if( inan .gt. 0 .or. iout .gt. 0 ) then
+	  write(6,*) '*** check2Dr: ',textgen," (",text,") "
+	  write(6,*) 'total number of Nan found:       ',inan
+	  write(6,*) 'total number out of range found: ',iout
+	  write(6,*) 'full list can be found in file fort.999'
+          stop 'error stop check2Dr'
+	end if
+
+	end
+	  
+!***************************************************************
+!***************************************************************
+!***************************************************************
+
+	subroutine checksum_2d(n1dim,n,nlv,levels,data,crc)
+
+	integer n1dim			! dimension of first index
+	integer i,n
+	integer nlv			!nlv>0 use this  nlv<=0 use levels
+	integer levels(n)
+	double precision data(n1dim,n)
+	integer crc
+
+	integer a,b,l,lmax
+
+	integer ivalue
+	double precision value
+	equivalence(value,ivalue)
+
+	a = 1
+	b = 0
+
+	do i=1,n
+	  lmax = nlv
+	  if( lmax .le. 0 ) lmax = levels(i)
+	  do l=1,lmax
+	    value = data(l,i)
+	    call checksum_i(a,b,ivalue)
+	  end do
+	end do
+
+	crc = 256*256 * b + a
+
+	end
+
+!***************************************************************
+
+	subroutine checksum_1d(n,data,crc)
+
+	integer n
+	double precision data(n)
+	integer crc
+
+	integer i,a,b
+
+	integer ivalue
+	double precision value
+	equivalence(value,ivalue)
+
+	a = 1
+	b = 0
+
+	do i=1,n
+	  value = data(i)
+	  call checksum_i(a,b,ivalue)
+	end do
+
+	crc = 256*256 * b + a
+
+	end
+
+!***************************************************************
+
+	subroutine checksum_i(a,b,data)
+
+	integer a,b,data
+
+	integer MOD_ADLER
+	parameter ( MOD_ADLER = 65521 )
+
+	a = mod(a+data,MOD_ADLER)
+	b = mod(a+b,MOD_ADLER)
+
+	end
+
+!***************************************************************
+
+	subroutine divide_by_zero(iaux)
+
+! raises a division by zero error
+
+	implicit none
+
+	integer iaux
+
+        iaux = 0
+        iaux = 1/iaux
+
+	end
+
+!***************************************************************
+
+!---------------------------------------------------------------
+        end module chk_NaN
+!---------------------------------------------------------------

@@ -1,0 +1,25 @@
+list of files taken from libshy.a library:
+basin.f90
+convert.f90
+defnames.f90
+def_para.f90
+fem_util.f90
+fil.f90
+nls.f90
+para.f90
+utility.f90
+version.f90
+
+list of files also used from directory ../2nc
+apnfile.f90
+apn_util.f90
+strings.f90
+
+
+new_files for shypre:
+clo.f90
+cuthill_mckee.f90
+grd.f90
+grdutil.f90
+rosen.f90
+sort_util.f90

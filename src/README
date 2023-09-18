@@ -1,0 +1,17 @@
+file da convertire in f90:
+submir.f
+spk_iters.f
+spk_ilut.f
+spk_blas1_mod.f
+spk_matvec.f
+
+file da convertire in moduli:
+submir.f
+spk_iters.f
+spk_ilut.f
+spk_blas1_mod.f
+spk_matvec.f
+subinv.f -----------> matrix_inv.f90
+spk_itaux.f90
+
+

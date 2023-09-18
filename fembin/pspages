@@ -1,4 +1,0 @@
-#!/bin/sh
-
-grep "^%%Pages" $1 | grep -v atend | sed -e "s/%%Pages: *//"
-

@@ -1,0 +1,44 @@
+list of files taken from libshy.a library:
+basin.f90
+convert.f90
+defnames.f90
+def_para.f90
+depth.f90
+dts.f90
+fem_util.f90
+fil.f90
+geometrical.f90
+geom.f90
+hydro_admin.f90
+ioous.f90
+levels.f90
+nls.f90
+para.f90
+sigma.f90
+utility.f90
+vec_util.f90
+version.f90
+
+
+different file with src dir:
+depth_util_2nc.f90
+evgeom_2nc.f90
+ionos_2nc.f90
+regular_2nc.f90
+
+
+list of files taken from directory ../pre:
+apnfile.f90
+apn_util.f90
+strings.f90
+
+
+new_files for 2nc tools:
+netcdf.f90
+netcdf_util.f90
+nos2nc.f90
+nosutil.f90
+ous2nc.f90
+ousutil.f90
+output_util.f90
+ts2nc.f90

@@ -1,0 +1,40 @@
+list of files taken from libshy.a library:
+basin.f90
+bnd.f90
+bnd_geom.f90
+defnames.f90
+def_para.f90
+fem_util.f90
+fil.f90
+geometrical.f90
+geom.f90
+levels.f90
+line_admin.f90
+links.f90
+lnku.f90
+convert.f90
+mpi_communication_struct.f90
+nls.f90
+para.f90
+sigma.f90
+sigma_admin.f90
+utility.f90
+mpi_common_struct.f90
+
+
+different file with src dir:
+bnd_admin_par.f90     ../../src/bnd_admin.f90
+constants_par.f90       ../../src/constants.f90
+flux_par.f90            ../../src/flux.f90
+initialize_par.f90      ../../src/initialize.f90
+iostr_par.f90           ../../src/iostr.f90
+volume_par.f90          ../../src/volume.f90
+
+
+new_files for partitioning:
+mpi_global_graph_elem.f90
+mpi_partitioning_elem.f90
+shypart_elem.f90
+shypart.f90
+shypart_util.f90
+
