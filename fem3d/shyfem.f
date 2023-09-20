@@ -176,6 +176,7 @@ c 18.05.2022    ggu     cpu_time routines introduced
 c 10.03.2023    ggu     do not use bmpirun anymore
 c 28.04.2023    ggu     update function calls for belem
 c 22.05.2023    ggu     new names for closing: close_init, close_handle
+c 05.06.2023    lrp     introduce z-star
 c
 c*****************************************************************
 c
@@ -358,6 +359,7 @@ c-----------------------------------------------------------
 	call iff_init_global(nkn,nel,nlv,ilhkv,ilhv
      +				,hkv_max,hev,hlv,date,time)
 
+	call init_zadaptation
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
 
 c-----------------------------------------------------------

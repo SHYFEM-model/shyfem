@@ -585,7 +585,7 @@ c*****************************************************************
 ! 	  if we are in first layer, w(l-1,ii) is zero (see above)
 
 	  w = wl(l-1,ii)		!top of layer
-	  if( l .eq. 1 ) w = 0.		!surface -> no transport (WZERO)
+	  if( l .eq. jlevel ) w = 0.	!surface -> no transport (WZERO)
 	  if( w .ge. 0. ) then
 	    fw(ii) = aat*w*cl(l,ii)
 	    flux_top = w*cl(l,ii)

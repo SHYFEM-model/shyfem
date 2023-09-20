@@ -46,6 +46,8 @@ c 26.05.2017	ccf	handle particles on open boundary
 c 25.10.2018	ggu	changed VERS_7_5_51
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 22.05.2023	ggu	get_layer_thickness() was missing an argument
+c 05.06.2023    lrp     introduce z-star
+
 c
 c******************************************************
 
@@ -167,12 +169,13 @@ c computes layer thickness for element ie
 	real hl(lmax)		!layer thickness (return)
 	real htot,htotz		!total depth without and with zeta (return)
 
-	integer nlev,nsigma,ii,lmax_act
-	real hsigma
+	integer nlev,nsigma,nadapt,ii,lmax_act
+	real hsigma,hadapt
 	real z,h
 
         !call compute_sigma_info(nlev,hlv,nsigma,hsigma)
 	call get_sigma_info(nlev,nsigma,hsigma)
+        call get_zadapt_info(ie,nadapt,hadapt) 
 	lmax_act = ilhv(ie)
 	if( lmax_act > lmax ) goto 99
 	if( lmax_act > nlev ) goto 99
@@ -185,7 +188,8 @@ c computes layer thickness for element ie
 	end do
 	z = z / 6.
 
-        call get_layer_thickness(lmax,1,nsigma,hsigma,z,h,hlv,hl)
+	call get_layer_thickness(lmax,1,nsigma,nadapt,
+     +				 hsigma,hadapt,z,h,hlv,hl)
 	htot = h
 	htotz = h + z
 

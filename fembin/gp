@@ -12,8 +12,9 @@
 #
 #########################################################
 
-version=1.99
+version=2.00
 
+# 2.00	09.09.2023	can accept 24 hours date (GetSecs)
 # 1.99	29.11.2022	use -u if given for 2 data column
 # 1.98	19.02.2022	bug fix for option -labels
 # 1.97	15.01.2022	new option -labels
@@ -437,9 +438,19 @@ GetSecs()
   local date=$1
 
   date=$( echo $date | sed -e 's/::/ /' )
+
+  local d=$( echo $date | sed -e 's/::/ /' | sed -e 's/:/ /g' )
+  local hour=$( echo $d | cut -d " " -f 2 )
+  local day=$( echo $d | cut -d " " -f 1 )
+
   #echo "GetSecs $1 $date"
 
-  date --date="$date" +%s
+  [ "$hour" = "" ] && hour=0
+  if [ "$hour" -eq 24 ]; then		# roll to next day
+    date --date="$day +1 day" +%s
+  else
+    date --date="$date" +%s
+  fi
 }
 
 #-------------------------------------------------------------------

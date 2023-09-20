@@ -507,7 +507,7 @@ SOBJS   = \
 	  submod.o subuti.o subele.o subgeo.o subdts.o \
 	  links.o sublnka.o sublnks.o sublnku.o \
 	  debug.o subhisto.o subnosa.o subfvl.o \
-	  subeos.o sigmautil.o \
+	  subeos.o sigmautil.o zadaptutil.o \
 	  nosutil.o ousutil.o subfemfile.o subvintp.o \
 	  genutil.o subfemintp.o $(TSOBJS) subxi.o \
 	  $(MODULES) \
@@ -556,7 +556,7 @@ HTOBJS = \
 	atoxi3d.o atoxi.o kepsd.o keps_util.o \
 	newexpl.o subrnd.o \
 	submet.o subrgf.o subcoord.o subsrt.o subfvl.o \
-	subtrace.o subproj.o subeos.o sigmautil.o \
+	subtrace.o subproj.o subeos.o sigmautil.o zadaptutil.o \
 	subwrt.o subvintp.o \
 	subfemfile.o subtsuvfile.o \
 	subflxa.o subflx3d.o subflx.o subflxu.o subflxm.o \
@@ -607,7 +607,8 @@ OUTOBJS = $(PARMOD) subnls.o subsss.o subround.o subscn.o \
 	  debug.o subreg.o subnev.o \
 	  subfemfile.o subfemutil.o \
 	  $(TSOBJS) \
-	  subvintp.o subver.o sigmautil.o suboutputd.o $(OBSOLETE_OUT) \
+	  subvintp.o subver.o sigmautil.o zadaptutil.o \
+	  suboutputd.o $(OBSOLETE_OUT) \
 	  subclo.o \
 	  mod_depth.o mod_hydro.o mod_hydro_print.o \
 	  mod_geom.o mod_geom_dynamic.o \
@@ -1362,6 +1363,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/shympi_tripple.mod: submpi_tripple.o
 ../femlib/mod/shyutil.mod: shyutil.o
 ../femlib/mod/sigma.mod: sigmautil.o
+../femlib/mod/zadapt.mod: zadaptutil.o
 ../femlib/mod/simple_sediments.mod: subssed.o
 ../femlib/mod/stab.mod: newstab.o
 ../femlib/mod/tide.mod: tide_utils.o
@@ -2370,4 +2372,12 @@ weutro_seed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 weutro_shell.o: donata.h
 weutro_ulva.o: donata.h
 weutro_wdia.o: ../femlib/mod/eutro.mod weutro.h
-
+subzad.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
+                ../femlib/mod/mod_depth.mod \
+		../femlib/mod/mod_area.mod \
+                ../femlib/mod/evgeom.mod \
+		../femlib/mod/mod_geom_dynamic.mod \
+		../femlib/mod/mod_layer_thickness.mod \
+                ../femlib/mod/mod_hydro.mod \
+                ../femlib/mod/mod_hydro_vel.mod \
+                ../femlib/mod/shympi.mod

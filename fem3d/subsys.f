@@ -227,6 +227,7 @@ c 30.03.2021	ggu	new parameters idtdbg,itmdbg
 c 23.04.2021	clr	new parameters petsc_zcfg and amgx_zcfg
 c 15.02.2022	ggu	new parameter iage
 c 15.02.2022	ggu	new parameters for limiting_scalar
+c 20.07.2023    lrp     new parameter nzadapt
 c
 c************************************************************************
 
@@ -828,6 +829,23 @@ c		layer. (Default 0.25)
 
 	call addpar('ilytyp',3.00)	!type of depth adjustment
 	call addpar('hlvmin',0.25)	!min percentage of last layer thickness
+
+c With $z-$layers the treatment of the free-surface must be addressed.
+c What happen if the water level falls below the first $z$-level? 
+c A $z-$star type vertical grid deformation can be deployed.
+c The next parameter specify the number of surface layers that are moving.
+
+c |nzadapt|	Parameter that controls the number of surface $z-$layers that are moving.
+c		The value $|nzadapt|\le 1$ corresponds to standard $z-$layers (Default). 
+c		Then, some care is needed to define the first interface sufficiently 
+c		deep to avoid the well-known "drying" of the first layer. 
+c		The value of $|nzadapt| = N_{tot}$, with $N_{tot}$ the total number 
+c		of $z$-layers, is $z-$star (all layers are moving).
+c		Other values of $1<|nzadapt|<N_{tot}$ corresponds to move, at minimum,
+c		the first |nzadapt| surface layers with $z-$star.  
+c		These feature is still experimental.
+
+        call addpar('nzadapt',0.)      ! z-layers parameter
 
 c The above parameters are dealing with zeta layers, where every layer
 c has constant thickness, except the surface layer which is varying with

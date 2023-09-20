@@ -1,0 +1,40 @@
+
+===============================
+HOWTO BUG
+===============================
+
+Please always use the latest version on GitHub.
+
+-------------
+Report a bug:
+-------------
+
+If you want to report an error or bug, please always send the error message
+that the program is giving you together with the explanation of what
+you were trying to do.
+
+----------------
+Reproduce a bug:
+----------------
+
+If you want me to reproduce to a bug, please do the following:
+
+1) Try to simplify the simulation so that the bug still shows up. This means
+that you should take away not necessary computations, boundary conditions, etc..
+
+2) Once you have a simple simulation that still reproduces the bug, please 
+try to create a STR file that uses as little simulation time as possible.
+
+3) Run the following command:
+	strparse.pl -collect=dir -reduce file.str
+where dir is the directory where all file needed for the simulation will
+be copied and file.str is the modified STR file. If the command strparse.pl
+cannot be executed, please use the full file path shyfem_dir/bin/strparse.pl
+where shyfem_dir is the directory where SHYFEM is installed.
+
+4) If you cd to the new directory you should be able to run the simulation.
+Please zip the directory, and send it to me. If too big, put it on a gdrive
+and send me the link.
+
+===============================
+

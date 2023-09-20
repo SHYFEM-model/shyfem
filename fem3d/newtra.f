@@ -91,6 +91,7 @@ c 30.03.2021	ggu	new routine compute_velocities()
 c 07.04.2022	ggu	ie_mpi introduced computing print velocities
 c 10.04.2022	ggu	ie_mpi and double in uvint (compiler issue with INTEL)
 c 09.05.2023    lrp     introduce top layer index variable
+c 05.06.2023    lrp     introduce z-star
 c
 c****************************************************************************
 
@@ -438,6 +439,7 @@ c distribute barotropic velocities onto layers (only in dry elements)
 	use mod_geom_dynamic
 	use mod_hydro_baro
 	use mod_hydro_vel
+	use mod_layer_thickness
 	use mod_hydro
 	use levels
 	use basin
@@ -447,7 +449,8 @@ c distribute barotropic velocities onto layers (only in dry elements)
 	logical bsigma
 	integer nsigma
 	integer ie,ilevel,jlevel,ii,l
-	real hsigma
+	real hsigma,weight,htot
+  
 c functions
         integer ieext
 
@@ -460,20 +463,18 @@ c functions
 	  if( iwegv(ie) .gt. 0 ) then	!dry
 	    ilevel=ilhv(ie)
 	    jlevel=jlhv(ie)
-	    if( ilevel .gt. 1 ) then
-		write(6,*) 'drying in more than one layer'
-		write(6,*) ie,ieext(ie),ilevel
-		do ii=1,3
-		  write(6,*) zeov(ii,ie),zenv(ii,ie),hm3v(ii,ie)
-		end do
-                do l=jlevel,ilevel
-                  write(6,*) utlnv(l,ie),vtlnv(l,ie)
-                end do
-                write(6,*) unv(ie),vnv(ie)
-		stop 'error stop baro2l: drying in more than one layer'
-	    end if
-	    utlnv(jlevel,ie) = unv(ie)
-	    vtlnv(jlevel,ie) = vnv(ie)
+	    !wettying with more then one layer
+	    !allowed: jlevel.ne.ilevel case
+	    !we put a uniform velocity across layers
+	    htot = 0.0
+            do l=jlevel,ilevel
+	      htot = htot + hdenv(l,ie)  
+	    end do
+	    do l=jlevel,ilevel		
+	      weight = hdenv(l,ie)/htot
+	      utlnv(l,ie) = unv(ie) * weight
+	      vtlnv(l,ie) = vnv(ie) * weight
+	    end do
 	  end if
 	end do
 

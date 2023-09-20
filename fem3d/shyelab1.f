@@ -75,6 +75,8 @@
 ! 21.12.2022    ggu     new options -rmin,-rmax,-rfreq implemented
 ! 10.03.2023    ggu     map renamed to influencemap
 ! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     array simpar introduced
+! 20.07.2023    lrp     new paramter nzadapt
 !
 !**************************************************************
 
@@ -132,6 +134,7 @@
 	character*20 aline
 	real rnull
 	real cmin,cmax,cmed,cstd,atot,vtot
+	real simpar(3),rzmov
 	double precision dtime,dtstart,dtnew,ddtime
 	double precision atfirst,atlast
 	double precision atime,atstart,atnew,atold
@@ -196,6 +199,7 @@
 	!--------------------------------------------------------------
 
 	call shy_get_params(id,nkn,nel,npr,nlv,nvar)
+        call shy_get_simpar(id,simpar)
 	call shy_get_ftype(id,ftype)
 
 	if( .not. bquiet ) call shy_info(id)
@@ -258,12 +262,13 @@
 	end if
 
 	!--------------------------------------------------------------
-	! set up aux arrays, sigma info and depth values
+	! set up aux arrays, sigma/z info and depth values
 	!--------------------------------------------------------------
 
 	call shyutil_init(nkn,nel,nlv)
 
 	call init_sigma_info(nlv,hlv)
+	call init_rzmov_info(nlv,nint(simpar(3)),hlv,rzmov)
 
 	call shy_make_area
 	!call shy_check_area

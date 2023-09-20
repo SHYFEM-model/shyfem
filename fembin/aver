@@ -42,7 +42,7 @@ for(;;) {
 
 @files = @ARGV;
 $nfiles = @files;
-#print "total number of files: $nfiles\n";
+print STDERR "total number of files: $nfiles\n";
 
 unless ($nfiles) {
     Usage();
@@ -54,8 +54,9 @@ $total = 0;
 if( $move ) {
     @new = <>;
     $ra = scale(\@new,$fact);
+    print STDERR "scaled...\n";
     $aver = maver($move,$ra);
-    print_array($aver);
+    print_array(\@new,$aver);
 } elsif( $nfiles < 2 ) {
     @new = <>;
     $ra = scale(\@new,$fact);
@@ -115,29 +116,35 @@ sub maver
       $high = $n1 if $high > $n1;
       my $m = 0;
       my $v = 0;
-      for(my $j=low;$j<=$high;$j++) {
+      my $vold = $old[$i];;
+      #print STDERR "moving... $move $n $i\n";
+      for(my $j=$low;$j<=$high;$j++) {
 	$m++;
-	$v += $old[j];
+	$v += $old[$j];
       }
       $v /= $m if $m;
       push(@new,$v);
+      #print " v = $vold $v\n"
     }
+
+    print STDERR "moved... $n $n1\n";
 
     return \@new;
 }
 
 sub print_array
 {
-    my ($ra) = @_;
+    my ($new,$ra) = @_;
 
     my $n = @$ra;
-    my $n1 = $n - 1;
-
-    my @new = ();
 
     for(my $i=0;$i<$n;$i++) {
-      my $low = $i - $move;
-      $low = 0 if $low < 0;
+      my $val = $ra->[$i];
+      my @f = split(/ /,$new->[$i]);
+      $f[$column] = $val;
+      my $line = join(" ",@f);
+      #my $line = $new->[$i];
+      print "$line\n";
     }
 }
 

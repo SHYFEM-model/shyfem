@@ -358,7 +358,7 @@ c*********************************************************
 
 	subroutine ext_read_header2(iunit,nvers,knausm,lmax
      +                          ,atime0
-     +                          ,href,hzmin,title,femver
+     +                          ,href,hzmin,nzadapt,title,femver
      +                          ,knaus,hdep,ilhkv,x,y,strings,hlv
      +				,ierr)
 
@@ -366,7 +366,7 @@ c*********************************************************
 
 	integer iunit,nvers,knausm,lmax
 	double precision atime0
-	real href,hzmin
+	real href,hzmin,nzadapt
 	character*80 title,femver
 	integer knaus(knausm)
 	real hdep(knausm)
@@ -393,7 +393,7 @@ c*********************************************************
 	else
 	  read(iunit,iostat=ierr) atime0
 	  if( ierr /= 0 ) return
-	  read(iunit,iostat=ierr) href,hzmin
+	  read(iunit,iostat=ierr) href,hzmin,nzadapt
 	  if( ierr /= 0 ) return
 	  read(iunit,iostat=ierr) title,femver
 	  if( ierr /= 0 ) return
@@ -495,7 +495,7 @@ c*********************************************************
 
 	subroutine ext_write_header2(iunit,nvers,knausm,lmax
      +                          ,atime0
-     +                          ,href,hzmin,title,femver
+     +                          ,href,hzmin,nzadapt,title,femver
      +                          ,knaus,hdep,ilhkv,x,y,strings,hlv
      +				,ierr)
 
@@ -503,7 +503,7 @@ c*********************************************************
 
 	integer iunit,nvers,knausm,lmax
 	double precision atime0
-	real href,hzmin
+	real href,hzmin,nzadapt
 	character*80 title,femver
 	integer knaus(knausm)
 	real hdep(knausm)
@@ -515,7 +515,7 @@ c*********************************************************
 
 	write(iunit,iostat=ierr) atime0
 	if( ierr /= 0 ) return
-	write(iunit,iostat=ierr) href,hzmin
+	write(iunit,iostat=ierr) href,hzmin,nzadapt
 	if( ierr /= 0 ) return
 	write(iunit,iostat=ierr) title,femver
 	if( ierr /= 0 ) return
