@@ -546,6 +546,7 @@
 	  z = shy_zeta(ie)
 	  if( h+z < zeps ) z = zeps - h	!make volume positive
 	  lmax = ilhv(ie)
+	  lmin = 1
 	  !write(6,*) ie,lmax,nlv,nlvdi
 	  call compute_zadapt_info(z,hlv,nsigma,lmax,lmin,nadapt,hadapt)
 	  call get_layer_thickness(lmax,lmin,nsigma,nadapt,

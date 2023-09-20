@@ -190,6 +190,7 @@
 
           area = area_elem(ie)
           lmax = ilhv(ie)
+	  lmin = 1
 	  if( bvel ) then
 	    zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
 	    zmin = minval(zenv(:,ie))   !min: z-adapt coords works with zmin
@@ -269,6 +270,7 @@
         do ie=1,nel
 
           lmax = ilhv(ie)
+	  lmin = 1
 	  zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
           zmin = minval(zenv(:,ie))     !min: z-adapt coords works with zmin	  
 	  if( bvel ) then

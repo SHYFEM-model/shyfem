@@ -47,3 +47,20 @@ https://github.com/SHYFEM-model/shyfem/releases
 https://github.com/SHYFEM-model/shyfem/tags
 
 -------------------------------------------------------------
+
+15.07.2023
+
+	modified:   Rules.make
+	modified:   fem3d/Makefile
+	modified:   fem3d/shyparts_dummy.f
+	modified:   fem3d/subqfxt.f
+	modified:   fem3d/subsys.f
+	modified:   femplot/shyplot.f
+	modified:   femplot/supsim.f
+
+Untracked files:
+	fem3d/mod_connect.f
+	fem3d/mod_flood.f
+	fem3d/queue.f
+	fem3d/subcolor.f
+

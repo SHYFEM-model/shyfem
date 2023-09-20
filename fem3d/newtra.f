@@ -450,6 +450,8 @@ c distribute barotropic velocities onto layers (only in dry elements)
 	integer nsigma
 	integer ie,ilevel,jlevel,ii,l
 	real hsigma,weight,htot
+	real hsigma
+  
 c functions
         integer ieext
 

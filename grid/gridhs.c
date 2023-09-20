@@ -697,7 +697,7 @@ static int MakeIndexNumber( Elem_type *elemp )
 	  n2 += elemp->index[i];
 	}
 
-	return (int) ( abs(n1+n2) % MAX_INT );
+	return (int) ( labs(n1+n2) % MAX_INT );
 }
 
 

@@ -31,7 +31,7 @@
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 09.05.2023    lrp     introduce top layer index variable
 ! 05.06.2023    lrp     introduce z-star
-
+!
 !***********************************************************
 
 	subroutine average_vertical_node(lmax,hlv,z,htot,values,aver)

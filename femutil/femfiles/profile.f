@@ -65,6 +65,7 @@
 ! 11.05.2018	ggu	changed VERS_7_5_47
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 31.01.2020	ggu	changed VERS_7_5_68
+! 31.05.2023	ggu	new routine sedi_init
 
 !*******************************************************************
 
@@ -78,6 +79,7 @@
 	call regular_conz_2d	!regular 2d grid
 	call regular_conz_3d	!regular 3d grid
 	call boundary_conz_3d	!boundary points 3d
+	call sedi_init		!regular 2d grid with sediment info
 
 	write(6,*) 'successful completion... files written to *.fem'
 
@@ -106,7 +108,7 @@
 	integer nvers,np,nvar,ntype,nlvddi,iformat
 	integer iunit
 	double precision dtime,dtime1,dtime2
-	real hd
+	real hd(1)
 	character*20 string
 
 	nvers = 0	!version of femfile, 0 for latest
@@ -183,7 +185,7 @@
 	integer nvers,np,nvar,ntype,nlvddi,iformat,i
 	integer iunit
 	double precision dtime,dtime_start,dt
-	real hd
+	real hd(1)
 	character*20 string
 
 	nvers = 0	!version of femfile, 0 for latest
@@ -253,7 +255,7 @@
 	integer ix,iy,ind
 	double precision dtime
 	real dxy,dx,dy,x0,y0,x1,y1
-	real hd,flag
+	real hd(1),flag
 	character*20 string
 
 	dxy = 0.1
@@ -349,7 +351,7 @@
 	integer iunit
 	double precision dtime
 	real dxy,dx,dy,x0,y0,x1,y1
-	real hd,flag
+	real hd(1),flag
 	character*20 string
 
 	dxy = 0.1
@@ -475,7 +477,7 @@
 	integer iunit,iv,ix,iy,ind
 	double precision dtime
 	real dxy,dx,dy,x0,y0,x1,y1
-	real hd,flag
+	real hd(1),flag
 	real y,ycrit
 	character*20 string
 
@@ -811,3 +813,124 @@
 	end
 
 !*******************************************************************
+
+	subroutine sedi_init
+
+! shows how to write a regular sediment initialization file
+!
+! only one time record is written -> can be used for initial condition
+!
+! more information can be found in file subfemfile.f
+
+	implicit none
+
+	integer, parameter :: lmax = 1
+	integer, parameter :: nx = 5		!points in x direction
+	integer, parameter :: ny = 17		!points in y direction
+
+	integer, parameter :: nvar = 3		!number of variables
+	character*20 :: file = 'sedi_init.fem'
+
+	real val(nx,ny,nvar)
+	real valaux(nvar)
+	real val1(nx,ny)
+	real hlv(lmax)
+	real regpar(7)
+	integer ilhkv(1)	!not needed, only one level
+	integer datetime(2)
+	character*80 strings(nvar)
+
+	integer nvers,np,ntype,nlvddi,iformat
+	integer iunit,iv,ix,iy,ind
+	double precision dtime
+	real dxy,dx,dy,x0,y0,x1,y1
+	real hd(1),flag
+	real y,ycrit
+	real v,tot
+	character*20 string
+
+	dxy = 1000.
+	x0 = 764000.
+	y0 = 4132000.
+	x1 = x0 + (nx-1)*dxy
+	y1 = y0 + (ny-1)*dxy
+	dx = dxy
+	dy = dxy
+
+	!write(6,*) x0,y0,x1,y1,dx,dy
+
+	nvers = 0	!version of femfile, 0 for latest
+	np = nx*ny	!total number of points
+	ntype = 11	!we want with date and regular information
+	nlvddi = lmax	!vertical dimension, must be 1 for 2D
+	ilhkv = lmax	!number of layers per point, not needed
+	hd = 15.	!total depth, not needed
+	iformat = 1	!file should be formatted
+	string = 'sediments'
+	flag = -999.
+
+! set array with information on regular grid
+! points run from x0 to x0+(nx-1)*dx and y0 to y0+(ny-1)*dy
+! values are stored row-wise from left to right starting from the lowest row
+! first point is [x0,y0], second [x0+dx,y0], etc..
+
+	regpar(1) = nx	!number of points in x direction (nx)
+	regpar(2) = ny	!number of points in y direction (ny)
+	regpar(3) = x0	!coordinate of first point in in x direction (x0)
+	regpar(4) = y0	!coordinate of first point in in y direction (y0)
+	regpar(5) = dx	!space step in x direction (dx)
+	regpar(6) = dy	!space step in y direction (dy)
+	regpar(7) = flag!flag for invalid value (flag)
+
+! in hlv is the layer structure, values indicate the bottom of the layer
+! in datetime is the reference date
+! for initial value data with only one time record it is not mattering
+! in val are the sediment partitioning values for each layer
+
+	hlv = 0.			!no depth structure for 2d file
+	datetime = (/19970101,0/)	!reference date is 1.1.1997
+
+! here we construct the sediment partitioning - must sum to 1
+
+	tot = 1.
+	do iv=1,nvar
+	  v = 0.6 * tot
+	  if( iv == nvar ) v = tot	!all the remaining
+	  valaux(iv) = v
+	  tot = tot - v
+	  write(strings(iv),'(a,i3)') trim(string),iv
+	end do
+
+	if( tot /= 0. ) stop 'error stop sedi_init: tot /= 0'
+
+	val = 0.
+	do iv=1,nvar
+	  do iy=1,ny
+	    do ix=1,nx
+	      val(ix,iy,iv) = valaux(iv)
+	    end do
+	  end do
+	end do
+
+	iunit = 1
+	open(iunit,file=file,form='formatted',status='unknown')
+
+	dtime = 0.
+        call fem_file_write_header(iformat,iunit,dtime
+     +                          ,nvers,np,lmax
+     +                          ,nvar,ntype
+     +                          ,nlvddi,hlv,datetime,regpar)
+	do iv=1,nvar
+          call fem_file_write_data(iformat,iunit
+     +                          ,nvers,np,lmax
+     +                          ,strings(iv)
+     +                          ,ilhkv,hd
+     +                          ,nlvddi,val(:,:,iv))
+	end do
+
+	close(iunit)
+
+	end
+
+!*******************************************************************
+

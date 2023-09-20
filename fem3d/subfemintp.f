@@ -2128,6 +2128,7 @@ c interpolates in space all variables in data set id
 	call get_layer_thickness(lmax,lmin,nsigma,nadapt,
      +				 hsigma,hadapt,z,h,pinfo(id)%hlv_file,hl)
 
+
 	do ivar=1,nvar
 	  acum = 0.
 	  htot = 0.
@@ -2243,6 +2244,7 @@ c global lmax and lexp are > 1
 	hfile = h
 	if( hfile < -990. ) hfile = pinfo(id)%hlv_file(lmax) !take from hlv
 	if( hfile == -1. ) hfile = hfem 		!hlv is sigma -> hfem
+
 	!write(6,*) 'ggu: ',lmax,lfem,ipl,hfem,hfile
 
 	lmin=1						!file layer structure: lmin always 1

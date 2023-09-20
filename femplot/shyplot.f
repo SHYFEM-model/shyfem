@@ -75,6 +75,7 @@
 ! 25.06.2021	ggu	in plot_lgr_file() call shympi_init() after basin init
 ! 21.10.2021	ggu	fixed for vertical velocity as overlay
 ! 03.05.2023	ggu	introduced belem (bug fix)
+! 22.05.2023	ggu	get_layer_thickness() was missing an argument
 ! 26.07.2023	lrp	introduce zstar in shyplot
 !
 ! notes :
@@ -2074,7 +2075,7 @@ c*****************************************************************
 	  if( h < -990. ) h = hlv(lm)
 	  !if( h == -1. ) h = 1.
 	  if( h+z<zeps ) z = zeps-h
-          call get_layer_thickness(lm,nsigma,0,hsigma,0.
+    call get_layer_thickness(lm,nsigma,0,hsigma,0.
      +                          ,z,h,hlv,hl)
 
 	  vacu = 0.

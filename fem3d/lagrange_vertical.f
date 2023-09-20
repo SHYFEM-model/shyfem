@@ -47,6 +47,7 @@ c 25.10.2018	ggu	changed VERS_7_5_51
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 22.05.2023	ggu	get_layer_thickness() was missing an argument
 c 05.06.2023    lrp     introduce z-star
+
 c
 c******************************************************
 
@@ -187,7 +188,7 @@ c computes layer thickness for element ie
 	end do
 	z = z / 6.
 
-        call get_layer_thickness(lmax,1,nsigma,nadapt,
+  call get_layer_thickness(lmax,1,nsigma,nadapt,
      +				 hsigma,hadapt,z,h,hlv,hl)
 	htot = h
 	htotz = h + z

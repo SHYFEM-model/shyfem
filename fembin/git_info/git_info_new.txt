@@ -1,0 +1,48 @@
+
+#------------------------------------------------------------------------
+#
+#    Copyright (C) 1985-2020  Georg Umgiesser
+#
+#    This file is part of SHYFEM.
+#
+#------------------------------------------------------------------------
+
+how to initialize a new git repository:
+=======================================
+
+https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github
+
+git init -b main
+git add [files] [dirs]
+git status
+vi .gitignore
+git .gitignore
+git status
+git commit
+
+how to create a new repository on GitHub:
+=========================================
+
+https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository
+
+goto to GitHub, open the drop down menu "+" and create a new repository
+
+Adding a local repository to GitHub using Git:
+==============================================
+
+create a new repository on GitHub (see above)
+
+in code find adress of repository:
+	https://github.com/georgu/mpi-regress.git
+
+either
+  git clone https://github.com/georgu/mpi-regress.git
+or
+  git remote add origin  https://github.com/georgu/mpi-regress.git
+git remote -v
+
+git branch --set-upstream-to=origin/main main
+git pull --allow-unrelated-histories
+
+git-push
+
