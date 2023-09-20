@@ -31,6 +31,7 @@
 ! 28.01.2020	ggu	new code to transfrom trans2vel on element, vorticity
 ! 02.02.2020	ggu	update for vorticity
 ! 09.05.2023    lrp     introduce top layer index variable
+! 05.06.2023    lrp     introduce z-star
 
 !***************************************************************
 
@@ -170,9 +171,9 @@
         real hl(nlvddi)                 !aux variable for real level thickness
 
         logical bsigma
-        integer ie,ii,k,l,lmax,lmin,nsigma,nlvaux
-        real hmed,u,v,area,zeta
-        real hsigma
+        integer ie,ii,k,l,lmax,lmin,nsigma,nadapt,nlvaux
+        real hmed,u,v,area,zeta,zmin
+        real hsigma,hadapt
 
         real area_elem
 
@@ -192,14 +193,22 @@
 	  lmin = 1
 	  if( bvel ) then
 	    zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
-	    call get_layer_thickness(lmax,lmin,nsigma,hsigma
-     +				,zeta,hev(ie),hlv,hl)
+	    zmin = minval(zenv(:,ie))   !min: z-adapt coords works with zmin
+	    call compute_zadapt_info(zmin,hlv,nsigma,lmax,
+     +			             lmin,nadapt,hadapt)
+	    call get_layer_thickness(lmax,lmin,nsigma,nadapt,
+     +				     hsigma,hadapt,zeta,hev(ie),hlv,hl)
 	  end if
 
           do l=1,lmax
             hmed = hl(l)
-            u = utlnv(l,ie) / hmed
-            v = vtlnv(l,ie) / hmed
+	    if (hmed .gt. 0.) then
+              u = utlnv(l,ie) / hmed
+              v = vtlnv(l,ie) / hmed
+	    else
+	      u = 0.
+	      v = 0.
+      	    end if
             do ii=1,3
               k = nen3v(ii,ie)
               uprv(l,k) = uprv(l,k) + area * u
@@ -246,9 +255,9 @@
         real hl(nlvddi)                 !aux variable for real level thickness
 
         logical bsigma
-        integer ie,ii,k,l,lmin,lmax,nsigma,nlvaux
-        real hmed,zeta
-        real hsigma
+        integer ie,ii,k,l,lmin,lmax,nsigma,nadapt,nlvaux
+        real hmed,zeta,zmin
+        real hsigma,hadapt
 
         call get_sigma_info(nlvaux,nsigma,hsigma)
         if( nlvaux .gt. nlvddi ) stop 'error stop transp2vel: nlvddi'
@@ -263,16 +272,24 @@
           lmax = ilhv(ie)
 	  lmin = 1
 	  zeta = sum(zenv(:,ie)) / 3.	!average of zeta on element
+          zmin = minval(zenv(:,ie))     !min: z-adapt coords works with zmin	  
 	  if( bvel ) then
-	    call get_layer_thickness(lmax,lmin,nsigma,hsigma
-     +				,zeta,hev(ie),hlv,hl)
+	    call compute_zadapt_info(zmin,hlv,nsigma,lmax,
+     +			             lmin,nadapt,hadapt)
+	    call get_layer_thickness(lmax,lmin,nsigma,nadapt,
+     +				     hsigma,hadapt,zeta,hev(ie),hlv,hl)
 	  end if
 
 	  zev(ie) = zeta
           do l=1,lmax
             hmed = hl(l)
-            ue3v(l,ie) = utlnv(l,ie) / hmed
-            ve3v(l,ie) = vtlnv(l,ie) / hmed
+            if (hmed .gt. 0.) then
+              ue3v(l,ie) = utlnv(l,ie) / hmed
+              ve3v(l,ie) = vtlnv(l,ie) / hmed
+            else
+              ue3v(l,ie) = 0.
+              ve3v(l,ie) = 0.		    
+            end if
           end do
         end do
 

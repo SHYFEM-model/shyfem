@@ -108,6 +108,7 @@ c 29.03.2023	ggu	handle tripple points, new horizontal diffusion routine
 c 29.03.2023	ggu	exchange rindex between domains
 c 09.05.2023    lrp     introduce top layer index variable
 c 24.05.2023    ggu     momentum_viscous_stability(): must run over nel_unique
+c 05.06.2023    lrp     introduce z-star
 c
 c notes :
 c
@@ -1264,10 +1265,10 @@ c---------- DEB SIG
 c---------- DEB SIG
 
 	logical bdebug,bdebugggu
-	logical bsigma,bsigadjust
+	logical bsigma,bzadapt,badapt,bmoveinterface,bsigadjust
 	integer iudbg,iedbg
         integer k,l,ie,ii,lmax,lmin,nsigma,ie_mpi
-	real hsigma,hdep
+	real hsigma,hdep,htot
         double precision hlayer,hint,hhk,hh,hhup,htint
 	double precision dzdx,dzdy,zk
         double precision xbcl,ybcl
@@ -1279,6 +1280,9 @@ c---------- DEB SIG
 	double precision dtime
 
 	integer ipext,ieext
+	integer nzadapt
+	integer nadapt(4)
+	real hadapt(4)
 
 	bsigadjust = .false.		!regular sigma coordinates
 	bsigadjust = .true.		!interpolate on horizontal surfaces
@@ -1291,6 +1295,9 @@ c---------- DEB SIG
 
 	call get_sigma(nsigma,hsigma)
 	bsigma = nsigma .gt. 0
+	call get_nzadapt_info(nzadapt)
+	bzadapt = nzadapt .gt. 1
+	bmoveinterface = bsigma .or. bzadapt	!interfaces not aligned to geopotentials
 
         raux=grav/rowass
 	psigma = 0.
@@ -1300,7 +1307,7 @@ c---------- DEB SIG
 	!allocate(aux3d(nlvdi,nkn))
 	!allocate(aux2d(nkn))
 
-	if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
+	if( bmoveinterface .and. bsigadjust ) then	!-------------- DEB SIG
 	  do k=1,nkn
 	    lmax=ilhkv(k)
 	    hkko(0,k)=-zov(k)	!depth of interface on node
@@ -1321,6 +1328,7 @@ c---------- DEB SIG
 
         do ie_mpi=1,nel
 	  ie = ip_sort_elem(ie_mpi)
+          call get_zadapt_info(ie,nadapt,hadapt)
 	  !bdebugggu = ( dtime == 11100. .and. ie == 932 )
 	  !bdebug = ( iedbg > 0 .and. ieext(ie) == iedbg )
           rdist = rdistv(ie)              !use terms (distance from OB)
@@ -1336,17 +1344,19 @@ c---------- DEB SIG
 	  hhup=0.
           do l=lmin,lmax		!loop over layers to set up interface l-1
 	    bsigma = l .le. nsigma
+	    badapt = l .le. (nadapt(4)+lmin-1)
+	    bmoveinterface = bsigma .or. badapt
 
 	    htint = 0.				!depth of layer top interface
 	    if( l .gt. 1 ) htint = hlv(l-1)
 
             hlayer = hdeov(l,ie)		!layer thickness
-	    if( .not. bsigma ) hlayer = hldv(l)
+	    if( (.not. bsigma) .and. (.not. badapt)) hlayer = hldv(l)
 
             hh = 0.5 * hlayer
 	    hint = hh + hhup			!interface thickness
                 
-	    if( bsigma .and. bsigadjust ) then	!-------------- DEB SIG
+	    if( bmoveinterface .and. bsigadjust ) then	!-------------- DEB SIG
 	      hele = 0.
 	      helei = 0.
 	      do ii=1,3
@@ -1415,12 +1425,12 @@ c---------- DEB SIG
               b = ev(3+ii,ie)		!gradient in x
               c = ev(6+ii,ie)		!gradient in y
 
-	      if( l .eq. nsigma ) then	!last sigma layer
+	      if( l .eq. nsigma .or. l .eq. nadapt(4) ) then !last mov layer
 	        brl = brl + b * rhop
 	        crl = crl + c * rhop
 	      end if
 
-	      if( bsigma .and. bsigadjust ) then 
+	      if( bmoveinterface .and. bsigadjust ) then 
 		lu = llup(ii)
 		ld = lldown(ii)
 		if( ld .eq. 1 ) then		!above surface
@@ -1445,21 +1455,38 @@ c---------- DEB SIG
               br = br + b * rhop
               cr = cr + c * rhop
 
-              if (bsigma) then
+              if (bmoveinterface) then
 	       if( bsigadjust ) then
 		psigma = 0.
 	       else
                 psigma = psigma + (rhoup-rhop)/hint
-                hdep = hm3v(ii,ie) + zov(k)
-                hhk = -htint * hdep
-                zk = -hhk               !transform depth in z
+		htot = hm3v(ii,ie) 
+                if (bsigma) then 
+		   hsigma = htot !min(htot,hsigma)	  !FIXME lrp: this should be the min(htot,hsigma)
+		   hdep = hsigma + zov(k)
+                   hhk = -htint * hdep
+                   zk = -(hhk) !- zov(k))                 !FIXME lrp: add free-surface
+		else        
+		  if (l.le.(nadapt(ii)+lmin-1)) then 
+ 		    hdep = hadapt(ii) + zov(k)
+		    if ( nadapt(ii).eq.lmax ) then 
+		      hdep = htot + zov(k)   		  !bottom layer
+		      hadapt(ii) = htot
+	            end if  
+                    hhk = htint/hadapt(ii) * hdep 
+		    zk = 0.
+		    if (l.gt.1) zk = -(hhk - zov(k))      !transform depth in z		    
+		  else
+		    zk = htint
+		  end if
+		end if 
                 dzdx = dzdx + b * zk
                 dzdy = dzdy + c * zk
 	       end if
               end if
             end do
 
-	    if( bsigma .and. bsigadjust ) then 
+	    if( bmoveinterface .and. bsigadjust ) then 
               if(nb.eq.2)then
 	        brint = brup
 	        crint = crup
@@ -1489,7 +1516,7 @@ c---------- DEB SIG
 
 	    brup=br
 	    crup=cr
-	    if( l .eq. nsigma ) then
+	    if( l .eq. nsigma .or. l .eq. nadapt(4) ) then
 	      brup=brl
 	      crup=crl
 	    end if

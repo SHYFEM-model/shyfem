@@ -31,8 +31,8 @@ in the center of the layer, halfway down the total depth.  Deeper basins
 or highly variable bathymetry can require for the correct reproduction
 of the velocities, temperature and salinity the need for 3D computation.
 
-The 3D computation is performed with z layers, sigma layers or with
-a hybrid formulation.  In the default z layer formulation, each layer
+The 3D computation is performed with $z-$layers, sigma layers or with
+a hybrid formulation.  In the default $z-$layer formulation, each layer
 horizontally has constant depth over the whole basin, but vertically
 the layer thickness may vary between different layers. However, the
 first layer (surface layer) is of varying thickness because of the water
@@ -46,9 +46,9 @@ each other. This is opposed to sigma layers where the number of total
 layers is constant all over the basin, but the thickness of each layer
 varies between different elements.
 
-\subsubsection{Z layers}
+\subsubsection{$z-$layers}
 
-In order to use z layers for 3D computations a new section |$layers|
+In order to use $z-$layers for 3D computations a new section |$layers|
 has to be introduced into the |STR| file, where the sequence of depth
 values of the bottom of the layers has to be declared.  Layer
 depths must be declared in increasing order. An example of a |$layer|
@@ -110,6 +110,22 @@ element will be 4 and the last layer will have a thickness of 1.5 m.
 With |ilytyp|=1 the total number of layers will be kept as 4 but the
 total depth will be adjusted to 8 m. This will make all layers equal to
 2 m thickness.
+
+A specific treatment for the surface layer is also needed. Standard 
+$z-$layers are coded with the first layer of variable thickness that, 
+however, must never become dry. This is the default usage of $z-$layers.
+As an alternative, the $z$-star layers can be used. You need to specify in the 
+|$para| section the parameter |nzadapt| equal or greater to
+the maximum number of layers. For the previous example
+one should set |nzadapt|$\ge 8$. If one wants to use fixed
+interface for the interior part of the water column, there is also the
+possibility to move only the surface layers with a $z-$star type 
+transformation. This reminds of $z$-star over $z-$layers. To use
+this slicing, you need to set |nzadapt|, the minimum number of moving layers 
+(when the water level moves downward). For example |nzadapt|$=2$ means that, 
+at minimum, two layers will absorb a downward motion of the water level. 
+Please note that this feature is still experimental.
+
 
 \subsubsection{Sigma layers}
 

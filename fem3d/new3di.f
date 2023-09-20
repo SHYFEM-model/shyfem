@@ -1720,7 +1720,7 @@ c =>  w(l-1) = flux(l-1) / a_i(l-1)  =>  w(l-1) = flux(l-1) / a(l)
 		write(670,*) hdknv(l,k),hdkov(l,k)
 	    end if
 	  end do
-	  dz = dt * wlnv(0,k) / va(1,k)
+	  dz = dt * wlnv(lmin-1,k) / va(lmin,k)
 	  dzmax = max(dzmax,abs(dz))
 	  wlnv(lmin-1,k) = 0.	! ensure no flux across surface - is very small
 	  dzeta(k) = dz

@@ -422,8 +422,8 @@ c we could do better using information on node area and depth structure
 	  ak = 4. * weight_elem(ie)	!area of vertex
 	  h = hev(ie)
 	  lmin=1
-	  call get_layer_thickness(nlv,lmin,nsigma,
-     +				   hsigma,z,h,hlv,hl)
+	  call get_layer_thickness(nlv,lmin,nsigma,0,
+     +				   hsigma,0.,z,h,hlv,hl)
 	  do ii=1,3
 	    k = nen3v(ii,ie)
 	    bdebug = k == ks .and. nlv > 1
