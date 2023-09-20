@@ -963,7 +963,7 @@
         bcenter = .true.        !depth at center of layer
         call get_sigma_info(nlvaux,nsigma,hsigma)
 
-	      call compute_zadapt_info(z,hlv,nsigma,lmax,lmin,nadapt,hadapt)
+	call compute_zadapt_info(z,hlv,nsigma,lmax,lmin,nadapt,hadapt)
         call get_layer_thickness(lmax,lmin,nsigma,nadapt,
      +                           hsigma,hadapt,z,h,hlv,hd)
 

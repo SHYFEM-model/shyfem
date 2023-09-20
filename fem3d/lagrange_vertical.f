@@ -188,7 +188,7 @@ c computes layer thickness for element ie
 	end do
 	z = z / 6.
 
-  call get_layer_thickness(lmax,1,nsigma,nadapt,
+	call get_layer_thickness(lmax,1,nsigma,nadapt,
      +				 hsigma,hadapt,z,h,hlv,hl)
 	htot = h
 	htotz = h + z

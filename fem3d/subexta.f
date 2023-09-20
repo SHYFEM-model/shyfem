@@ -57,6 +57,7 @@ c 11.05.2018	ggu	changed VERS_7_5_47
 c 06.07.2018	ggu	changed VERS_7_5_48
 c 16.02.2019	ggu	changed VERS_7_5_60
 c 02.04.2022	ggu	close ext file explicitly
+c 18.09.2023	ggu	also write rho to ext file
 c
 c******************************************************************
 c******************************************************************
@@ -282,7 +283,7 @@ c writes and administers ext file
 	real y(knausm)
 	real vals(nlv_global,knausm,3)
 	integer, save :: nvar
-	logical, save :: btemp,bsalt,bconz,bwave,bsedi
+	logical, save :: btemp,bsalt,brho,bconz,bwave,bsedi
 	integer, save, allocatable :: il(:)
 	integer, save, allocatable :: kind(:,:)
 	character*80 strings(knausm)
@@ -309,6 +310,7 @@ c--------------------------------------------------------------
 
           btemp = ( nint(getpar('itemp')) > 0 )
           bsalt = ( nint(getpar('isalt')) > 0 )
+          brho  = ( nint(getpar('irho'))  > 0 )
           bconz = ( nint(getpar('iconz')) == 1 )
           bsedi = ( nint(getpar('isedi')) > 0 )
           bwave = ( nint(getpar('iwave')) > 0 )
@@ -316,6 +318,7 @@ c--------------------------------------------------------------
           nvar = 2				!includes zeta and vel
           if( btemp ) nvar = nvar + 1
           if( bsalt ) nvar = nvar + 1
+          if( brho  ) nvar = nvar + 1
           if( bconz ) nvar = nvar + 1
           if( bsedi ) nvar = nvar + 1
           if( bwave ) nvar = nvar + 1
@@ -444,6 +447,24 @@ c	-------------------------------------------------------
 	  end if
 	end if
 
+c       -------------------------------------------------------
+c       density
+c       -------------------------------------------------------
+
+        if( brho ) then
+          iv = iv + 1
+          ivar = 13
+          do j=1,knausm
+            k = knaus(j)
+            call shympi_collect_node_value(k,rhov,vals(:,j,1))
+          end do
+          if( shympi_is_master() ) then
+            call ext_write_record(nbext,0,atime,knausm,nlv3d
+     +                                  ,ivar,m,il,vals,ierr)
+            if( ierr /= 0 ) goto 97
+          end if
+        end if
+
 c	-------------------------------------------------------
 c	concentration
 c	-------------------------------------------------------
@@ -540,7 +561,7 @@ c--------------------------------------------------------------
    97   continue
 	write(6,*) 'Error writing record of EXT file'
 	write(6,*) 'unit,iv,ierr :',nbext,iv,ierr
-	write(6,*) btemp,bsalt,bconz,bwave,bsedi
+	write(6,*) btemp,bsalt,brho,bconz,bwave,bsedi
 	stop 'error stop wrexta: writing ext record'
 	end
 

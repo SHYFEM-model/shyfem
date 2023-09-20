@@ -1,5 +1,20 @@
 ============================================================
 
+Wed Sep 20 14:45:20 CEST 2023
+
+resolved merge conflicts for compilation
+
+ fem3d/lagrange_vertical.f |  2 +-
+ fem3d/newtra.f            |  1 -
+ fem3d/shyelab_nodes.f     |  2 +-
+ fem3d/subexta.f           | 25 +++++++++++++++++++++++--
+ fembin/aver               | 27 +++++++++++++++++----------
+ fembin/gp                 | 15 +++++++++++++--
+ femplot/shyplot.f         |  2 +-
+ 7 files changed, 56 insertions(+), 18 deletions(-)
+
+============================================================
+
 Tue Jun  6 11:06:33 CEST 2023
 
 minor changes, better check_shympi_debug.f

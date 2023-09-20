@@ -2075,7 +2075,7 @@ c*****************************************************************
 	  if( h < -990. ) h = hlv(lm)
 	  !if( h == -1. ) h = 1.
 	  if( h+z<zeps ) z = zeps-h
-    call get_layer_thickness(lm,nsigma,0,hsigma,0.
+	  call get_layer_thickness(lm,nsigma,0,hsigma,0.
      +                          ,z,h,hlv,hl)
 
 	  vacu = 0.
