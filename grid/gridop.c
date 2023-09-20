@@ -40,6 +40,7 @@
  * 17.12.1997	ggu	OpColor - color nodes and lines (...was compress...)
  * 01.10.2004	ggu	set default for OpMaxColDepth to -1 (not given)
  * 16.02.2011	ggu	new options OpOutFile and OpItemType implemented
+ * 26.06.2023	ggu	new option for filling nodes
  *
 \************************************************************************/
 
@@ -66,10 +67,10 @@ void SetOptions(int argc, char *argv[])
 
 {
 	int c;
-	char *options = "CTM:S:kfoahw:c:g:d:uDV:N:O:t:";
+	char *options = "CTM:S:kfFoahw:c:g:d:uDV:N:O:t:";
 
 	      OpCheck = 0;    /* do more checks */
-	       OpFill = 0;    /* fill elements */
+	       OpFill = 0;    /* fill elements or nodes */
 	      OpColor = 0;    /* color nodes and lines */
 	     OpBorder = 1;    /* outline elements */
 	   OpShowType = 0;    /* show type -- 0 is depth, else type */
@@ -125,6 +126,9 @@ void SetOptions(int argc, char *argv[])
 			break;
         case 'f' :              /* f - fill triangles */
 			OpFill = 1;
+			break;
+        case 'F' :              /* f - fill nodes */
+			OpFill = 2;
 			break;
         case 'o' :              /* o - do not outline elements */
 			OpBorder = 0;
@@ -188,8 +192,8 @@ void Help( void )
 
 {
 	printf("Options :\n");
-	printf("  -o   do not outline elements        ");
-	printf("  -f   fill elements with color     \n");
+	printf("  -f   fill elements with color       ");
+	printf("  -F   fill nodes with color        \n");
 	printf("  -k   do extra checking              ");
 	printf("  -u   check if nodes are used      \n");
 	printf("  -T   show type instead of depth     ");
@@ -204,6 +208,7 @@ void Help( void )
 	printf("  -V#  scale factor for vectors is #\n");
 	printf("  -C   color nodes and lines          ");
 	printf("  -On  use n as output file name    \n");
+	printf("  -o   do not outline elements        ");
 	printf("  -t#  use type # for new items     \n");
 	printf("\n");
 }

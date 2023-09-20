@@ -418,19 +418,19 @@ rules_diff:
 	@-diff femcheck/rules/Rules.dist ./Rules.make || true
 
 rules_std:
-	bin/rules.sh std
+	fembin/rules.sh std
 
 rules_mpi:
-	bin/rules.sh mpi
+	fembin/rules.sh mpi
 
 rules_omp:
-	bin/rules.sh omp
+	fembin/rules.sh omp
 
 rules_petsc:
-	bin/rules.sh petsc
+	fembin/rules.sh petsc
 
 rules_intel:
-	bin/rules.sh intel
+	fembin/rules.sh intel
 
 #------------------------------------------------------------
 

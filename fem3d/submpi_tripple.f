@@ -37,9 +37,25 @@
 ! 02.04.2023	ggu	bug fix looking for internal element
 ! 03.04.2023	ggu	new bug fix looking for internal element
 ! 12.04.2023	ggu	fill buffer_in only if my_id == id_from
+! 07.06.2023    ggu     in exchange_elem_info() use utlov not utlnv (bug-fix)
+! 09.06.2023    ggu     bug fix for tripple point on external boundary
 !
 !******************************************************************
 
+! notes :
+!
+!	iexch(nexch,itmax)
+!
+!	  iexch(1,i) = ie	!internal element number
+!	  iexch(2,i) = ipev(ie)	!external element number
+!	  iexch(3,i) = my_id	!id of domain
+!	  iexch(8,i) = i0	!neibor element opposite to this vertex
+!
+!	  iexch(4,i) = iint	!internal number of neighbor element
+!	  iexch(5,i) = iext	!external number of neighbor element
+!	  iexch(6,i) = ide	!domain of neighbor element
+!	  iexch(7,i) = lmax	!max level of neighbor element
+! 
 !==================================================================
         module shympi_tripple
 !==================================================================
@@ -103,6 +119,7 @@
 
 	if( itrtot >= 0 ) return	!already set up
 
+	call shympi_syncronize
 	write(6,*) 'starting tripple_points_init: ',my_id
 
 	iu = 0
@@ -124,6 +141,12 @@
 	call shympi_syncronize
 
 	itrtot = shympi_sum(itr)
+	if( my_id == 0 ) then
+	  write(6,*) 'summary for tripple points:'
+	  write(6,*) '                                  '//
+     +			'     domain         itr      itrtot'
+	end if
+	call shympi_syncronize
 	write(6,*) 'total numbers of tripple points: ',my_id,itr,itrtot
 
 	nmax_tripple = 2 * (nlv_global+1)
@@ -233,13 +256,14 @@
 
 	do i=1,itrtot
 	  ide = ielist(3,i)
+	  iext = ielist(5,i)		!only handle if iext > 0
 	  if( ide /= my_id ) cycle	!only handle this domain
 	  ie = ielist(1,i)
 	  ii = ielist(8,i)
 	  if( ii < 1 .or. ii > 3 ) then
 	    stop 'error stop tripple_points: internal (21)'
 	  end if
-	  ietrp(ii,ie) = i		!pointer into tripple list
+	  if( iext > 0 ) ietrp(ii,ie) = i	!pointer into tripple list
 	end do
 
 	!--------------------------------------------------
@@ -360,8 +384,8 @@
         if( id_from == my_id ) then
 	  buffer_in(1) = lmax
 	  buffer_in(2) = 12. * ev(10,iint)
-	  buffer_in(3:lmax+2) = utlnv(1:lmax,iint)
-	  buffer_in(lmax+3:2*lmax+2) = vtlnv(1:lmax,iint)
+	  buffer_in(3:lmax+2) = utlov(1:lmax,iint)
+	  buffer_in(lmax+3:2*lmax+2) = vtlov(1:lmax,iint)
 	end if
 
 	if( n > nmax ) then
@@ -481,6 +505,8 @@
 	do i=1,itr
 	  iext = iexch(5,i)
 	  ide = -1
+	  iexch(6,i) = ide	!domain of neighbor element
+	  if( iext == 0 ) cycle	!tripple point on boundary
 	  do ie=1,nel_global
 	    if( ip_ext_elem(ie) == iext ) then
 	      iee = ie		!global internal element number of neibor
@@ -511,10 +537,10 @@
 	    stop 'error stop tripple_points: internal (6)'
 	  end if
 	  write(6,*) 'ide found: ',iext,iint,ide
-	  iexch(4,i) = iint
-	  iexch(5,i) = iext
-	  iexch(6,i) = ide
-	  iexch(7,i) = lmax
+	  iexch(4,i) = iint	!internal element number of neighbor
+	  iexch(5,i) = iext	!external element number of neighbor
+	  iexch(6,i) = ide	!domain of neighbor element
+	  iexch(7,i) = lmax	!ma level of neighbor element
 	end do
 
 !------------------------------------------------------------
@@ -523,13 +549,18 @@
 
 	do i=1,itr
 	  ie = iexch(1,i)
+	  iext = iexch(5,i)
+	  ide = iexch(6,i)	!domain of neibor element
 	  ii = iexch(8,i)
 	  ineib = ieltv(ii,ie)
-	  if( ineib /= -1000 ) then
+	  if( ineib == 0 .and. iext == 0 ) then
+	    write(6,*) 'not real tripple point... ignoring ',i
+	    cycle
+	  else if( ineib /= -1000 ) then
+	    write(6,*) i,ineib,iext
 	    write(6,*) '*** neigbor not flagged as external: ',ineib
-	    stop 'error stop tripple_points: internal (14)'
+	    call error_stop('tripple_points','internal (14)')
 	  end if
-	  ide = iexch(6,i)	!domain of neibor element
 	  ieltv(ii,ie) = -1000 - ide
 	end do
 
@@ -547,6 +578,7 @@
 
 	use basin
 	use shympi
+	use mod_geom
 
 	implicit none
 
@@ -554,13 +586,15 @@
 	integer i0	!vertex opposite of neibor element (return)
 	integer iext	!external number of neibor element (return)
 
-	integer ii,i1,i2,iei,iee
+	integer ii,i1,i2,iei,iee,ieint,ineigh
 	integer k,k1,k2,kg1,kg2
+	integer ids(3),ides(3)
 
 	if( ie == 0 ) then
 	  stop 'error stop find_elem_neib: ie == 0'
 	end if
 
+	ieint = ie
 	iee = ipev(ie)
 
 !------------------------------------------------------------
@@ -574,15 +608,26 @@
 	  k = nen3v(ii,ie)
 	  if( id_node(k) == my_id ) then
 	    i0 = ii
+	    ineigh = ieltv(i0,ie)
 	    i1 = mod(ii,3) + 1
 	    i2 = mod(i1,3) + 1
 	    k1 = nen3v(i1,ie)
 	    k2 = nen3v(i2,ie)
 	  end if
+	  ids(ii) = id_node(k)
+	  ides(ii) = id_elem(ii,ie)
 	end do
 
 	if( i0 == 0 ) then
 	  stop 'error stop find_elem_neib: i0 == 0'
+	end if
+
+	if( ineigh == 0 ) then
+	  write(6,*) 'tripple point is on boundary...'
+	  write(6,*) 'no need to get information...'
+	  write(6,*) ieint,iee,i0
+	  iext = 0
+	  return
 	end if
 
 !------------------------------------------------------------
@@ -611,7 +656,11 @@
 	if( iei == 0 ) then
 	  write(6,*) 'cannot find element to nodes ',my_id
 	  write(6,*) my_id,iee,kg1,kg2
-	  stop 'error stop find_elem_neib: internal (2)'
+	  write(6,*) id_elem(:,ieint)
+	  write(6,*) ids
+	  write(6,*) ides
+	  write(6,*) i0,ieltv(:,ieint)
+	  call error_stop('find_elem_neib','internal (2)')
 	end if
 
 !------------------------------------------------------------
@@ -846,6 +895,34 @@
 	end do
 
 	stop 'error stop exchange_areas: generic'
+
+	end
+
+!******************************************************************
+
+	subroutine check_id_elem(text)
+
+	use basin
+	use shympi
+
+	implicit none
+
+	character*(*) text
+
+	integer ie,ii,id,n
+
+	do ie=1,nel
+	  n = id_elem(0,ie)
+	  do ii=1,n
+	    id = id_elem(ii,ie)
+	    if( id < 0 .or. id >= n_threads ) then
+	      write(6,*) trim(text)
+	      write(6,*) 'error in id_elem check: ',ie
+	      write(6,*) id_elem(:,ie)
+	      call error_stop('check_id_elem','id_elem corrupt')
+	    end if
+	  end do
+	end do
 
 	end
 

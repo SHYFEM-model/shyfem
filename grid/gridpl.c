@@ -52,6 +52,7 @@
  * ...		ggu	uses OpColor to decide if color or not
  * ...		ggu	(changed also algorithm for node coloring)
  * ...		ggu	new routine SetLineColor()
+ * 26.06.2023	ggu	new routines FillNode(), GetElemColor(), GetNodeColor()
  *
 \************************************************************************/
 
@@ -466,6 +467,43 @@ static void PlotNodeForm( int type , float x , float y )
 
 /**************************************************************************/
 
+int GetElemColor( Hashtable_type H , Elem_type *pe )
+
+{
+	float depth;
+	int color;
+
+	if( OpShowType == 1 ) { /* color by type */
+	  color = GetRandomColor((int) pe->type);
+	} else {		/* color by depth */
+	  depth = pe->depth;
+	  if( depth == NULLDEPTH ) {
+		depth = MakeDepthFromNodes(H,pe);
+	  }
+	  color = GetDepthColor(depth);
+	}
+
+	return color;
+}
+
+int GetNodeColor( Node_type *pn )
+
+{
+	float depth;
+	int type;
+	int color;
+
+	if( OpShowType == 1 ) { /* color by type */
+	  type = (int) pn->type;
+	  color = GetRandomColor(type);
+	} else {		/* color by depth */
+	  depth = pn->depth;
+	  color = GetDepthColor(depth);
+	}
+
+	return color;
+}
+
 void PlotElements( Hashtable_type HE , Hashtable_type HN )
 
 {
@@ -483,32 +521,23 @@ void PlotElements( Hashtable_type HE , Hashtable_type HN )
 	MouseShow();
 }
 
-void PlotElem( Hashtable_type H , Elem_type *p )
+void PlotElem( Hashtable_type H , Elem_type *pe )
 
 {
 	Rect r;
-	float depth;
 
-	PolyMinMax( H , p , &r );
+	PolyMinMax( H , pe , &r );
 	if( r.low.x>GbPlo.high.x || r.high.x<GbPlo.low.x
 		|| r.low.y>GbPlo.high.y || r.high.y<GbPlo.low.y ) return;
 
-	if( OpFill ) {
-		if( OpShowType == 1 ) { /* color by type */
-		  FillElem(H,p,GetRandomColor((int) p->type));
-		} else {		/* color by depth */
-		  depth = p->depth;
-/* changed temp. 25.3.95 */	/* FIXME */
-		  if( depth == NULLDEPTH ) {
-			depth = MakeDepthFromNodes(H,p);
-		  }
-/**/
-		  FillElem(H,p,GetDepthColor(depth));
-		}
+	if( OpFill == 1 ) {
+		FillElem(H,pe);
+	} else if( OpFill == 2 ) {
+		FillNode(H,pe);
 	}
 
 	if( OpBorder )
-		PlotElemP( H , p );
+		PlotElemP( H , pe );
 
 }
 
@@ -534,18 +563,18 @@ static void PlotElemP( Hashtable_type H , Elem_type *pe )
 	}
 }
 
-void FillElem( Hashtable_type H , Elem_type *p , int color )
+void FillElem( Hashtable_type H , Elem_type *pe )
 
 {
 	Node_type *pn;
-	int node,nvert,tmpcol,i;
+	int node,nvert,tmpcol,i,color;
 	static float *x=NULL,*y=NULL;
 	static int ndim=0;
 
-	if( !p )
+	if( !pe )
 		return;
 
-	nvert = p->vertex;
+	nvert = pe->vertex;
 	if( ndim < nvert ) {
 		if( ndim != 0 ) {
 			free(x);
@@ -558,14 +587,83 @@ void FillElem( Hashtable_type H , Elem_type *p , int color )
 	}
 
 	for(i=0;i<nvert;i++) {
-		node=p->index[i];
+		node=pe->index[i];
 		pn=RetrieveByNodeNumber(H,node);
 		x[i]=pn->coord.x; y[i]=pn->coord.y;
 	}
 
+	color = GetElemColor( H , pe );
 	QGetPen(&tmpcol);
 	QNewPen(color);
 	QAreaFill(nvert,x,y);
+	QNewPen(tmpcol);
+}
+
+void FillNode( Hashtable_type H , Elem_type *pe )
+
+/* fills nodes of element pe */
+
+{
+	Node_type *pn;
+	int node,nvert,tmpcol,i,inext,color;
+	static float *x=NULL,*y=NULL;		/* nodes defining area */
+	static float *xv=NULL,*yv=NULL;		/* vertex */
+	static float *xm=NULL,*ym=NULL;		/* mid points */
+	static float xc,yc;			/* central point */
+	static int ndim=0;
+
+	if( !pe )
+		return;
+
+	nvert = pe->vertex;
+	if( ndim < nvert ) {
+		if( ndim != 0 ) {
+			free(x); free(y);
+			free(xv); free(yv);
+			free(xm); free(ym);
+		}
+		x = (float *) malloc( 4*sizeof(float) );
+		y = (float *) malloc( 4*sizeof(float) );
+		xv = (float *) malloc( nvert*sizeof(float) );
+		yv = (float *) malloc( nvert*sizeof(float) );
+		xm = (float *) malloc( nvert*sizeof(float) );
+		ym = (float *) malloc( nvert*sizeof(float) );
+		if( !x || !y ) Error("FillNode : Cannot allocate x/y");
+		if( !xv || !yv ) Error("FillNode : Cannot allocate x/y");
+		if( !xm || !ym ) Error("FillNode : Cannot allocate x/y");
+		ndim=nvert;
+	}
+
+	xc = 0; yc = 0;
+	for(i=0;i<nvert;i++) {
+		node=pe->index[i];
+		pn=RetrieveByNodeNumber(H,node);
+		xv[i]=pn->coord.x; yv[i]=pn->coord.y;
+		xc += xv[i]; yc += yv[i];
+	}
+	xc /= nvert; yc /= nvert;
+
+	for(i=0;i<nvert;i++) {
+		inext = (i+1) % nvert;
+		xm[i] = 0.5 * (xv[i] + xv[inext] );
+		ym[i] = 0.5 * (yv[i] + yv[inext] );
+	}
+
+	QGetPen(&tmpcol);
+
+	for(i=0;i<nvert;i++) {
+		inext = (nvert+i-1) % nvert;
+		x[0] = xv[i]; y[0] = yv[i];
+		x[1] = xm[i]; y[1] = ym[i];
+		x[2] = xc; y[2] = yc;
+		x[3] = xm[inext]; y[3] = ym[inext];
+		node=pe->index[i];
+		pn=RetrieveByNodeNumber(H,node);
+		color = GetNodeColor(pn);
+		QNewPen(color);
+		QAreaFill(4,x,y);
+	}
+
 	QNewPen(tmpcol);
 }
 

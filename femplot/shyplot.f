@@ -1118,6 +1118,7 @@
 	use elabtime
 	use shyfile
 	use shyutil
+	use shympi
 
         use basin
         use levels
@@ -1160,6 +1161,8 @@
 
 	integer getisec
 	real getpar
+
+        !call shympi_init(.false.)
 
         !--------------------------------------------------------------
         ! set command line parameters
@@ -1273,7 +1276,7 @@
 	  end if
 
           call makehev(hev)
-          call makehkv(hkv)
+          if( .not. bregdata ) call makehkv(hkv)
           call allocate_2d_arrays
 	end if
 

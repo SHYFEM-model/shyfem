@@ -10,7 +10,10 @@
 #
 # str utility routines
 #
-# version 	1.5	30.03.2023	new option -reduce
+# version	1.8     26.06.2023      new routine has_section()
+# version	1.7     11.06.2023      parameter nocomment implemented
+# version	1.6     08.06.2023      write extra section with description
+# version	1.5     30.03.2023      prepared new number section
 # version 	1.4	16.01.2022	parses extra section with description
 # version 	1.3	24.11.2014	finds section now, can insert values
 # version 	1.2	11.05.2011	restructured and commented
@@ -63,6 +66,7 @@ sub new
 			,section_types	=>	undef
 			,verbose	=>	0
 			,quiet		=>	0
+			,nocomment	=>	0
 		};
 
     bless $self;
@@ -123,6 +127,13 @@ sub set_verbose {
   my ($self,$value) = @_;
 
   $self->{verbose} = $value;
+}
+
+sub set_nocomment {
+
+  my ($self,$value) = @_;
+
+  $self->{nocomment} = $value;
 }
 
 # section defaults to "para"
@@ -462,9 +473,7 @@ sub parse_number_section {
   my $data = $sect->{data};
   my $name = $sect->{name};
   my @number = ();
-  my @allnumbers = ();
   my @description = ();
-  my @fluxsection = ();
 
   print STDERR "parsing number section... $name\n" if $self->{verbose};
 
@@ -483,10 +492,7 @@ sub parse_number_section {
     push(@number,@f);
     push(@description,$description) if $description;
     if( $description and $name eq "flux" ) {
-      my @naux = @number;
-      push(@fluxsection,\@naux);
-      push(@allnumbers,@number);
-      #@number = ();
+      push(@number,0);		#insert 0 to divide section
     }
   }
 
@@ -497,43 +503,12 @@ sub parse_number_section {
     $sect->{array} = \@number;
     $sect->{description} = \@description;
   } elsif( $name eq "flux" ) {
-    my $n = @fluxsection;
-    my $d = @description;
-    die "error in flux section: $n $d\n" if $d > 0 and $n != $d;
-    $sect->{array} = \@allnumbers;
-    $sect->{fluxsection} = \@fluxsection;
+    $sect->{array} = \@number;
     $sect->{description} = \@description;
-    if( $d == 0 ) {
-      $sect->{array} = \@number;
-      #print STDERR "*** cannot yet handle flux section without description\n";
-      my $rf = split_on_zero(@number);
-      $sect->{fluxsection} = $rf;
-    }
   } elsif( $name eq "levels" ) {
     $sect->{array} = \@number;
     $sect->{description} = \@description;
   }
-}
-
-sub split_on_zero {
-
-  my @numbers = @_;
-
-  push(@numbers,0);
-  my @array = ();
-  my @fluxnumbers = ();
-
-  foreach my $num (@_) {
-    if( $num == 0 and @array > 0 ) {
-      my @naux = @array;
-      push(@fluxnumbers,\@naux);
-      @array = ();
-    } else {
-      push(@array,$num);
-    }
-  }
-
-  return \@fluxnumbers;
 }
 
 sub parse_table_section {
@@ -656,7 +631,9 @@ sub write_section {
   if( $type eq "param" ) {
     $self->write_param_section($sect);
   } elsif( $type eq "comment" ) {
-    $self->write_comment_section($sect);
+    if( $self->{nocomment} == 0 ) {
+      $self->write_comment_section($sect);
+    }
   } elsif( $type eq "title" ) {
     $self->write_title_section($sect);
   } elsif( $type eq "number" ) {
@@ -750,23 +727,93 @@ sub write_number_section {
   my ($self,$sect) = @_;
 
   my $data = $sect->{array};
+  my $description = $sect->{description};
+  my $na = @$data;
+  my $nd = @$description;
 
-  write_array($data);
+  if( $nd == 0 ) {
+    write_array($data);
+  } elsif( $na != $nd ) {
+    write_array_multi_with_description($data,$description);
+  } else {
+    write_array_with_description($data,$description);
+  }
+}
+
+sub write_array_multi_with_description {
+
+  my ($array,$description) = @_;
+
+  my $nval = 5;			# how many values on one line
+
+  my $na = @$array;
+  my $nd = @$description;
+
+  #print STDERR "array $na\n";
+  #foreach my $f (@$array) {
+  #  print STDERR "$f ";
+  #}
+  #print STDERR "\n";
+  #print STDERR "description $nd\n";
+  #foreach my $f (@$description) {
+  #  print STDERR "$f ";
+  #}
+  #print STDERR "\n";
+
+  my $j = 0;
+  for( my $i=0; $i<$na; $i++ ) {
+    my $item = $array->[$i];
+    if( $item == 0 ) {
+      next if( $j == 0 );
+      $j = 0;
+      my $descr = shift(@$description);
+      $descr = "'" . $descr . "'";
+      print "\t$descr\n";
+    } else {
+      $j++;
+      print "  $item";
+      if( $j == $nval ) {
+        print "\n";
+        $j = 0;
+      }
+    }
+  }
+}
+
+sub write_array_with_description {
+
+  my ($array,$description) = @_;
+
+  my $na = @$array;
+
+  for( my $i=0; $i<$na; $i++ ) {
+    my $item = $array->[$i];
+    my $descr = $description->[$i];
+    $descr = "'" . $descr . "'";
+    print "\t$item\t$descr\n";
+  }
 }
 
 sub write_array {
 
   my ($array,$extra) = @_;
 
+  my $nval = 10;			# how many values on one line
+
   print "$extra" if $extra;
+
+  my $na = @$array;
 
   my $i = 0;
   foreach my $item (@$array) {
     $i++;
     print "   $item";
-    print "\n" if $i%5 == 0;
+    if( $item == 0 or $i == $nval ) {
+      print "\n";
+      $i = 0;
+    }
   }
-  print "\n" unless $i%5 == 0;
+  print "\n" unless $i == 0;
 }
 
 sub write_table_section {
@@ -789,6 +836,26 @@ sub write_unknown_section {	# simply copy
   foreach my $line (@$data) {
     print "$line\n";
   }
+}
+
+#-----------------------------------------------------------------
+# utilities
+#-----------------------------------------------------------------
+
+sub has_section {
+
+  my ($self,$sectname) = @_;
+
+  my $sections = $self->{sections};
+  my $sequence = $self->{sequence};
+
+  foreach my $section (@$sequence) {
+    my $sect = $sections->{$section};
+    my $name = $sect->{name};
+    #print STDERR "section $name\n";
+    return 1 if $name eq $sectname;
+  }
+  return 0;
 }
 
 #-----------------------------------------------------------------

@@ -2133,9 +2133,12 @@ c		used to indicate the box number. This parameter
 c		is only useful for the plotting of the box model. (Default 0)
 c |inumber|	If set to 1 plots node and element numbers on top
 c		of the grid. This is only useful in debug mode. (Default 0)
+c |icolmin|	If set to 1 uses minimum number of colors possible.
+c		(Default 0)
 
         call addpar('ibox',0.)
         call addpar('inumber',0.)
+        call addpar('icolmin',0.)
 
 c DOCS	END
 

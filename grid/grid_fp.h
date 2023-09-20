@@ -48,6 +48,7 @@
  * 02.04.1998	ggu	no SetNewCommand() & Buttons, new ExitEventLoop()
  * 13.05.2003	ggu	new include menu.h and prototype ExecuteMenuCommand()
  * 16.02.2011	ggu	in MakeElem/Line() pass also type
+ * 26.06.2023	ggu	FillElem() and FillNode() without color passing
  *
 \************************************************************************/
 
@@ -247,7 +248,8 @@ void PlotPoints( Hashtable_type HN );
 void PlotPoint( Node_type *pn );
 void PlotElements( Hashtable_type HE , Hashtable_type HN );
 void PlotElem( Hashtable_type H , Elem_type *p );
-void FillElem( Hashtable_type H , Elem_type *p , int color );
+void FillElem( Hashtable_type H , Elem_type *p );
+void FillNode( Hashtable_type H , Elem_type *p );
 void PlotLines( Hashtable_type HL , Hashtable_type HN );
 void PlotLine( Hashtable_type H , Line_type *p );
 void PlotSegment( float x1 , float y1 , float x2 , float y2 , int color );

@@ -86,6 +86,7 @@ c 13.03.2019	ggu	changed VERS_7_5_61
 c 21.05.2019	ggu	changed VERS_7_5_62
 c 06.11.2019	ggu	eliminated femtime
 c 23.05.2023	ggu	in setznv() loop over ie_mpi
+c 07.06.2023	ggu	new routine compute_dry_elements()
 c
 c*****************************************************************
 
@@ -777,4 +778,35 @@ c write back to original vector zenv
         end
 c
 c*****************************************************************
-c
+
+        subroutine compute_dry_elements(iloop)
+
+! computes total number of dry elements
+
+	use mod_geom_dynamic
+	use basin
+	use shympi
+
+        implicit none
+
+	integer iloop
+
+        integer ie,idry
+	integer, save :: iuinfo = 0
+
+	idry = 0
+        do ie=1,nel_unique
+          if( iwegv(ie) /= 0 ) idry = idry + 1
+	end do
+
+	idry = shympi_sum(idry)
+
+        if( iuinfo .le. 0 ) call getinfo(iuinfo)
+        if(shympi_is_master()) then
+          write(iuinfo,*) 'dry_elems: ',iloop,idry
+        end if
+
+	end
+
+!*****************************************************************
+

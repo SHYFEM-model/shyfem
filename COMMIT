@@ -12,6 +12,69 @@ resolved merge conflicts for compilation
  fembin/gp                 | 15 +++++++++++++--
  femplot/shyplot.f         |  2 +-
  7 files changed, 56 insertions(+), 18 deletions(-)
+ 
+============================================================
+
+Sat Jul 15 18:15:50 CEST 2023
+
+working on connection and flood fill (coloring)
+
+ fem3d/Makefile         |  17 +-
+ fem3d/mod_connect.f    | 717 +++++++++++++++++++++++++++++++++++++++++++++++++
+ fem3d/mod_flood.f      | 202 ++++++++++++++
+ fem3d/queue.f          | 455 +++++++++++++++++++++++++++++++
+ fem3d/shyparts_dummy.f | 273 ++++++++++++++++++-
+ fem3d/subcolor.f       | 365 +++++++++++++++++++++++++
+ fem3d/subqfxt.f        |  34 ++-
+ fem3d/subsys.f         |   3 +
+ femplot/shyplot.f      |   5 +-
+ femplot/supsim.f       |  45 +++-
+ 10 files changed, 2096 insertions(+), 20 deletions(-)
+ new file:
+   fem3d/mod_connect.f
+   fem3d/mod_flood.f
+   fem3d/queue.f
+   fem3d/subcolor.f
+
+============================================================
+
+Mon Jun 26 14:56:13 CEST 2023
+
+new option for grid to plot node type (F)
+
+ fembin/strparse.pl |   8 +++
+ femlib/perl/str.pm |  21 ++++++++
+ grid/grid_fp.h     |   4 +-
+ grid/gridop.c      |  13 +++--
+ grid/gridpl.c      | 140 +++++++++++++++++++++++++++++++++++++++++++++--------
+ 5 files changed, 160 insertions(+), 26 deletions(-)
+
+============================================================
+
+Mon Jun 26 10:48:09 CEST 2023
+
+strparse modified
+
+ fem3d/subbnd.f     |   7 +--
+ fembin/strparse.pl |  98 +++++++++++++++++++++++++++++++++------
+ femlib/perl/str.pm | 132 ++++++++++++++++++++++++++++++++++++-----------------
+ 3 files changed, 177 insertions(+), 60 deletions(-)
+
+============================================================
+
+Thu Jun  8 10:08:04 CEST 2023
+
+bug fix for tripple points with more iterations
+
+ fem3d/bin/diff.sh                   |   2 +-
+ fem3d/new3di.f                      | 156 ++++++++++++++++++++++++++++++++----
+ fem3d/shyfem.f                      |   9 +++
+ fem3d/shympi_debug.f                |   3 +
+ fem3d/subdry.f                      |  34 +++++++-
+ fem3d/submpi_tripple.f              |   5 +-
+ fembin/git_info/git_info_branch.txt |   4 +
+ fembin/strparse.pl                  |  19 ++++-
+ 8 files changed, 209 insertions(+), 23 deletions(-)
 
 ============================================================
 

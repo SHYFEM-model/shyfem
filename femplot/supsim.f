@@ -795,21 +795,31 @@ c plots element type values
 	integer area(nel)
         character*(*) title
 
+	logical bmincol
 	integer iamax,iamin
 	real pmin,pmax,flag
+	integer color(nel)
 	real pa(nel)
 	real getpar
+
+	bmincol = .true.
 
 	call qstart
         call annotes(title)
 	call bash(0)
 
-	iamin = minval(area)
-	iamax = maxval(area)
+	color = area
+	bmincol = ( nint(getpar('icolmin')) /= 0 )
+	if( bmincol ) then
+	  call transform_color_to_min(color)
+	end if
+
+	iamin = minval(color)
+	iamax = maxval(color)
         if( bminmax ) write(6,*) 'min/max: ',nel,iamin,iamax
 	call colset_reg(iamin,iamax)
 
-	pa = area
+	pa = color
 
         call qcomm('Plotting area of '//trim(title))
         call isoline(pa,nel,0.,3)			!plot on elements
@@ -2537,6 +2547,35 @@ c*****************************************************************
 	if( .not. bregplot ) return
 
 	call getgeo(x0,y0,dx,dy,flag)
+
+	end
+
+c*****************************************************************
+
+	subroutine transform_color_to_min(ids)
+
+	use basin
+	use mod_color
+
+	implicit none
+
+	integer ids(nel)
+
+	integer nmax,ncol,i
+	integer, allocatable :: matrix(:,:)
+	integer color(nel)
+	integer ecv(3,nel)
+
+	call connect_init(nkn,nel,nen3v)
+	call connect_get_ecv(nel,ecv)
+	call make_elem_matrix(nel,ecv,ids,nmax,matrix)
+	call color_graph(nel,ids,nmax,matrix,ncol,color)
+	call release_color_matrix(matrix)
+	call connect_release
+
+	write(6,*) 'needed colors for coloring: ',ncol
+
+	ids = color
 
 	end
 

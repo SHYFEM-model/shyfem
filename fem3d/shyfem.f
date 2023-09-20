@@ -657,6 +657,7 @@ c*****************************************************************
 
         use clo
         use shympi
+	use mod_zeta_system
 
         implicit none
 
@@ -713,6 +714,7 @@ c*****************************************************************
 	  else
 	    write(6,*) 'compiled with parallel support: NONE'
 	  end if
+	  write(6,*) 'matrix solver: ',trim(solver_type)
 	  write(6,*)
          end if
 	end if
@@ -1063,6 +1065,13 @@ c*****************************************************************
 	if( allocated(cnv) ) then
 	  call shympi_write_debug_node('cnv',cnv)
 	end if
+
+	!call shympi_write_debug_elem(3,'zeov',zeov)
+	!call shympi_write_debug_elem('hdeov',hdeov)
+	!call shympi_write_debug_elem('utlov',utlov)
+	!call shympi_write_debug_elem('vtlov',vtlov)
+	!call shympi_write_debug_node('momentxv',momentxv)
+	!call shympi_write_debug_node('momentyv',momentyv)
 
 	allocate(aux3d(nlvdi,nkn))
 	aux3d(:,:) = visv(1:nlvdi,:)
