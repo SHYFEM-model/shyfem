@@ -1,4 +1,13 @@
 
+25.09.2023	VERS_7_5_84	Pre-community edition
+
+	generalized vertical coordinates
+	many bug fixes for mpi routines
+	tripple point managing
+	finished box model
+	manage nkn==nel bug
+	worked on closings
+
 24.03.2023	VERS_7_5_83	Pre-Istanbul23 edition
 
 	many bug fixes and enhancements for MPI

@@ -1363,12 +1363,12 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/shympi_tripple.mod: submpi_tripple.o
 ../femlib/mod/shyutil.mod: shyutil.o
 ../femlib/mod/sigma.mod: sigmautil.o
-../femlib/mod/zadapt.mod: zadaptutil.o
 ../femlib/mod/simple_sediments.mod: subssed.o
 ../femlib/mod/stab.mod: newstab.o
 ../femlib/mod/tide.mod: tide_utils.o
 ../femlib/mod/ts_util.mod: subtsutil.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
+../femlib/mod/zadapt.mod: zadaptutil.o
 amgx_c_wrapper_dummy.o: ../femlib/mod/petscdm.mod \
 		../femlib/mod/petscdmlabel.mod \
 		../femlib/mod/petscmat.mod \
@@ -2372,12 +2372,5 @@ weutro_seed.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
 weutro_shell.o: donata.h
 weutro_ulva.o: donata.h
 weutro_wdia.o: ../femlib/mod/eutro.mod weutro.h
-subzad.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
-                ../femlib/mod/mod_depth.mod \
-		../femlib/mod/mod_area.mod \
-                ../femlib/mod/evgeom.mod \
-		../femlib/mod/mod_geom_dynamic.mod \
-		../femlib/mod/mod_layer_thickness.mod \
-                ../femlib/mod/mod_hydro.mod \
-                ../femlib/mod/mod_hydro_vel.mod \
-                ../femlib/mod/shympi.mod
+zadaptutil.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod
+

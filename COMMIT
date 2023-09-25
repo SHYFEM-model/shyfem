@@ -1,5 +1,19 @@
 ============================================================
 
+Mon Sep 25 15:11:03 CEST 2023
+
+last commits before community model
+
+ LOG                     | 309 ++++++++++++++++++++++++++++++++++++++++++++++++
+ RELEASE_NOTES           |   9 ++
+ fem3d/Makefile          |  13 +-
+ fem3d/subver.f          |  13 +-
+ femdoc/final/shyfem.pdf | Bin 343844 -> 333920 bytes
+ femplot/Makefile        |   1 +
+ 6 files changed, 329 insertions(+), 16 deletions(-)
+
+============================================================
+
 Wed Sep 20 14:45:20 CEST 2023
 
 resolved merge conflicts for compilation
