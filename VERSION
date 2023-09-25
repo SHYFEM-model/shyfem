@@ -1,3 +1,318 @@
+version  7_5_84    25-09-2023    VERS_7_5_84
+
+========================================================== 25-09-2023 - 7_5_84
+
+c ./fem3d/subuti.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/sublnkmpi.f:
+! 29.03.2023    ggu     refactoring
+c
+c ./fem3d/newbcl.f:
+c 02.04.2023	ggu	min/max of T/S computed correctly for mpi
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/subn35.f:
+c 03.05.2023	ggu	avoid out of bound error in ckarea()
+c
+c ./fem3d/mod_shympi_node.f:
+! 27.03.2023    ggu     new routines shympi_receive(), more docs
+! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
+! 13.04.2023    ggu     flagged potential problems with GGU_NKN_NEL_BUG
+! 13.04.2023    ggu     introduced bnode, belem (distinguish calls to node/elem)
+! 19.04.2023    ggu     potential bugs fixed with passing belem
+! 03.05.2023    ggu     new routine shympi_bdebug()
+! 18.05.2023    ggu     in shympi_gather_array() eliminate rectify array
+! 09.06.2023    ggu     new routine error_stop()
+!
+c ./fem3d/newlevels.f:
+! 09.05.2023    lrp     introduce top layer index variable
+c ./fem3d/subgotm_mud.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/mod_conz.f:
+! 28.04.2023	ggu	update function calls for belem
+!
+c ./fem3d/subflxa.f:
+c 18.05.2023	ggu	in flx_write() call flx_collect_3d()
+c 22.05.2023	ggu	need fluxes_r for write
+c
+c ./fem3d/ousutil.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/sigmautil.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/subfemintp.f:
+! 27.04.2023    ggu     avoid creating automatic temporary array
+! 09.05.2023    lrp     introduce top layer index variable
+! 22.05.2023    ggu     new routine iff_ts_intp1()
+! 05.06.2023    lrp     introduce z-star
+!
+c ./fem3d/subbndo.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/newini.f:
+c 28.04.2023	ggu	possible nkn=nel bug flagged with GGU_NKN_NEL
+c
+c ./fem3d/shyelab_output.f:
+! 28.04.2023    ggu     update function calls for belem
+!
+c ./fem3d/subbnd.f:
+c 24.05.2023	ggu	in ckbnds() more debug, new boundary_debug()
+c
+c ./fem3d/basutil_part.f:
+! 04.04.2023    ggu     minor changes
+!
+c ./fem3d/mod_shympi_dummy.f:
+! 27.03.2023    ggu     new routines shympi_receive(), more docs
+! 27.03.2023    ggu     new shympi_l2g_array_fix_i, shympi_gather_array_fix_i
+! 03.05.2023    ggu     new routine shympi_bdebug()
+! 09.06.2023    ggu     new routine error_stop()
+!
+c ./fem3d/shyfem.f:
+c 28.04.2023    ggu     update function calls for belem
+c 22.05.2023    ggu     new names for closing: close_init, close_handle
+c 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/subn11.f:
+c 01.04.2023	ggu	handle new boundary type 5
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/subdry.f:
+c 23.05.2023	ggu	in setznv() loop over ie_mpi
+c 07.06.2023	ggu	new routine compute_dry_elements()
+c
+c ./fem3d/mod_internal.f:
+! 02.04.2023	ggu	initialize fxv, fyv
+c ./fem3d/shypre.f:
+c 06.05.2023    ggu     some enhancements and better error handeling
+c 22.05.2023    ggu     locate is defined in module
+c
+c ./fem3d/submpi_tripple.f:
+! 27.03.2023	ggu	tripple point routines copied here
+! 28.03.2023	ggu	insert lmax into list
+! 29.03.2023	ggu	finished, new routines for getting vals
+! 02.04.2023	ggu	bug fix looking for internal element
+! 03.04.2023	ggu	new bug fix looking for internal element
+! 12.04.2023	ggu	fill buffer_in only if my_id == id_from
+! 07.06.2023    ggu     in exchange_elem_info() use utlov not utlnv (bug-fix)
+! 09.06.2023    ggu     bug fix for tripple point on external boundary
+!
+c ./fem3d/netcdf.f:
+c 09.05.2023    lrp     write vertical velocity and density
+c
+c ./fem3d/lagrange_vertical.f:
+c 22.05.2023	ggu	get_layer_thickness() was missing an argument
+c 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/shyelab_util.f:
+! 09.05.2023    lrp     introduce top layer index variable
+! 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/mod_shympi_node_internal.f:
+! 27.03.2023	ggu	new routines shympi_receive_internal_*()
+! 13.04.2023	ggu	introduced bnode, belem (distinguish calls to node/elem)
+!
+c ./fem3d/subshyutil2.f:
+! 28.04.2023    ggu     update function calls for belem
+c
+c ./fem3d/newstab.f:
+c 29.03.2023	ggu	exchange rindex,tindex,gindex, write to info file
+c 02.04.2023    ggu     only master writes to iuinfo
+c 09.05.2023    lrp     introduce top layer index variable
+c 24.05.2023    ggu     debug section introduced in hydro_internal_stability()
+c
+c ./fem3d/newexpl.f:
+c 27.03.2023	ggu	tripple point routines in new file submpi_tripple.f
+c 29.03.2023	ggu	handle tripple points, new horizontal diffusion routine
+c 29.03.2023	ggu	exchange rindex between domains
+c 09.05.2023    lrp     introduce top layer index variable
+c 24.05.2023    ggu     momentum_viscous_stability(): must run over nel_unique
+c 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/subflx3d.f:
+c 21.04.2023	ggu	avoid access of node 0 in flxtype()
+c
+c ./fem3d/subshyutil.f:
+! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     array simpar introduced
+! 20.07.2023    lrp     new paramter nzadapt
+!
+c ./fem3d/newchk.f:
+c 02.04.2023	ggu	only master writes to iuinfo
+c
+c ./fem3d/submpi_ghost.f:
+! 27.03.2023	ggu	bug fix... iloop == 4 eliminated
+! 27.03.2023	ggu	bug fix... no ieaux
+! 19.04.2023	ggu	in ghost_exchange adapt call to shympi_check_array()
+c
+c ./fem3d/mod_gotm_aux.f:
+! 28.04.2023    ggu     update function calls for belem
+c ./fem3d/subver.f:
+c 25.09.2023	ggu	version 7.5.84  Pre-community edition
+c
+c ./fem3d/subqfxt.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/newclose.f:
+! 18.05.2023	ccf	include reading closure from file
+!
+c ./fem3d/shympi_debug.f:
+! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     make sure shympi_write_debug_init() is called
+!
+c ./fem3d/substress.f:
+! 18.05.2023	ggu	forgot to exchange taubot in bottom_stress()
+!
+c ./fem3d/subtide.f:
+! 28.04.2023	ggu	avoid using floating for **2
+!
+c ./fem3d/tselab1.f:
+! 30.03.2023    ggu     implement -inclusive option
+c
+c ./fem3d/subele.f:
+c 02.04.2023	ggu	to compute total mass only run over nkn_inner
+c 09.05.2023    lrp     introduce top layer index variable
+c 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/subtime.f:
+c 02.04.2023    ggu     only master writes to iuinfo
+c
+c ./fem3d/newtra.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/shyelab_nodes.f:
+! 09.05.2023    lrp     introduce top layer index variable
+! 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/subgotm.f:
+c 02.05.2023    ggu     fix mpi bug for nlv==1
+c 09.05.2023    lrp     introduce top layer index variable
+c 06.06.2023    ggu     minor change writing n2max
+c
+c ./fem3d/shyutil.f:
+! 28.04.2023    ggu     update function calls for belem
+! 09.05.2023    lrp     introduce top layer index variable
+! 05.06.2023    lrp     introduce z-star
+!
+c ./fem3d/shyelab_average.f:
+! 09.05.2023    lrp     introduce top layer index variable
+! 05.06.2023    lrp     introduce z-star
+c
+c ./fem3d/newcon_omp.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/nosutil.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/zadaptutil.f:
+c 05.06.2023    lrp     introduce z-star
+c 18.07.2023	lrp	rzmov read from shy
+c 20.07.2023	lrp	new parameter nzadapt
+c
+c ./fem3d/subexta.f:
+c 18.09.2023	ggu	also write rho to ext file
+c
+c ./fem3d/shyelab1.f:
+! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     array simpar introduced
+! 20.07.2023    lrp     new paramter nzadapt
+c
+c ./fem3d/newcon.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c 31.05.2023    ggu     in conzstab, use ie_mpi, run over nkn_unique (bug fix)
+c
+c ./fem3d/subrst.f:
+! 28.04.2023    ggu     update function calls for belem
+! 02.05.2023    ggu     fix mpi bug for nlv==1
+!
+c ./fem3d/submud.f:
+! 09.05.2023    lrp     introduce top layer index variable
+c ./fem3d/mod_system.f:
+! 02.05.2023	ggu	use ncopy for re-allocating
+!
+c ./fem3d/newconz.f:
+c 02.04.2023    ggu     only master writes to iuinfo
+c 19.04.2023    ggu     init tracer file output only once, syncronize
+c
+c ./fem3d/submeteo2.f:
+c 02.04.2023    ggu     only master writes to iuinfo
+c
+c ./fem3d/newfix.f:
+c 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/subshy.f:
+! 28.04.2023    ggu     update function calls for belem
+! 07.06.2023    ggu     new version 13 - simpar introduced
+!
+c ./fem3d/sublnks.f:
+c 06.06.2023	ggu	do not write newlnk - not working in MPI
+c
+c ./fem3d/subboxa.f:
+! 01.04.2023	ggu	debugging code
+! 21.04.2023	ggu	changes in writing OB fluxes and boxes_3d_aver()
+! 18.05.2023	ggu	tons of changes to get 2D mass check right
+! 29.05.2023	ggu	bug fix: all section arrays have same dimension (ns)
+!
+c ./fem3d/check_shympi_debug.f:
+! 28.03.2023    ggu     code refactorying, new options -summary
+! 13.04.2023    ggu     avoid compiler errors for d/i/r_info
+! 05.06.2023    ggu     handle exceptions, show records with highest errrors
+! 09.06.2023    ggu     handle non existing files
+c ./fem3d/subsort.f:
+! 08.05.2023	ggu	transformed into module
+!
+c ./fem3d/mod_bndo.f:
+! 01.04.2023	ggu	new array bexnod, handle fix boundary condition (bfix)
+! 02.04.2023	ggu	merged files subbndo.f and mod_bndo.f
+! 21.04.2023	ggu	call bexnod() only for existing boundaries
+!
+c ./fem3d/new3di.f:
+c 02.05.2023    ggu     fix mpi bug for nlv==1
+c 09.05.2023    lrp     introduce top layer index variable
+c 08.06.2023    ggu     new zeta_debug(), cleaned, call to compute_dry_elements
+c
+c ./fem3d/lgrelab1.f:
+! 28.04.2023    ggu     update function calls for belem
+c
+c ./fem3d/subflxm.f:
+c 21.04.2023	ggu	problems in gather_sum_d3() ... not yet solved
+c 18.05.2023	ggu	flux_write() changed, new routine flx_collect_3d()
+c
+c ./fem3d/submpi_basin.f:
+! 12.04.2023	ggu	protect from nkn == nel
+c ./fem3d/subwaves.f:
+! 09.05.2023    lrp     introduce top layer index variable
+!
+c ./fem3d/shyparts.f:
+! 04.04.2023	ggu	minor changes
+! 27.04.2023	ggu	better error handling
+c
+c ./fem3d/levels.h:
+! 09.05.2023    lrp     introduce top layer index variable
+c
+c ./fem3d/newtvd.f:
+! 09.05.2023    lrp     introduce top layer index variable
+!
+c ./fem3d/subsys.f:
+c 20.07.2023    lrp     new parameter nzadapt
+c
+c ./femutil/femfiles/profile.f:
+! 31.05.2023	ggu	new routine sedi_init
+c
+c ./femplot/shyplot.f:
+! 03.05.2023	ggu	introduced belem (bug fix)
+! 22.05.2023	ggu	get_layer_thickness() was missing an argument
+! 26.07.2023	lrp	introduce zstar in shyplot
+!
+c ./femplot/supdep.f:
+c 26.07.2023    lrp     introduce zstar in shyplot
+
+==========================================================
+
 version  7_5_83    24-03-2023    VERS_7_5_83   commit_2023-09-25
 
 version  7_5_83    24-03-2023    VERS_7_5_83   commit_2023-09-20
