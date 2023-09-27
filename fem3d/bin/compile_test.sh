@@ -24,6 +24,8 @@ if [ $1 = "-single" ]; then
   shift
 fi
 
+status=0
+
 if [ $single = "YES" ]; then	# compile files one by one
   for file in $*
   do
@@ -31,10 +33,14 @@ if [ $single = "YES" ]; then	# compile files one by one
     echo "   $file"
     echo "--------------------------------------------"
     $compiler main_dummy.f $file
+    [ $? -ne 0 ] && $(( status = status + 1 ))   
   done
 else				# compile all files together
   $compiler main_dummy.f $*
+  status=$?
 fi
 
 rm -f main_dummy.f
+
+exit $status
 

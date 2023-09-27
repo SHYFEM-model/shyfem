@@ -15,6 +15,8 @@ while(<>) {
 
 	chomp;
 
+	next if /\*\./;
+
 	if( /^\s+subroutine\s+(\w+)/i ) {
 	  print "$1\n";
 	} elsif( /^\s+function\s+(\w+)/i ) {
