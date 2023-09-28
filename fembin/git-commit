@@ -67,7 +67,14 @@ GetSpecial()
 
 CheckRules()
 {
-  cmp Rules.make femcheck/rules/Rules.dist > /dev/null
+  if [ -f femcheck/rules/Rules.dist ]; then
+    cmp Rules.make femcheck/rules/Rules.dist > /dev/null
+  elif [ -f var/rules/Rules.dist ]; then
+    cmp Rules.make var/rules/Rules.dist > /dev/null
+  else
+    echo "cannot find Rules.dist"
+    exit 5
+  fi
   status=$?
 
   #echo "CheckRules: $status"
