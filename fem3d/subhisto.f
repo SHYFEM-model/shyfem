@@ -38,10 +38,28 @@ c 23.03.2010	ggu	changed v6.1.1
 c 31.05.2011	ggu	changed VERS_6_1_23
 c 09.01.2015	ggu	changed VERS_7_0_12
 c 16.02.2019	ggu	changed VERS_7_5_60
+c 28.09.2023	ggu	include substituted with module
 c
 c****************************************************************
 
+	module histo
+
+	implicit none
+
+        integer, parameter :: ndim_histo = 100
+        integer, parameter :: nid_histo = 14758327
+
+        integer, save :: ncbin,ncid
+        integer, save :: icount(ndim_histo+1)
+        real, save :: abin(ndim_histo)
+
+	end module histo
+
+c****************************************************************
+
         subroutine histo_init(nbin,bin0,dbin,rbin)
+
+	use histo
 
         implicit none
 
@@ -49,8 +67,6 @@ c****************************************************************
         real bin0               !first bin (limit)
         real dbin               !regular bin size (0 => use rbin)
         real rbin(nbin)         !bin size limits (upper)
-
-	include 'histo.h'
 
         integer i
 
@@ -77,11 +93,11 @@ c****************************************************************
 
         subroutine histo_insert(value)
 
+	use histo
+
         implicit none
 
         real value
-
-	include 'histo.h'
 
         integer i
 
@@ -101,11 +117,11 @@ c****************************************************************
 
         subroutine histo_final(ic)
 
+	use histo
+
         implicit none
 
         integer ic(1)
-
-	include 'histo.h'
 
         integer i
 

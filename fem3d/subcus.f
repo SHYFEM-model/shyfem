@@ -3557,11 +3557,6 @@ c**********************************************************************
 
         implicit none
 
-!       include 'param.h'
-!       include 'basin.h'
-!        include 'ev.h'
-!        include 'ts.h'
-
         integer k,l,ii,ie
         real rgil,rmed,rbla,rmar     !relaxaxion factors
         real rop,rco            !relaxaxion factor for open sea and coast

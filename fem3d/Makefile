@@ -662,6 +662,7 @@ ETSOBJS = subets.o etsutil.o genutil.o subetsm.o
 ETSOBJS = 
 NOSOUSOBJS = subnos.o nosutil.o subous.o ousutil.o subets.o etsutil.o \
 		genutil.o sub2linear.o
+NOSOUSOBJS = 
 GRDOBJS = subgrd.o grdutil.o
 PROJOBJS = subproj.o
 UTILOBJS = subsrt.o
@@ -1261,6 +1262,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/flux.mod: subflxa.o
 ../femlib/mod/flxfile.mod: subflx.o
 ../femlib/mod/grd.mod: subgrd.o
+../femlib/mod/histo.mod: subhisto.o
 ../femlib/mod/ice_global.mod: subicemodel.o
 ../femlib/mod/ice_params.mod: subicemodel.o
 ../femlib/mod/ice_variables.mod: subicemodel.o
@@ -1368,6 +1370,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/tide.mod: tide_utils.o
 ../femlib/mod/ts_util.mod: subtsutil.o
 ../femlib/mod/vector_matrix_utils.mod: aquabc_II_co2sys.o
+../femlib/mod/volcomp.mod: subvola.o
 ../femlib/mod/zadapt.mod: zadaptutil.o
 amgx_c_wrapper_dummy.o: ../femlib/mod/petscdm.mod \
 		../femlib/mod/petscdmlabel.mod \
@@ -2083,7 +2086,6 @@ subele.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/shympi.mod 
 subenergy.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/shympi.mod 
-subets.o: etsinf.h
 subexta.o: ../femlib/mod/basin.mod ../femlib/mod/levels.mod \
 		../femlib/mod/mod_conz.mod \
 		../femlib/mod/mod_depth.mod \
@@ -2146,7 +2148,6 @@ subgotm_mud.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_ts.mod femtime.h param.h \
 		pkonst.h 
 subgrd.o: ../femlib/mod/mod_geom_dynamic.mod
-subhisto.o: histo.h
 subice.o: ../femlib/mod/basin.mod
 sublin.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
 sublnka.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod
@@ -2338,7 +2339,7 @@ subuti.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/mod_ts.mod ../femlib/mod/shympi.mod \
 		pkonst.h 
 subvola.o: ../femlib/mod/basin.mod ../femlib/mod/mod_geom.mod \
-		modules.h param.h volcomp.h 
+		modules.h 
 subwat.o: ../femlib/mod/basin.mod ../femlib/mod/evgeom.mod \
 		../femlib/mod/levels.mod \
 		../femlib/mod/mod_geom.mod \

@@ -1,5 +1,146 @@
 ============================================================
 
+Thu Sep 28 11:00:13 CEST 2023
+
+h-files to obsolete, changes in filetype, subvola, subhisto
+
+ fem3d/Makefile                        |  7 ++--
+ fem3d/bin/check_h.sh                  | 20 +++++++++++-
+ fem3d/filetype.f                      | 42 ++++++++++++------------
+ fem3d/{ => obsolete}/area.h           |  0
+ fem3d/{ => obsolete}/aux_array.h      |  0
+ fem3d/{ => obsolete}/basin.h          |  0
+ fem3d/{ => obsolete}/bclfix.h         |  0
+ fem3d/{ => obsolete}/bnd_aux.h        |  0
+ fem3d/{ => obsolete}/bound_dynamic.h  |  0
+ fem3d/{ => obsolete}/bound_geom.h     |  0
+ fem3d/{ => obsolete}/bound_names.h    |  0
+ fem3d/{ => obsolete}/bsig.h           |  0
+ fem3d/{ => obsolete}/chezy.h          |  0
+ fem3d/{ => obsolete}/common.h         |  3 --
+ fem3d/{ => obsolete}/common_amat.h    |  0
+ fem3d/{ => obsolete}/const_aux.h      |  0
+ fem3d/{ => obsolete}/conz.h           |  0
+ fem3d/{ => obsolete}/depth.h          |  0
+ fem3d/{ => obsolete}/diff_aux.h       |  0
+ fem3d/{ => obsolete}/diff_visc_fric.h |  0
+ fem3d/{ => obsolete}/etsinf.h         |  0
+ fem3d/{ => obsolete}/ev.h             |  0
+ fem3d/{ => obsolete}/evmain.h         |  0
+ fem3d/{ => obsolete}/extra.h          |  0
+ fem3d/{ => obsolete}/fluidmud.h       |  0
+ fem3d/{ => obsolete}/geom.h           |  0
+ fem3d/{ => obsolete}/geom_aux.h       |  0
+ fem3d/{ => obsolete}/geom_dynamic.h   |  0
+ fem3d/{ => obsolete}/gotm_aux.h       |  0
+ fem3d/{ => obsolete}/grd_extra.h      |  0
+ fem3d/{ => obsolete}/histo.h          |  0
+ fem3d/{ => obsolete}/hydro.h          |  0
+ fem3d/{ => obsolete}/hydro_baro.h     |  0
+ fem3d/{ => obsolete}/hydro_print.h    |  0
+ fem3d/{ => obsolete}/hydro_vel.h      |  0
+ fem3d/{ => obsolete}/internal.h       |  0
+ fem3d/{ => obsolete}/levels.h         |  0
+ fem3d/{ => obsolete}/meteo.h          |  0
+ fem3d/{ => obsolete}/meteo_aux.h      |  0
+ fem3d/{ => obsolete}/nbasin.h         |  0
+ fem3d/{ => obsolete}/nbound.h         |  0
+ fem3d/{ => obsolete}/nbvdim.h         |  0
+ fem3d/{ => obsolete}/nkonst.h         |  0
+ fem3d/{ => obsolete}/nlevel.h         |  0
+ fem3d/{ => obsolete}/nohyd.h          |  0
+ fem3d/{ => obsolete}/nohydlinks.h     |  0
+ fem3d/{ => obsolete}/nudge.h          |  0
+ fem3d/{ => obsolete}/nudging.h        |  0
+ fem3d/{ => obsolete}/roughness.h      |  0
+ fem3d/{ => obsolete}/sed_param.h      |  0
+ fem3d/{ => obsolete}/sigma.h          |  0
+ fem3d/{ => obsolete}/sinking.h        |  0
+ fem3d/{ => obsolete}/subbndo.h        |  0
+ fem3d/{ => obsolete}/subdts.h         |  0
+ fem3d/{ => obsolete}/subets.f         |  0
+ fem3d/{ => obsolete}/subetsa.h        |  0
+ fem3d/{ => obsolete}/subgrd.h         |  0
+ fem3d/{ => obsolete}/subnls.h         |  0
+ fem3d/{ => obsolete}/subobc.h         |  0
+ fem3d/{ => obsolete}/subqfxm4.h       |  0
+ fem3d/{ => obsolete}/testbndo.h       |  0
+ fem3d/{ => obsolete}/ts.h             |  0
+ fem3d/{ => obsolete}/turbulence.h     |  0
+ fem3d/{ => obsolete}/tvd.h            |  0
+ fem3d/{ => obsolete}/volcomp.h        |  0
+ fem3d/{ => obsolete}/waves.h          |  0
+ fem3d/subcus.f                        |  5 ---
+ fem3d/subhisto.f                      | 28 ++++++++++++----
+ fem3d/subvola.f                       | 60 ++++++++++++++++-------------------
+ 69 files changed, 93 insertions(+), 72 deletions(-)
+ renamed:
+    fem3d/area.h -> fem3d/obsolete/area.h
+    fem3d/aux_array.h -> fem3d/obsolete/aux_array.h
+    fem3d/basin.h -> fem3d/obsolete/basin.h
+    fem3d/bclfix.h -> fem3d/obsolete/bclfix.h
+    fem3d/bnd_aux.h -> fem3d/obsolete/bnd_aux.h
+    fem3d/bound_dynamic.h -> fem3d/obsolete/bound_dynamic.h
+    fem3d/bound_geom.h -> fem3d/obsolete/bound_geom.h
+    fem3d/bound_names.h -> fem3d/obsolete/bound_names.h
+    fem3d/bsig.h -> fem3d/obsolete/bsig.h
+    fem3d/chezy.h -> fem3d/obsolete/chezy.h
+    fem3d/common.h -> fem3d/obsolete/common.h
+    fem3d/common_amat.h -> fem3d/obsolete/common_amat.h
+    fem3d/const_aux.h -> fem3d/obsolete/const_aux.h
+    fem3d/conz.h -> fem3d/obsolete/conz.h
+    fem3d/depth.h -> fem3d/obsolete/depth.h
+    fem3d/diff_aux.h -> fem3d/obsolete/diff_aux.h
+    fem3d/diff_visc_fric.h -> fem3d/obsolete/diff_visc_fric.h
+    fem3d/etsinf.h -> fem3d/obsolete/etsinf.h
+    fem3d/ev.h -> fem3d/obsolete/ev.h
+    fem3d/evmain.h -> fem3d/obsolete/evmain.h
+    fem3d/extra.h -> fem3d/obsolete/extra.h
+    fem3d/fluidmud.h -> fem3d/obsolete/fluidmud.h
+    fem3d/geom.h -> fem3d/obsolete/geom.h
+    fem3d/geom_aux.h -> fem3d/obsolete/geom_aux.h
+    fem3d/geom_dynamic.h -> fem3d/obsolete/geom_dynamic.h
+    fem3d/gotm_aux.h -> fem3d/obsolete/gotm_aux.h
+    fem3d/grd_extra.h -> fem3d/obsolete/grd_extra.h
+    fem3d/histo.h -> fem3d/obsolete/histo.h
+    fem3d/hydro.h -> fem3d/obsolete/hydro.h
+    fem3d/hydro_baro.h -> fem3d/obsolete/hydro_baro.h
+    fem3d/hydro_print.h -> fem3d/obsolete/hydro_print.h
+    fem3d/hydro_vel.h -> fem3d/obsolete/hydro_vel.h
+    fem3d/internal.h -> fem3d/obsolete/internal.h
+    fem3d/levels.h -> fem3d/obsolete/levels.h
+    fem3d/meteo.h -> fem3d/obsolete/meteo.h
+    fem3d/meteo_aux.h -> fem3d/obsolete/meteo_aux.h
+    fem3d/nbasin.h -> fem3d/obsolete/nbasin.h
+    fem3d/nbound.h -> fem3d/obsolete/nbound.h
+    fem3d/nbvdim.h -> fem3d/obsolete/nbvdim.h
+    fem3d/nkonst.h -> fem3d/obsolete/nkonst.h
+    fem3d/nlevel.h -> fem3d/obsolete/nlevel.h
+    fem3d/nohyd.h -> fem3d/obsolete/nohyd.h
+    fem3d/nohydlinks.h -> fem3d/obsolete/nohydlinks.h
+    fem3d/nudge.h -> fem3d/obsolete/nudge.h
+    fem3d/nudging.h -> fem3d/obsolete/nudging.h
+    fem3d/roughness.h -> fem3d/obsolete/roughness.h
+    fem3d/sed_param.h -> fem3d/obsolete/sed_param.h
+    fem3d/sigma.h -> fem3d/obsolete/sigma.h
+    fem3d/sinking.h -> fem3d/obsolete/sinking.h
+    fem3d/subbndo.h -> fem3d/obsolete/subbndo.h
+    fem3d/subdts.h -> fem3d/obsolete/subdts.h
+    fem3d/subets.f -> fem3d/obsolete/subets.f
+    fem3d/subetsa.h -> fem3d/obsolete/subetsa.h
+    fem3d/subgrd.h -> fem3d/obsolete/subgrd.h
+    fem3d/subnls.h -> fem3d/obsolete/subnls.h
+    fem3d/subobc.h -> fem3d/obsolete/subobc.h
+    fem3d/subqfxm4.h -> fem3d/obsolete/subqfxm4.h
+    fem3d/testbndo.h -> fem3d/obsolete/testbndo.h
+    fem3d/ts.h -> fem3d/obsolete/ts.h
+    fem3d/turbulence.h -> fem3d/obsolete/turbulence.h
+    fem3d/tvd.h -> fem3d/obsolete/tvd.h
+    fem3d/volcomp.h -> fem3d/obsolete/volcomp.h
+    fem3d/waves.h -> fem3d/obsolete/waves.h
+
+============================================================
+
 Wed Sep 27 17:04:04 CEST 2023
 
 new scripts in fem3d/bin
