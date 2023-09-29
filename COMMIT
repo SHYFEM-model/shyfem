@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Sep 29 21:22:36 CEST 2023
+
+bug fix for shyelab (concatenating)
+
+ fem3d/shyelab1.f | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+============================================================
+
 Thu Sep 28 14:40:09 CEST 2023
 
 changes in fembin/git-commit

@@ -77,6 +77,7 @@
 ! 28.04.2023    ggu     update function calls for belem
 ! 07.06.2023    ggu     array simpar introduced
 ! 20.07.2023    lrp     new paramter nzadapt
+! 29.09.2023    ggu     new atime0out for correct concatenating of files
 !
 !**************************************************************
 
@@ -137,7 +138,7 @@
 	real simpar(3),rzmov
 	double precision dtime,dtstart,dtnew,ddtime
 	double precision atfirst,atlast
-	double precision atime,atstart,atnew,atold
+	double precision atime,atstart,atnew,atold,atime0out
 
  	real, parameter :: pthresh = 30.
  	real, parameter :: cthresh = 0.1
@@ -326,6 +327,7 @@
 
 	call shy_get_date(id,date,time)
 	call elabtime_date_and_time(date,time)
+	atime0out = atime00
 	call elabtime_set_minmax(stmin,stmax)
 	call elabtime_set_inclusive(binclusive)
 	
@@ -383,6 +385,8 @@
          if(ierr.ne.0) then	!EOF - see if we have to read another file
 	   if( ierr > 0 .or. atstart == -1. ) exit
 	   call open_new_file(ifile,id,atstart)
+	   call shy_get_date(id,date,time)
+	   call elabtime_date_and_time(date,time)
 	   if( .not. bsilent ) call shy_write_filename(id)
 	   cycle
 	 end if
@@ -444,6 +448,7 @@
 	 ! initialize record header for output
 	 !--------------------------------------------------------------
 
+	 dtime = atime - atime0out
 	 call shyelab_header_output(idout,ftype,dtime,nvar)
 
 	 it = dtime
