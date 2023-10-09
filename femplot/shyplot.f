@@ -77,6 +77,7 @@
 ! 03.05.2023	ggu	introduced belem (bug fix)
 ! 22.05.2023	ggu	get_layer_thickness() was missing an argument
 ! 26.07.2023	lrp	introduce zstar in shyplot
+! 28.09.2023    lrp     bug fix for zstar (forgotten parameter)
 !
 ! notes :
 !
@@ -2078,7 +2079,7 @@ c*****************************************************************
 	  if( h < -990. ) h = hlv(lm)
 	  !if( h == -1. ) h = 1.
 	  if( h+z<zeps ) z = zeps-h
-	  call get_layer_thickness(lm,nsigma,0,hsigma,0.
+	  call get_layer_thickness(lm,1,nsigma,0,hsigma,0.
      +                          ,z,h,hlv,hl)
 
 	  vacu = 0.

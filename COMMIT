@@ -1,5 +1,18 @@
 ============================================================
 
+Mon Oct  9 12:46:42 CEST 2023
+
+bug fix zstar, changes in compile.sh
+
+ fem3d/bin/compile.sh      | 56 +++++++++++++++++++++++++++++++++++++++++++++--
+ fem3d/bin/compile_test.sh |  4 ++++
+ fem3d/lagrange_vertical.f | 12 +++++-----
+ femplot/shyplot.f         |  3 ++-
+ femplot/supdep.f          |  5 +++--
+ 5 files changed, 70 insertions(+), 10 deletions(-)
+
+============================================================
+
 Fri Sep 29 21:22:36 CEST 2023
 
 bug fix for shyelab (concatenating)

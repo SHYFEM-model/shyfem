@@ -11,6 +11,10 @@
 compiler=g77
 compiler=gfortran
 
+tmpdir=tmp_compile
+
+mkdir $tmpdir
+
 echo "	end" > main_dummy.f
 
 if [ $# -eq 0 ]; then
