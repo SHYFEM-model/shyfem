@@ -234,7 +234,7 @@ sub make_dev_names {
         ,'dmc' => 'Donata Melaku Canu'
         ,'erp' => 'Erik Pascolo'
         ,'fdp' => 'Francesca De Pascalis'
-        ,'gir' => 'Ginevra Rosat'
+        ,'gir' => 'Ginevra Rosati'
         ,'clc' => 'Celia Laurent'
         ,'cla' => 'Carl Amos'
         ,'isa' => 'Isabella Scroccaro'

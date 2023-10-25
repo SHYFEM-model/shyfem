@@ -1,5 +1,25 @@
 ============================================================
 
+Wed Oct 25 13:11:31 CEST 2023
+
+new git-log, shyfind.sh and update compile.sh, usemod.pl
+
+ .gitignore                          |   3 +
+ fem3d/bin/compile.sh                |  93 +++++++++++++++-------
+ fem3d/bin/usemod.pl                 | 112 +++++++++++++++++++++++++++
+ fembin/git-log                      |  80 +++++++++++++++++++
+ fembin/git-log.pl                   | 149 ++++++++++++++++++++++++++++++++++++
+ fembin/shyfind.sh                   |  86 +++++++++++++++++++++
+ femcheck/copyright/utils_develop.pm |   2 +-
+ 7 files changed, 496 insertions(+), 29 deletions(-)
+ new file:
+   fem3d/bin/usemod.pl
+   fembin/git-log
+   fembin/git-log.pl
+   fembin/shyfind.sh
+
+============================================================
+
 Mon Oct  9 12:46:42 CEST 2023
 
 bug fix zstar, changes in compile.sh

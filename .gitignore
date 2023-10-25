@@ -267,6 +267,9 @@ fembin/grid
 fembin/mesh
 fembin/exgrd
 
+fembin/compile.sh
+fembin/usemod.pl
+
 femutil/netcdf/ncinfo
 femutil/netcdf/ncbgc
 

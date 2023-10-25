@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# displays history of files in git repository
+#
+#--------------------------------------
+
+Usage()
+{
+  echo "Usage: git-log [-h|-help] [-options] file(s)"
+}
+
+FullUsage()
+{
+  Usage
+  echo ""
+  echo "Available options:"
+  echo "  -h|-help         this help"
+  echo "  -verbose         be verbose"
+  echo "  -quiet           be quiet"
+  echo "  -full            show full log messages messages"
+  echo "  -short           show short log messages messages"
+  echo "  -oneline         show one line for each commit (default)"
+  echo "  -first           show first commit"
+  echo "  -last            show last commit"
+  echo ""
+}
+
+#--------------------------------------
+
+show=
+verbose=NO
+quiet=NO
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -quiet)         quiet="YES";;
+        -verbose)       verbose="YES";;
+        -full)          show="full";;
+        -short)         show="short";;
+        -oneline)       show="oneline";;
+        -first)         show="first";;
+        -last)          show="last";;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             echo "No such option: $1"; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+[ $# -eq 0 ] && Usage && exit 0
+
+[ -z "$show" ] && show=oneline
+
+#--------------------------------------------------
+
+date="format-local:'%Y-%m-%d::%H:%M:%S'"
+
+git log --date=$date $* > tmp.tmp
+
+#echo "show = $show"
+
+if [ $show = "full" ]; then
+  cat tmp.tmp
+elif [ $show = "short" ]; then
+  grep -v "^$" tmp.tmp
+elif [ $show = "oneline" ]; then
+  git-log.pl tmp.tmp
+elif [ $show = "first" ]; then
+  git-log.pl tmp.tmp | tail -1
+elif [ $show = "last" ]; then
+  git-log.pl tmp.tmp | head -1
+else
+  echo "unknown option..."
+fi
+
+rm tmp.tmp
+
+#--------------------------------------------------
+

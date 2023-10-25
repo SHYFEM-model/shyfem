@@ -15,27 +15,6 @@ dmain=dummy_main.f
 actdir=$( pwd )
 tmpdir=tmp_compile
 
-if [ $# -eq 0 ]; then
-  echo "Usage: compile.sh [-single|-show] fortran-file(s)"
-  exit 0
-fi
-
-single=NO
-show=NO
-keep=NO
-if [ "$1" = "-single" ]; then
-  single="YES"
-  shift
-fi
-if [ "$1" = "-show" ]; then
-  show="YES"
-  shift
-fi
-if [ "$1" = "-keep" ]; then
-  keep="YES"
-  shift
-fi
-
 #--------------------------------------
 
 MakeDummy()
@@ -43,12 +22,72 @@ MakeDummy()
   echo "	end" > $dmain
 }
 
+DoOutput()
+{
+  if [ $status -eq 0 ]; then
+    echo "$status  $file"
+  else
+    [ $only0 = "NO" ] && echo "$status  $file"
+    if [ $show = "YES" -o $verbose = "YES" ]; then
+      cat logfile.log
+    fi
+  fi
+}
+
 #--------------------------------------
 
-if [ $# -eq 0 ]; then
-  echo "Usage: compile.sh fortran-file(s)"
+Usage()
+{
+  echo "Usage: compile.sh [-h|-help] [-options] fortran-file(s)"
   exit 0
-fi
+}
+
+FullUsage()
+{
+  echo "Usage: compile.sh [-h|-help] [-options] fortran-file(s)"
+  echo ""
+  echo "Available options:"
+  echo "  -h|-help         this help"
+  echo "  -show            show error messages"
+  echo "  -verbose         be verbose"
+  echo "  -quiet           be quiet"
+  echo "  -single          compile files one by one"
+  echo "  -keep            do not delete directory and objetcs"
+  echo "  -only0           only show files with status 0"
+  echo ""
+
+  exit 0
+}
+
+#--------------------------------------
+
+show=NO
+verbose=NO
+show=NO
+quiet=NO
+single=NO
+keep=NO
+only0=NO
+
+while [ -n "$1" ]
+do
+   case $1 in
+        -quiet)         quiet="YES";;
+        -verbose)       verbose="YES";;
+        -show)          show="YES";;
+        -single)        single="YES";;
+        -keep)          keep="YES";;
+        -only0)         only0="YES";;
+        -h|-help)       FullUsage; exit 0;;
+        -*)             ErrorOption $1; exit 1;;
+        *)              break;;
+   esac
+   shift
+done
+
+[ $# -eq 0 ] && Usage
+
+#--------------------------------------
 
 mkdir -p $tmpdir
 cp $* $tmpdir
@@ -61,14 +100,12 @@ if [ $single = "YES" ]; then
   do
     $comp $dmain $file > logfile.log 2>&1
     status=$?
-    echo "$status  $file"
-    [ $status -ne 0 -a $show = "YES" ] && cat logfile.log
+    DoOutput
   done
 else
   $comp $dmain $* > logfile.log 2>&1
   status=$?
-  echo "status = $status"
-  [ $status -ne 0 -a $show = "YES" ] && cat logfile.log
+  DoOutput
 fi
 
 cd $actdir
