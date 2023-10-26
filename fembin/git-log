@@ -56,7 +56,7 @@ done
 
 date="format-local:'%Y-%m-%d::%H:%M:%S'"
 
-git log --date=$date $* > tmp.tmp
+git log --follow --date=$date $* > tmp.tmp
 
 #echo "show = $show"
 
