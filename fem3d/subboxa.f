@@ -98,6 +98,8 @@
 ! 21.04.2023	ggu	changes in writing OB fluxes and boxes_3d_aver()
 ! 18.05.2023	ggu	tons of changes to get 2D mass check right
 ! 29.05.2023	ggu	bug fix: all section arrays have same dimension (ns)
+! 25.10.2023	ggu	eps2d and eps3d introduced
+! 28.10.2023	ggu	bug fix for not existing boundaries
 !
 ! notes :
 !
@@ -178,6 +180,9 @@
         integer, save :: nbxdim = 0	!maximum for nbox
         integer, save :: nscboxdim = 0	!maximum for nsect
         integer, save :: nfxboxdim = 0	!maximum for kfluxm
+
+	real, parameter :: eps2d = 1.e-4	!eps for 2d mass balance
+	real, parameter :: eps3d = 1.e-4	!eps for 3d mass balance
 
         integer, save :: nbox		!total number of boxes
         integer, save :: nbc_ob		!total number of open boundaries
@@ -860,7 +865,7 @@ c******************************************************************
 	  if( id .le. 0 ) exit
 	  read(1,*) (iaux,i=1,n)
 	  nsct = nsct + 1
-	  if( id .ne. nsect ) goto 97
+	  if( id .ne. nsct ) goto 97
 	  kflxm = kflxm + n + 1
 	end do
 
@@ -949,7 +954,7 @@ c******************************************************************
 	  if( id .ne. nsect ) goto 97
 	  if( nsect .gt. nscboxdim ) goto 95
 	  call box_insert_section(id,n,itype,ib1,ib2,iauxv,ierr)
-	  if( kfluxm .gt. nfxboxdim ) goto 96
+	  if( kfluxm .gt. nfxboxdim ) goto 96	!kfluxm set in sub above
 	  if( ierr .gt. 0 ) goto 93		!should be already handled above
 	  if( iudeb > 0 ) then
 	    write(iudeb,*) id,n,ib1,ib2
@@ -959,11 +964,16 @@ c******************************************************************
 
 	close(1)
 
-	kfluxm = kfluxm - 1
+	!kfluxm = kfluxm - 1		!we keep last 0
 	kflux_ext = kflux
 
 	write(6,*) 'finished reading boxfile: ',trim(boxfile)
-	write(6,*) nbox,nsect,kfluxm,nscboxdim,nfxboxdim
+	write(6,*) '  boxes    = ',nbox
+	write(6,*) '  sections = ',nsect
+	write(6,*) '  nodes    = ',kfluxm
+	write(6,*) '  sdim     = ',nscboxdim
+	write(6,*) '  ndim     = ',nfxboxdim
+	!write(6,*) kflux(1:kfluxm)
 
 	if( iudeb == 0 ) return
 
@@ -2399,16 +2409,16 @@ c sets up open boundary inputs
 	integer ipext
 
 	ierr = 0
-	kfluxm = kfluxm + 1
-	kflux(kfluxm) = 0
 	ndim = nkn
 
 	nbc = nbnds()
 
 	do ibc = 1,nbc
 	  !write(6,*) ibc,nbc
+	  iscbnd(:,ibc) = 0
 	  itype = itybnd(ibc)
 	  nk = nkbnds(ibc)
+	  if( nk <= 0 ) cycle			!no boundary
 	  ib = 0
 	  call irbnds(ibc,ndim,nk,iauxv)
 	  where( iauxv == 0 ) iauxv = -1	!flag non existing nodes
@@ -2441,7 +2451,7 @@ c sets up open boundary inputs
 	!write(630+my_id,'(5i5)') (ibc,iscbnd(:,ibc),ibc=1,nbc)
 	!flush(630+my_id)
 
-	kfluxm = kfluxm - 1
+	!kfluxm = kfluxm - 1
 
 	return
    93	continue
@@ -2697,11 +2707,13 @@ c computes mass balance
 	integer ib,is,ib1,ib2,iu,l
 	real volf,vole,volb,vola,vold,volr
 	real errmax,errv(nbox),errd(nbox)
+	real eps
 	double precision vol(nbox)
 	double precision flux
 	logical bdebug,bw
 
-	real, parameter :: eps = 1.e-5
+	eps = eps2d
+	if( eps == 0. ) return
 
 	bdebug = .false.
 	bdebug = .true.
