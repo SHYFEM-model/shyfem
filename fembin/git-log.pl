@@ -18,17 +18,18 @@ while(<>) {
     $author =~ s/\s*<.*//;
   } elsif( /^Date:\s+\'(.*)\'/ ) {
     $date = $1;
+  } elsif( /^=+ (\S+)/ ) {
+    $file = $1;
   } else {
     s/^\s+//; s/\s+$//;
-    $comment = substr($_,0,42) if $_;
-    #print "comment: $comment\n";
+    $comment = $_ if $_;
   }
 
 }
 
 print_commit();		# last commit
 
-print_authors();
+print_authors() unless $file;
 
 #--------------------------------------------------------
 
@@ -39,7 +40,14 @@ sub print_commit
   $commit = substr($commit,0,10);
   my $acron = make_author_acronym($author);
 
-  print "$commit $date $acron  $comment\n";
+  if( $file ) {
+    my $l = length($file);
+    $comment = substr($comment,0,42-1-$l);
+    print "$commit $date $acron  $file $comment\n";
+  } else {
+    $comment = substr($comment,0,42);
+    print "$commit $date $acron  $comment\n";
+  }
 }
 
 sub print_authors

@@ -130,6 +130,7 @@
 ! 3		for MPI	(after 15.03.2022)
 ! 4		final version of with 3d computations under MPI
 ! 5		writing of boxes_geom.txt (with boxes and external nums)
+!		boxes_stats.txt has different section format
 !
 !******************************************************************
 !

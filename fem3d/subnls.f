@@ -308,7 +308,9 @@ c .true. if new line found, else .false.
 	logical bcomma
 
 	integer ios
-	character*80 linaux,name
+	!character*80 linaux,name
+	character*80 name
+	character*128 linaux,lintab
 
 	integer ichafs
 
@@ -321,7 +323,9 @@ c .true. if new line found, else .false.
 
 	  nline = nline + 1
 	  ioff = 1
-	  call tablnc(linaux,line)
+	  call tablnc(linaux,lintab)
+	  call nls_check_line_length(lintab)
+	  line = lintab(1:80)
 	  !write(6,*) trim(line)
 	  if( nls_skip_whitespace_on_line(bcomma) ) exit  !something on line
 	end do
@@ -371,6 +375,22 @@ c reads next data line and returns it
 	if( sect /= 'end' ) ioff = len_trim(line) + 1
 
 	end function nls_next_data_line
+
+c******************************************************************
+
+	subroutine nls_check_line_length(line)
+
+	implicit none
+
+	character*(*) line
+
+	if( len_trim(line) > 80 ) then
+	  write(6,*) 'line longer than 80 chars: ',len_trim(line)
+	  write(6,*) trim(line)
+	  stop 'error stop nls_check_line_length: line too long'
+	end if
+
+	end
 
 c******************************************************************
 

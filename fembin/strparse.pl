@@ -12,11 +12,12 @@
 #
 # possible command line options: see subroutine FullUsage
 #
-# version       1.6     11.06.2023      -essential implemented
-# version       1.5     09.06.2023      handle flux/extra section with descrip
-# version       1.4     07.06.2023      use ScriptPath() to determine path
-# version       1.3     09.05.2023      handle also boxes and only bas files
-# version       1.2     30.03.2023      restructured and -collect, -reduce
+# version       1.7     02.11.2023     -restart implemented
+# version       1.6     11.06.2023     -essential implemented
+# version       1.5     09.06.2023     handle flux/extra section with descrip
+# version       1.4     07.06.2023     use ScriptPath() to determine path
+# version       1.3     09.05.2023     handle also boxes and only bas files
+# version       1.2     30.03.2023     restructured and -collect, -reduce
 # version       1.1     24.03.2023     handle extra and flux sections
 # version       1.0     ?              old version, partially functional
 #
@@ -40,6 +41,7 @@ $::extra = 0 unless $::extra;
 $::flux = 0 unless $::flux;
 $::zip = 0 unless $::zip;
 $::rewrite = 0 unless $::rewrite;
+$::restart = 0 unless $::restart;
 $::essential = 0 unless $::essential;
 $::sect = "" unless $::sect;
 $::txt = 0 unless $::txt;
@@ -95,6 +97,10 @@ if( $::h or $::help ) {
   #$str->print_sections();;
   $str->write_str("new.str");;
   print STDERR "str-file written to new.str\n";
+} elsif( $::restart ) {
+  prepare_restart($str);
+  $str->write_str("restart.str");;
+  print STDERR "str-file written to restart.str\n";
 } elsif( $::sect ) {
   show_sect($str,$::sect);
 } elsif( $::simtime ) {
@@ -145,6 +151,7 @@ sub FullUsage {
   print STDERR "    -flux         extract flux nodes\n";
   print STDERR "    -zip          zips forcing files, grid, str in one file\n";
   print STDERR "    -rewrite      rewrite the str file\n";
+  print STDERR "    -restart      create a restart from the str file\n";
   print STDERR "    -essential    only write active sections, no comments\n";
   print STDERR "    -value=var    show value of var ([sect:]var)\n";
   print STDERR "    -replace=val  replace value of var with val and rewrite\n";
@@ -467,6 +474,17 @@ sub write_nodes_to_grd {
 }
 
 #------------------------------------------------------------
+
+sub prepare_restart {
+
+  my $str = shift;
+
+  my $simul = $str->get_simul();
+  replace_value($str,'itrst',-1,'para');
+  replace_value($str,'restrt',"'${simul}.rst'",'name');
+  $simul .= "_rst";
+  $str->set_simul($simul);
+}
 
 sub show_files {
 

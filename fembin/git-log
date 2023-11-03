@@ -22,7 +22,25 @@ FullUsage()
   echo "  -oneline         show one line for each commit (default)"
   echo "  -first           show first commit"
   echo "  -last            show last commit"
+  echo "  -names           show file names"
   echo ""
+}
+
+PrintLog()
+{
+  if [ $show = "full" ]; then
+    cat tmp.tmp
+  elif [ $show = "short" ]; then
+    grep -v "^$" tmp.tmp
+  elif [ $show = "oneline" ]; then
+    git-log.pl tmp.tmp
+  elif [ $show = "first" ]; then
+    git-log.pl tmp.tmp | tail -1
+  elif [ $show = "last" ]; then
+    git-log.pl tmp.tmp | head -1
+  else
+    echo "unknown option..."
+  fi
 }
 
 #--------------------------------------
@@ -30,6 +48,7 @@ FullUsage()
 show=
 verbose=NO
 quiet=NO
+names=NO
 
 while [ -n "$1" ]
 do
@@ -41,6 +60,7 @@ do
         -oneline)       show="oneline";;
         -first)         show="first";;
         -last)          show="last";;
+        -names)         names="YES";;
         -h|-help)       FullUsage; exit 0;;
         -*)             echo "No such option: $1"; exit 1;;
         *)              break;;
@@ -51,30 +71,33 @@ done
 [ $# -eq 0 ] && Usage && exit 0
 
 [ -z "$show" ] && show=oneline
+single="NO"
+[ $show = "first" ] && single="YES"
+[ $show = "last" ] && single="YES"
+[ $names = "YES" ] && single="YES"
 
 #--------------------------------------------------
 
 date="format-local:'%Y-%m-%d::%H:%M:%S'"
 
-git log --follow --date=$date $* > tmp.tmp
+[ -f tmp.tmp ] && rm -f tmp.tmp
 
-#echo "show = $show"
+for file in $*
+do
+  [ $names = "YES" ] && echo "===================== $file" >> tmp.tmp
+  git log --follow --date=$date $file >> tmp.tmp
+  if [ $single = "YES" ]; then
+    PrintLog
+    [ -f tmp.tmp ] && rm -f tmp.tmp
+  fi
+done
 
-if [ $show = "full" ]; then
-  cat tmp.tmp
-elif [ $show = "short" ]; then
-  grep -v "^$" tmp.tmp
-elif [ $show = "oneline" ]; then
-  git-log.pl tmp.tmp
-elif [ $show = "first" ]; then
-  git-log.pl tmp.tmp | tail -1
-elif [ $show = "last" ]; then
-  git-log.pl tmp.tmp | head -1
-else
-  echo "unknown option..."
+if [ $single = "NO" ]; then
+  PrintLog
+  [ -f tmp.tmp ] && rm -f tmp.tmp
 fi
 
-rm tmp.tmp
+#rm tmp.tmp
 
 #--------------------------------------------------
 
