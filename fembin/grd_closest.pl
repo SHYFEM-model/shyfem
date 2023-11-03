@@ -39,6 +39,7 @@ $ngrid->readgrd("$node_list");
 
 my @list = ();
 open(GRD,">closest_nodes.grd");
+open(TXT,">closest_nodes.txt");
 
 #------------------------------------------------------------
 
@@ -61,13 +62,17 @@ foreach my $number ( @nodes ) {
   $x = $item->{x};
   $y = $item->{y};
   print GRD "1 $number $type $x $y\n" unless $::nodeonly;
+  print TXT "$number\n" unless $::nodeonly;
 }
 
 foreach my $line (@list) {
   print "$line\n";
 }
 
-print STDERR "nodes have been written to closest_nodes.grd\n" unless $::silent;
+unless( $::silent) {
+  print STDERR "nodes have been written to closest_nodes.grd";
+  print STDERR " and closest_nodes.txt\n";
+}
 
 #------------------------------------------------------------
 

@@ -30,6 +30,7 @@ while(<>) {
   s/^\s*//;	# get rid of leading spaces
   s/,/ /g;	# convert commas to spaces
   s/;/ /g;	# convert semicolon to spaces
+  next unless $_;
 
   @f = split;
   $nf = @f;
