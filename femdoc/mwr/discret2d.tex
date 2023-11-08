@@ -1,0 +1,515 @@
+
+%------------------------------------------------------------------------
+%
+%    Copyright (C) 1985-2020  Georg Umgiesser
+%
+%    This file is part of SHYFEM.
+%
+%    SHYFEM is free software: you can redistribute it and/or modify
+%    it under the terms of the GNU General Public License as published by
+%    the Free Software Foundation, either version 3 of the License, or
+%    (at your option) any later version.
+%
+%    SHYFEM is distributed in the hope that it will be useful,
+%    but WITHOUT ANY WARRANTY; without even the implied warranty of
+%    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+%    GNU General Public License for more details.
+%
+%    You should have received a copy of the GNU General Public License
+%    along with SHYFEM. Please see the file COPYING in the main directory.
+%    If not, see <http://www.gnu.org/licenses/>.
+%
+%    Contributions to this file can be found below in the revision log.
+%
+%------------------------------------------------------------------------
+
+% changed for 2d semi-implicit explanations
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% basic heading for Latex %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt]{article}
+
+\usepackage{a4}
+%\usepackage{amssymb}
+%\usepackage{amsmath}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% user commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\vect}[2]   {       \mbox{$
+					\left(  \begin{array}{c}
+					#1 \\ #2
+					\end{array}     \right)
+				$}
+			}
+\newcommand{\paren}[1]  { \left( #1 \right) }
+
+\newcommand{\nsz} {\normalsize}
+
+%<MATH_ABBREV>
+
+\newcommand{\tdif}[1] {\frac{\partial #1}{\partial t}}
+\newcommand{\xdif}[1] {\frac{\partial #1}{\partial x}}
+\newcommand{\ydif}[1] {\frac{\partial #1}{\partial y}}
+\newcommand{\zdif}[1] {\frac{\partial #1}{\partial z}}
+\newcommand{\xxdif}[1] {\frac{\partial^2 #1}{\partial x^2}}
+\newcommand{\yydif}[1] {\frac{\partial^2 #1}{\partial y^2}}
+\newcommand{\zzdif}[1] {\frac{\partial^2 #1}{\partial z^2}}
+
+\newcommand{\dt} {\Delta t}
+\newcommand{\dtt} {\mbox{$\frac{\Delta t}{2}$}}
+\newcommand{\dx} {\mbox{$\Delta x$}}
+\newcommand{\dy} {\mbox{$\Delta y$}}
+\newcommand{\dz}{\Delta z}
+
+
+\newcommand{\olds} {\mbox{$\scriptstyle (0)$}}
+\newcommand{\news} {\mbox{$\scriptstyle (1)$}}
+\newcommand{\meds} {\mbox{$\scriptscriptstyle (\frac{1}{2})$}}
+\newcommand{\half} {\mbox{$\scriptstyle \frac{1}{2}$}}
+
+\newcommand{\uold} {\mbox{$U^{\olds}$}}
+\newcommand{\vold} {\mbox{$V^{\olds}$}}
+%\newcommand{\zold} {\mbox{$\zeta^{\olds}$}}
+\newcommand{\unew} {\mbox{$U^{\news}$}}
+\newcommand{\vnew} {\mbox{$V^{\news}$}}
+%\newcommand{\znew} {\mbox{$\zeta^{\news}$}}
+
+\newcommand{\uuold} {\mbox{$u^{\olds}$}}
+\newcommand{\vvold} {\mbox{$v^{\olds}$}}
+\newcommand{\uunew} {\mbox{$u^{\news}$}}
+\newcommand{\vvnew} {\mbox{$v^{\news}$}}
+
+\newcommand{\uzl} {\mbox{$\zdif{U_{l}}$}}
+\newcommand{\vzl} {\mbox{$\zdif{V_{l}}$}}
+
+\newcommand{\uoldp}[1] {\mbox{$U_{{#1}}^{\olds}$}}
+\newcommand{\voldp}[1] {\mbox{$V_{{#1}}^{\olds}$}}
+\newcommand{\zoldp}[1] {\mbox{$\zeta_{{#1}}^{\olds}$}}
+\newcommand{\unewp}[1] {\mbox{$U_{{#1}}^{\news}$}}
+\newcommand{\vnewp}[1] {\mbox{$V_{{#1}}^{\news}$}}
+\newcommand{\znewp}[1] {\mbox{$\zeta_{{#1}}^{\news}$}}
+\newcommand{\zmedp}[1] {\mbox{$\zeta_{{#1}}^{\meds}$}}
+
+\newcommand{\resr} {{\cal R}}
+\newcommand{\rhon} {\rho_0}
+\newcommand{\drho} {\frac{1}{\rhon}}
+\newcommand{\fracs}[2] {\mbox{$\frac{#1}{#2}$}}
+%\newcommand{\drho} {\mbox{$\scriptstyle \frac{1}{\rho_{0}}$}}
+\newcommand{\deltat} {\mbox{$\tilde{\delta}$}}
+\newcommand{\gammat} {\mbox{$\tilde{\gamma}$}}
+
+\newcommand{\AO} {A_{\Omega}}
+\newcommand{\dO} {d \Omega}
+
+\newcommand{\uv} {{\bf U}}
+\newcommand{\uvold} {{\bf U^{(0)}}}
+\newcommand{\uvnew} {{\bf U^{(1)}}}
+
+\newcommand{\Uold} {U^{(0)}}
+\newcommand{\Unew} {U^{(1)}}
+\newcommand{\Vold} {V^{(0)}}
+\newcommand{\Vnew} {V^{(1)}}
+\newcommand{\zold} {\zeta^{(0)}}
+\newcommand{\znew} {\zeta^{(1)}}
+
+\newcommand{\Xb} {\hat{X}}
+\newcommand{\Yb} {\hat{Y}}
+\newcommand{\aush} {A_H}
+
+\newcommand{\az} {\alpha_{z}}
+\newcommand{\am} {\alpha_{m}}
+\newcommand{\ar} {\alpha_{r}}
+\newcommand{\azt} {\tilde{\az}}
+\newcommand{\amt} {\tilde{\am}}
+\newcommand{\art} {\tilde{\ar}}
+
+\newcommand{\duv} {\Delta {\bf U}}
+\newcommand{\dzeta} {\Delta \zeta}
+\newcommand{\iv} {{\bf I}}
+\newcommand{\ivh} {\hat{\bf I}}
+\newcommand{\fv} {{\bf F}}
+\newcommand{\uvh} {\hat{\bf U}}
+\newcommand{\ffxx} {\tilde{f_x}}
+\newcommand{\ffyy} {\tilde{f_y}}
+
+\newcommand{\dvol} {\Delta v}
+\newcommand{\cbar} {\bar c}
+
+\newcommand{\tv} {\tau}
+
+%</MATH_ABBREV>
+
+\newcommand{\beq} {\begin{equation}}
+\newcommand{\eeq} {\end{equation}}
+\newcommand{\beqa} {\begin{eqnarray}}
+\newcommand{\eeqa} {\end{eqnarray}}
+
+\newcommand{\eqref} [1] {(\ref{eq:#1})}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% hyphenation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% title & author %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Discretization of 2D FEM model}
+
+\author{Georg Umgiesser}
+
+%\date{\today}
+%\date{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%\baselineskip 20 pt
+\maketitle
+
+%\begin{abstract}
+%The main features of a newly conceived primitive equation circulation
+%model are outlined. The model uses finite elements for spatial
+%integration and a semi-implicit algorithm for integration in time.
+%The terms treated implicitly are the water levels, the Coriolis term
+%and the vertical eddy diffusion. The model uses a combination of
+%linear form functions for the expansion of the
+%water levels and constant form functions for the velocities.
+%Through this combination of form functions the resulting grid resembles
+%a staggered finite difference Arakawa B-grid. This
+%staggered finite element grid is superior, as far as conservation
+%and propagation properties are concerned, to a standard Galerkin method.
+%The model has already been used successfully with
+%the Venice Lagoon and
+%in its full three dimensional formulation will be also
+%applied to the Adriatic Sea.
+%\end{abstract}
+
+
+\section*{The Equations}
+
+
+We start with the two-dimensional
+shallow water momentum equations and the continuity equation:
+\beq
+\tdif{u} + g \xdif{\zeta} + \frac{1}{\rho}\zdif{\tau_x} + \tilde{X} = 0
+\eeq
+\beq
+\tdif{v} + g \ydif{\zeta} + \frac{1}{\rho}\zdif{\tau_y} + \tilde{Y} = 0
+\eeq
+\beq
+\xdif{u} + \ydif{v} + \zdif{w} = 0
+\eeq
+The terms $\tau_x$ and $\tau_y$ are the stress terms.
+
+Integrating over the water column gives
+\beq
+\tdif{U} + gH \xdif{\zeta} + RU + X = 0
+\eeq
+\beq
+\tdif{V} + gH \ydif{\zeta} + RV + Y = 0
+\eeq
+\beq
+\tdif{\zeta} + \xdif{U} + \ydif{V} = 0
+\eeq
+where $x,y,t$ are the space coordinates and time, $U,V$ the
+transports in $x,y$ direction, $\zeta$ the water level,
+$R$ the friction parameter, 
+$g$ the gravitational
+acceleration, $H=h+\zeta$ the total water depth, $h$ the
+undisturbed water depth and
+$X,Y$ extra terms that can be treated
+explicitly in the following discretization and as explained later.
+
+wwwww
+
+wwwww
+
+\section*{The Friction}
+
+The friction parameter $R$ depends itself on the
+current velocity. If a quadratic bottom friction is used we have
+\beq
+\tau_x^B = c_B \rho |u| u
+\eeq
+\beq
+\tau_y^B = c_B \rho |u| v
+\eeq
+and $R = \frac{c_B |u|}{H}$.
+
+The transports $U,V$ can be obtained from the velocities by
+\beq
+	U = \int_{-h}^{\zeta} u dz 
+		\hspace{1cm} 
+	V = \int_{-h}^{\zeta} v dz
+\eeq
+where $u,v$ are the current velocities.
+
+The terms contained in $X,Y$ are the non-linear advective terms, the
+Coriolis terms, the wind stress and the lateral turbulent diffusion.
+They may be written as
+\beq
+X = U \xdif{u} + V \ydif{u} - f V - \frac{\tau^x}{\rhon}
+	- \aush ( \xxdif{U} + \yydif{U} )
+\eeq
+\beq
+Y = U \xdif{v} + V \ydif{v} + f U - \frac{\tau^y}{\rhon}
+	- \aush ( \xxdif{V} + \yydif{V} )
+\eeq
+where $f$ is the Coriolis parameter, $\tau^x,\tau^y$ the
+wind stress, $\rhon$ the reference density of water and
+$\aush$ the horizontal eddy viscosity.
+
+
+\section*{Discretization of the Momentum Equation}
+
+
+The various time varying variables are now discretized in time.
+The general expression for this is 
+$\zeta = \alpha \znew + \tilde{\alpha} \zold$ where the index
+$\news$ designs the new and $\olds$ the old time level.
+The weighting parameters $\alpha,\tilde{\alpha}$ must be in the
+the intervall from 0 to 1 and $\alpha+\tilde{\alpha}=1$ must hold.
+
+We now chose weighting parameters for the discretization. These parameters
+are $a_z$ for the transports in the continuity equation, $a_m$
+for the pressure term in the momentum equations and $a_r$ for
+the friction term. Associated to these parameters are the parameters
+$\azt, \amt, \art$ that are defined as
+\beq
+\azt = 1 - a_z \quad \amt = 1 - a_m \quad \art = 1 - a_r.
+\eeq
+All above parameters can take the values from 0 to 1 where
+0 means an explicit treatment and 1 a complete implicit treatment.
+
+Discretizing the $x$ momentum equation one obtains
+\beq
+\frac{\Unew-\Uold}{\dt} + gH [ \am \xdif{\znew} + \amt \xdif{\zold} ]
+	+ R [ \ar \Unew + \art \Uold ] + X = 0
+\eeq
+where the total depth $H$ and the extra terms $X$ are always taken
+at the old time step.
+
+Solving for $\Unew$ and introducing the new parameter 
+\beq
+\delta = \frac{1}{1 + \dt R \ar}
+\eeq
+we obtain 
+\beq
+\Unew = \delta (1 - \dt R \art) \Uold 
+		- \dt \delta gH [ \am \xdif{\znew} + \amt \xdif{\zold} ]
+		- \dt \delta X.
+\eeq
+
+Introducing two more auxiliary parameters
+\beq
+	\gamma = \delta [ 1 - \dt R \art ] \quad
+	\beta = \dt \delta gH
+\eeq
+we finally have for both momentum equations
+\beq
+\Unew = \gamma \Uold 
+		- \beta \am \xdif{\znew} - \beta \amt \xdif{\zold} 
+		- \dt \delta X
+\eeq
+\beq
+\Vnew = \gamma \Vold 
+		- \beta \am \ydif{\znew} - \beta \amt \ydif{\zold} 
+		- \dt \delta Y
+\eeq
+where the equation in $y$ direction
+has been obtained in a similar way 
+as the one in $x$ direction.
+
+\section*{Discretization of the continuity equation}
+
+\beq
+\tdif{\zeta} + \xdif{U} + \ydif{V} = 0
+\eeq
+\beq
+\znew = \zold 
+		- \dt [ \am \xdif{\Unew} + \amt \xdif{\Uold} ]
+		- \dt [ \am \ydif{\Vnew} + \amt \ydif{\Vold} ]
+\eeq
+
+We can insert formally $\Unew$ and $\Vnew$ into this equation and obtain
+an equation in $\znew$ that can be solved by solving a linear system.
+
+\section*{The tre-dimensional case}
+
+We can again, 
+
+\begin{equation}
+	\tdif{U_l} + gH_l\xdif{\zeta}
+		= \tilde{F}_{l} + \nu\zzdif{U_l}
+\end{equation}
+\begin{equation}
+	\tdif{V_l} + gH_l\ydif{\zeta}
+		= \tilde{F}_{l} + \nu\zzdif{V_l}
+\end{equation}
+and the continuity equation
+\begin{equation}
+	\tdif{\zeta}
+		+ \sum_l \xdif{U_l}
+		+ \sum_l \ydif{V_l}
+		= 0
+\end{equation}
+
+We obtain a similar equation as before, but now we have the unknown velocity
+$U_L$ and $V_L$ which are the transports in the bottom layer. Now
+we cannot solve for $U,V$ anymore as before.
+
+\beq
+\tdif{U} + gH \xdif{\zeta} + RU_L + X = 0
+\eeq
+\beq
+\tdif{V} + gH \ydif{\zeta} + RV_L + Y = 0
+\eeq
+\beq
+\tdif{\zeta} + \xdif{U} + \ydif{V} = 0
+\eeq
+
+\beq
+        \frac{\Unew_l-\Uold_l}{\dt}
+        - f(\alpha_f\Vnew_l + (1-\alpha_f)\Vold_l)
+        + gH_l \xdif(\alpha_m\znew + (1-\alpha_m)\zold)
+        = \\
+        F^x_{l}
+        + \nu\alpha_d\frac{\Unew_{l-1}-2\Unew_l+\Unew_{l+1}}{\dz^2}
+        + \nu(1-\alpha_d)\frac{\Uold_{l-1}-2\Uold_l+\Uold_{l+1}}{\dz^2}
+\eeq
+
+\beq
+        \frac{\Vnew_l-\Vold_l}{\dt}
+        + f(\alpha_f\Unew_l + (1-\alpha_f)\Uold_l)
+        + gH_l \ydif(\alpha_m\znew + (1-\alpha_m)\zold)
+        = \\
+        F^y_{l}
+        + \nu\alpha_d\frac{\Vnew_{l-1}-2\Vnew_l+\Vnew_{l+1}}{\dz^2}
+        + \nu(1-\alpha_d)\frac{\Vold_{l-1}-2\Vold_l+\Vold_{l+1}}{\dz^2}
+\eeq
+
+\section*{Spatial Integration of the Momentum Equation}
+
+
+We now carry out the integration of the momentum equation over
+one finite element. For this the variable are expanded with their
+respective form functions, e.g., $\zold = \zold_M \Phi_M$ where
+$M=1,3$ for a triangular element and equal indices
+imply a summation over these indices.
+
+We multiply every term with the constant weighting function
+$\Psi$ and integrate. Remember that $U,V$ are constant over an
+element, and $\zeta$ is varying linearly. The single terms
+give
+\beq
+\int \Psi \Unew \dO = \AO \Unew
+\eeq
+\beq
+\int \Psi X \dO = \int X \dO
+\eeq
+\beq
+	\int \Psi \xdif{\znew} \dO 
+	= \int \Psi \xdif{\Phi_M} \znew_M \dO 
+	= \int b_M \znew_M \dO = \AO b_M \znew_M
+\eeq
+\beq
+	\int \Psi \ydif{\znew} \dO 
+	= \int \Psi \ydif{\Phi_M} \znew_M \dO 
+	= \int c_M \znew_M \dO = \AO c_M \znew_M
+\eeq
+where $\Omega$ is the integration domain, $\AO$ the area of the
+triangle and $b_M, c_M$ are the constant derivatives of the 
+linear form functions $\Phi_M$
+\beq
+b_M = \xdif{\Phi_M} \quad c_M = \ydif{\Phi_M}.
+\eeq
+
+We therefore obtain
+\beq
+\Unew = \gamma U 
+		- \beta \am b_M \znew_M - \beta \amt b_M \zold_M 
+		- \dt \delta \Xb
+\eeq
+\beq
+\Vnew = \gamma V 
+		- \beta \am c_M \znew_M - \beta \amt c_M \zold_M 
+		- \dt \delta \Yb
+\eeq
+with
+\beq
+\Xb = \frac{1}{\AO} \int X \dO \quad
+\Yb = \frac{1}{\AO} \int Y \dO.
+\eeq
+
+
+\section*{Integration of the Continuity Equation}
+
+
+
+
+
+Before discretizing we first multiply the continuity
+equation by the form function $\phi_N$ and integrate
+over one element to obtain
+\[
+\int \Phi_N \tdif{\zeta} + \int \Phi_N \xdif{U} + \int \Phi_N \ydif{V} = 0.
+\]
+The terms containing the spatial differentiation can now be transformed
+by partial integration in the following way
+\[ 
+        \int \Phi_N \xdif{U} + \int \Phi_N \ydif{V} =
+        - \int \xdif{\Phi_N} U - \int \ydif{\Phi_N} V +
+                \int_{\partial\Omega} \Phi_N U_n ds.
+\]
+and remembering that the partial derivatives of the form functions
+$\Phi_N$ are $b_N,c_N$ respectively we can write
+\beq \label{eq:conti1}
+        \int \Phi_N \xdif{U} + \int \Phi_N \ydif{V} =
+        - \int b_N U - \int c_N V +
+                \int_{\partial\Omega} \Phi_N U_n ds.
+\eeq
+
+Here the last integral is a line integral over the border of
+the element and $U_n$ the transport normal to the border. Once the
+various contributions of the elements are summed the terms of the last
+integral are equal in modulus but of inverse sign and therefore
+cancel out. The only terms that do not cancel out are the
+line integral over the border of the domain.
+
+In case of a material boundary the trasnport noram lto the boundary
+vanishes, and therefore the line integral over these elements
+is again zero. The only contribution different from zero is therefore
+at the open boundaries. In this case the line integral is exactly
+the discharge over the open boundary out of the domain. It is
+therefore natural to specify a flux boundary condition with finite elements.
+However, in case the water levels are specified this boundary
+condition is not needed and is substituted with a level
+boundary condition. We will not further consider this
+term from now on.
+
+
+The integrated continuity equation \eqref{conti1} is now discretized in time
+in the following way
+\[
+        \int \frac{\znew-\znew}{\dt} \dO =
+                b_N \int ( \az \unew + \azt \uold ) \dO +  
+                c_N \int ( \az \vnew + \azt \vold ) \dO
+\]
+
+
+
+
+
+
+\end{document}

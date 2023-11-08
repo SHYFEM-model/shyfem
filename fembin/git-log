@@ -23,6 +23,8 @@ FullUsage()
   echo "  -first           show first commit"
   echo "  -last            show last commit"
   echo "  -names           show file names"
+  echo "  -orig            same as -names -first"
+  echo "  -new             same as -names -last"
   echo ""
 }
 
@@ -61,6 +63,8 @@ do
         -first)         show="first";;
         -last)          show="last";;
         -names)         names="YES";;
+        -orig)          names="YES"; show="first";;
+        -new)           names="YES"; show="last";;
         -h|-help)       FullUsage; exit 0;;
         -*)             echo "No such option: $1"; exit 1;;
         *)              break;;

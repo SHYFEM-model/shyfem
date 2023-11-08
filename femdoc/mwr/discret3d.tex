@@ -1,0 +1,604 @@
+\documentclass[12pt,draft]{article}
+
+% 3d discretization
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\beqm}{\begin{multline}}
+\newcommand{\eeqm}{\end{multline}}
+
+\newcommand{\Unod}{U}
+\newcommand{\Vnod}{V}
+\newcommand{\znod}{\zeta}
+\newcommand{\Unew}{U^n}
+\newcommand{\Vnew}{V^n}
+\newcommand{\znew}{\zeta^n}
+\newcommand{\Uold}{U}
+\newcommand{\Vold}{V}
+\newcommand{\zold}{\zeta}
+\newcommand{\Udel}{\Delta U}
+\newcommand{\Vdel}{\Delta V}
+\newcommand{\zdel}{\Delta \zeta}
+
+\newcommand{\UV}{\mathbf{U}}
+\newcommand{\UVnew}{\mathbf{U}^n}
+\newcommand{\UVdel}{\mathbf{\Delta U}}
+\newcommand{\UVhat}{\hat{\mathbf{U}}}
+\newcommand{\UVhatdel}{\mathbf{\Delta \hat{U}}}
+\newcommand{\HH}{\mathbf{H}}
+\newcommand{\Amat}{\mathbf{\bar{A}}}
+\newcommand{\AmatI}{\mathbf{\bar{A}}^{-1}}
+\newcommand{\FF}{\mathbf{F}}
+\newcommand{\II}{\mathbf{I}}
+\newcommand{\Ipart}{\mathbf{\partial I}}
+
+\newcommand{\dt}{\Delta t}
+\newcommand{\dz}{\Delta z}
+
+\newcommand{\Ftilde}{\tilde{F}}
+\newcommand{\Ftx}[1]{\tilde{F}^x_{#1}}
+\newcommand{\Fty}[1]{\tilde{F}^y_{#1}}
+
+\newcommand{\delx}{\partial_x}
+\newcommand{\dely}{\partial_y}
+
+\newcommand{\dpartt}[1]{\frac{\partial #1}{\partial t}}
+\newcommand{\dpartx}[1]{\frac{\partial #1}{\partial x}}
+\newcommand{\dparty}[1]{\frac{\partial #1}{\partial y}}
+\newcommand{\dpartz}[1]{\frac{\partial #1}{\partial z}}
+\newcommand{\dpartzz}[1]{\frac{\partial^2 #1}{\partial z^2}}
+
+\newcounter{cms} % nel preambolo
+
+
+\title{Treatment of the 3D equations in SHYFEM}
+%\author{Georg Umgiesser}
+
+\begin{document}
+
+\maketitle
+
+\section{Derivation of the discretized equations in time}
+
+We start with the equations of momentum, already integrated over one model layer $l$:
+
+\begin{equation}
+	\dpartt{\Unod_l} - f\Vnod_l + gH_l\dpartx{\znod}
+		= \Ftx{l} + \nu\dpartzz{\Unod_l}
+\end{equation}
+\begin{equation}
+	\dpartt{\Vnod_l} + f\Unod_l + gH_l\dparty{\znod}
+		= \Fty{l} + \nu\dpartzz{\Vnod_l}
+\end{equation}
+and the continuity equation
+\begin{equation}
+	\dpartt{\znod}
+		+ \sum_l \dpartx{\Unod_l}
+		+ \sum_l \dparty{\Vnod_l}
+		= 0
+\end{equation}
+
+
+Here $\Unod_l$ and $\Vnod_l$ are the integrated velocities (transports) over layer
+$l$ in direction $x$ and $y$,
+$f$ the Coriolis parameter, $g$ the gravitational acceleration, $H_l$ the depth of
+layer $l$, $\znod$ the water level,
+$\nu$ the turbulent viscosity and $\Ftilde_l$ the other terms that will be
+treated explicitly in the discretization below, like advection, horizontal diffusion,
+atmospheric pressure etc., while $z$ denotes the vertical 
+coordinate (positive pointing upward).
+
+We discretize in time and develop semi-implicitly the Coriolis term ($\alpha_f$),
+the barotropic pressure term ($\alpha_m$), the vertical stress term ($\alpha_d$)
+and the divergence term in the continuity equation ($\alpha_z$).
+A superscript ${}^n$ identifies the values at the new time step, 
+whereas no superscript refers to the
+old time step.
+
+\begin{multline}
+	\frac{\Unew_l-\Uold_l}{\dt} 
+	- f(\alpha_f\Vnew_l + (1-\alpha_f)\Vold_l) 
+	+ gH_l \delx(\alpha_m\znew + (1-\alpha_m)\zold) 
+	= \\
+	\Ftx{l} 
+	+ \nu\alpha_d\frac{\Unew_{l-1}-2\Unew_l+\Unew_{l+1}}{\dz^2}
+	+ \nu(1-\alpha_d)\frac{\Uold_{l-1}-2\Uold_l+\Uold_{l+1}}{\dz^2}
+\end{multline}
+
+\begin{multline}
+	\frac{\Vnew_l-\Vold_l}{\dt} 
+	+ f(\alpha_f\Unew_l + (1-\alpha_f)\Uold_l) 
+	+ gH_l \dely(\alpha_m\znew + (1-\alpha_m)\zold)  
+	= \\
+	\Fty{l}
+	+ \nu\alpha_d\frac{\Vnew_{l-1}-2\Vnew_l+\Vnew_{l+1}}{\dz^2}
+	+ \nu(1-\alpha_d)\frac{\Vold_{l-1}-2\Vold_l+\Vold_{l+1}}{\dz^2}
+\end{multline}
+
+Here for simplicity a regular discretization in vertical layers
+of depth $\dz$ has been assumed.
+
+It is easy to see that with the definition
+$\Udel = \Unew - \Uold$ we can rearrange
+\beq
+\alpha\Unew + (1-\alpha)\Uold = \alpha\Udel + \Uold
+\eeq 
+Using this definition and rearranging,
+the two momentum equations become
+
+\begin{multline}
+	\frac{\Udel_l}{\dt} 
+	- f\alpha_f\Vdel_l 
+	- \nu\alpha_d\frac{\Udel_{l-1}-2\Udel_l+\Udel_{l+1}}{\dz^2}
+	+ gH_l\alpha_m\delx\zdel 
+	= \\
+	\Ftx{l}
+	+ f\Vold_l
+	+ \nu\frac{\Uold_{l-1}-2\Uold_l+\Uold_{l+1}}{\dz^2}
+	- gH_l\delx\zold 
+\end{multline}
+
+\begin{multline}
+	\frac{\Vdel_l}{\dt} 
+	+ f\alpha_f\Udel_l 
+	- \nu\alpha_d\frac{\Vdel_{l-1}-2\Vdel_l+\Vdel_{l+1}}{\dz^2}
+	+ gH_l\alpha_m\dely\zdel 
+	= \\
+	\Fty{l}
+	- f\Uold_l
+	+ \nu\frac{\Vold_{l-1}-2\Vold_l+\Vold_{l+1}}{\dz^2}
+	- gH_l\dely\zold 
+\end{multline}
+
+In the equations above on the left hand side the unknowns 
+that still depend on the values on the new time step
+have been gathered,
+whereas on the right hand side all the terms that are already known (explicit terms)
+are listed. If we call the whole right hand side $F$ and use 
+the following definitions
+\begin{equation}
+	\gamma=\dt f\alpha_f 
+	\hspace{1cm}
+	\epsilon=\dt\nu\alpha_d/\dz^2
+	\hspace{1cm}
+	\beta=\dt g\alpha_m
+\end{equation}
+we can write the discretized momentum equations as
+\begin{multline}
+	\Udel_l - \gamma\Vdel_l 
+	- \epsilon(\Udel_{l-1}-2\Udel_l+\Udel_{l+1})
+	+ \beta H_l\delx\zdel 
+	= \dt F^x_l
+\end{multline}
+\begin{multline}
+	\Vdel_l + \gamma\Udel_l 
+	- \epsilon(\Vdel_{l-1}-2\Vdel_l+\Vdel_{l+1})
+	+ \beta H_l\dely\zdel 
+	= \dt F^y_l
+\end{multline}
+
+We now introduce a new notation, where we gather into one array
+the single layer transports $\Unod_l$ and $\Vnod_l$
+and level depths $H_l$: 
+\begin{equation}
+\UV = 
+\begin{bmatrix}
+ U_1 \\ V_1 \\ U_2 \\ V_2 \\ \vdots \\ U_L \\ V_L 
+\end{bmatrix}
+\hspace{1cm}
+\UVdel =
+\begin{bmatrix}
+ \Udel_1 \\ \Vdel_1 \\ \Udel_2 \\ \Vdel_2 \\ \vdots \\
+ \Udel_L \\ \Vdel_L 
+\end{bmatrix}
+\hspace{1cm}
+\HH^x =
+\begin{bmatrix}
+ H_1 \\ 0 \\ H_2 \\ 0 \\ \vdots \\ H_L \\ 0 
+\end{bmatrix}
+\hspace{1cm}
+\HH^y =
+\begin{bmatrix}
+ 0 \\ H_1 \\ 0 \\ H_2 \\ \vdots \\ 0 \\ H_L 
+\end{bmatrix}
+\end{equation}
+where $L$ denotes the total number of layers for this element.
+With this notation we can collect the momentum equations into 
+one array equation
+\begin{equation}
+	\label{momentum_intermediate}
+	\Amat \UVdel + \beta(\HH^x\delx\zdel+\HH^y\dely\zdel)
+	= \dt\FF 
+\end{equation}
+with $\FF$ is defined as
+\begin{equation}
+\FF = 
+\begin{bmatrix}
+ F^x_{1} & F^y_{1} & F^x_{2} & F^y_{2} & \cdots 
+ & F^x_{L} & F^y_{L}  
+\end{bmatrix}^T.
+\end{equation}
+
+Here $\Amat$ is a matrix that condenses all the information of
+the implicit system into one matrix. Since one level is connected
+to the level above and below and also within the level between 
+$\Unod_l$ and $\Vnod_l$ this results in a pentagonal matrix
+for one node. The structure of the matrix is given in the appendix.
+
+After computing the inverse $\AmatI$ of $\Amat$ equation
+(\ref{momentum_intermediate})
+can be (at least formally) solved for $\UVdel$
+\begin{equation}
+	\UVdel =
+		- \beta(\AmatI\HH^x\delx\zdel+\AmatI\HH^y\dely\zdel)
+		+ \dt\AmatI\FF 
+\end{equation}
+In this equation the water level derivative is still unkown and
+the term containing it
+cannot yet be computed. However the last term is completely
+known and can be already 
+computed. We define a new auxiliary velocity as
+\begin{equation}
+	\label{uv_hat}
+	\UVhat = \UV + \dt\AmatI\FF
+\end{equation}
+and therefore
+$\UVhatdel = \dt\AmatI\FF$. With this definition we finally have
+for the momentum equation
+\begin{equation}
+	\label{momentum_final}
+	\UVdel = \UVhatdel
+		- \beta 
+		\left(
+		\AmatI\HH^x\delx\zdel+\AmatI\HH^y\dely\zdel
+		\right).
+\end{equation}
+
+In order to solve completely for the unknown velocities $\UVdel$
+we will have to use the continuity equation. After discretization,
+and taking into account that the divergence term is treated
+semi-implicitly with weighting $\alpha_z$, the continuity
+equation reads
+\begin{equation}
+	\frac{\zdel}{\dt}
+	+ \sum_l \dpartx{}(\alpha_z\Unew_l+(1-\alpha_z)\Uold_l) 
+	+ \sum_l \dparty{}(\alpha_z\Vnew_l+(1-\alpha_z)\Vold_l) 
+	= 0
+\end{equation}
+and transforming to $\Udel$ and $\Vdel$ we have
+\begin{equation}
+	\zdel
+	+ \dt \left[
+	   \sum_l \dpartx{}(\alpha_z\Udel_l+\Uold_l) 
+	+ \sum_l \dparty{}(\alpha_z\Vdel_l+\Vold_l) 
+	\right] 
+	= 0.
+\end{equation}
+We want to use the same vector notation as before. Therefore
+we define the two arrays 
+$\II^x$ and $\II^y$ and a combination of both
+$\Ipart = \II^x\delx + \II^y\dely$ as
+\begin{equation}
+\II^x =
+\begin{bmatrix}
+1 \\ 0 \\ 1 \\ 0 \\ \vdots \\ 1 \\ 0 
+\end{bmatrix}
+\hspace{1cm}
+\II^y =
+\begin{bmatrix}
+0 \\ 1 \\ 0 \\ 1 \\ \vdots \\ 0 \\ 1
+\end{bmatrix}
+\hspace{1cm}
+\Ipart =
+\begin{bmatrix}
+\delx \\ \dely \\ \delx \\ \dely \\ \vdots \\ \delx \\ \dely
+\end{bmatrix}
+\end{equation}
+and with this definition the continuity equation becomes
+\begin{equation}
+	\label{conti_final}
+	\zdel
+	+ \dt\alpha_z\Ipart\cdot\UVdel
+	+ \dt\Ipart\cdot\UV
+	= 0.
+\end{equation}
+Here the dot $\cdot$ indicates the scalar product. This transfers 
+the formal scalar product in a summation.
+
+We can now formally substitute in (\ref{conti_final})
+$\UVdel$ from (\ref{momentum_final}). If this is done
+we have
+\begin{multline}
+	\zdel
+	- \dt\alpha_z\beta\; \Ipart\cdot
+		(\AmatI\HH^x\delx+\AmatI\HH^y\dely)\zdel \\
+	=
+	- \dt[ \alpha_z\Ipart\cdot\UVhatdel
+	+ \Ipart\cdot\UV ].
+\end{multline}
+We can rearrange this, using the definition of $\UVhatdel$ 
+(\ref{uv_hat}) and
+$\beta$ and 
+defining a new $\delta=\dt\alpha_z\beta =
+g\dt^2\alpha_z\alpha_m$. We arrive at
+\begin{multline}
+	[ 1
+	- \delta\; \Ipart\cdot
+		(\AmatI\HH^x\delx+\AmatI\HH^y\dely) ] \zdel \\
+	=
+	- \dt[ \alpha_z\Ipart\cdot\UVhat
+	+ (1-\alpha_z)\Ipart\cdot\UV ].
+\end{multline}
+The right hand side is known ($\UVhat$ can be computed through
+(\ref{uv_hat}) and the rest only involves horizotanl differentiation)
+and can be computed readily. The left hand side involves the 
+horizontal differentiation of $\zdel$. Therefore this leads to 
+a matrix that involves all nodes of the grid. 
+
+Once the solution of $\zdel$ is known over the whole domain,
+equation (\ref{momentum_final}) can be used in a slightly
+modified form to compute the velocity at the new time level
+through the following equation:
+\begin{equation}
+	\label{uv_final}
+	\UVnew = \UV
+		- \beta 
+		\left(
+		\AmatI\HH^x\delx\zdel+\AmatI\HH^y\dely\zdel
+		\right).
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Structure of the vertical matrix}
+
+\subsection{Regular vertical discretization}
+
+The matrix $\Amat$ that describes the implicit part of the 
+vertical system is a pentagonal band matrix. It can therefore 
+be solved with standard methods. Here an
+example of the structure of
+the matrix with $L=4$ is given for reference. 
+For space limitation we use
+the abbreviation $\tilde{\epsilon}=1+2\epsilon$.
+
+{
+\newcommand{\EE}{-\epsilon}
+\newcommand{\ET}{\tilde{\epsilon}}
+\newcommand{\GG}{\gamma}
+% \cdots \vdots \ddots
+\begin{equation}
+%\AA = 
+\begin{bmatrix}
+\ET  & -\GG & \EE & 0      & 0    & 0 & 0 & 0 \\
+\GG & \ET   & 0    & \EE   & 0    & 0 & 0 & 0 \\
+\EE  & 0      & \ET & -\GG & \EE & 0 & 0 & 0\\
+0     & \EE   & \GG & \ET  & 0    & \EE   & 0 & 0 \\
+0 & 0 & \EE  & 0      & \ET & -\GG & \EE & 0 \\
+0 & 0 & 0     & \EE   & \GG & \ET  & 0    & \EE \\
+0 & 0 & 0 & 0 & \EE  & 0      & \ET & -\GG \\
+0 & 0 & 0 & 0 & 0     & \EE   & \GG & \ET      
+\end{bmatrix}
+\end{equation}
+}
+
+The above representation only shows the typical structure
+of the matrix and holds only for a regular layer spacing
+of $\dz$. If the the layers have different thickness the parameter
+$\epsilon$ and $\tilde{\epsilon}$ depend on the layer number
+and have to be written as $\epsilon_l$ etc. Moreover, boundary conditions on the surface and the bottom layer have not been 
+taken into account.
+
+\subsection{Vertical discretization with variable layer thickness}
+
+In order to account for variable layer thickness and viscosity
+and to allow boundary conditiosn to be handled properly we will have to start one more time from the vertical stress term
+$\nu\dpartzz{\Unod}$. In case of variable viscosity we can write
+this term for layer $l$ as
+\begin{equation}
+\dpartz{} \left( \nu\dpartz{U} \right)_l =
+\frac{ \left( \nu\dpartz{U} \right)^\uparrow_l 
+ - \left( \nu\dpartz{U} \right)^\downarrow_l
+}{H_l}
+\end{equation}
+where the superscript ${}^\uparrow$ identifies the upper
+interface and ${}^\downarrow$ the lower one. If we call $l-1$
+the upper and $l$ the lower interface of layer $l$ (see Fig ??), we have
+\begin{equation}
+\dpartz{} \left( \nu\dpartz{U} \right)_l =
+\frac{1}{H_l} \left[
+	\left( \frac{\nu}{\dz} \right)_{l-1} (U_{l-1}-U_l)
+ 	- \left( \frac{\nu}{\dz} \right)_{l} (U_l-U_{l+1})
+\right]
+\end{equation}
+where the terms $\frac{\nu}{\dz}$ are taken at the upper or
+lower interface of layer $l$. The values of $\dz$ will be
+computed as
+\begin{equation}
+\dz_{l-1} = \frac{H_{l-1}+H_l}{2}
+	\hspace{1cm}
+\dz_{l} = \frac{H_{l+1}+H_l}{2}.
+\end{equation}
+
+\newcommand{\EUT}[1]{\tilde{\epsilon}^\uparrow_#1}
+\newcommand{\EDT}[1]{\tilde{\epsilon}^\downarrow_#1}
+\newcommand{\EU}[1]{\epsilon^\uparrow_#1}
+\newcommand{\ED}[1]{\epsilon^\downarrow_#1}
+\newcommand{\EC}[1]{\epsilon_#1}
+
+We can now define new $\epsilon$ values for layer $l$ as
+\begin{equation}
+\EUT{l} = \frac{1}{H_l}
+		\left( \frac{\nu}{\dz} \right)_{l-1}
+	\hspace{1cm}
+\EDT{l}  = \frac{1}{H_l}
+		\left( \frac{\nu}{\dz} \right)_{l}
+\end{equation}
+and with these values we can write
+\begin{equation}
+\dpartz{} \left( \nu\dpartz{U} \right)_l =
+\EUT{l}(U_{l-1}-U_l) - \EDT{l}(U_l-U_{l+1}) =
+\EUT{l}U_{l-1} - (\EUT{l}+ \EDT{l})U_l + \EDT{l}U_{l+1}
+\end{equation}
+This is the expression that has to be substituted for the vertical
+stress term in $F^x_l$ (and a similar expression for $F^y_l$).
+
+In order to use these definitions also in matrix $\Amat$ we
+define
+\begin{equation}
+\EU{l} = \alpha_d\dt\EUT{l}
+	\hspace{1cm}
+\ED{l} = \alpha_d\dt\EDT{l}
+	\hspace{1cm}
+\EC{l} =  1 + \EU{l} + \ED{l}
+\end{equation}
+
+
+Now we can finally rewrite the matrix $\Amat$ as
+{
+\newcommand{\GG}{\gamma}
+% \cdots \vdots \ddots
+\begin{equation}
+%\AA = 
+\begin{bmatrix}
+\EC{1}  & -\GG & \ED{1} & 0      & 0    & 0 & 0 & 0 \\
+\GG & \EC{1}   & 0    & \ED{1}   & 0    & 0 & 0 & 0 \\
+\EU{2}  & 0      & \EC{2} & -\GG & \ED{2} & 0 & 0 & 0\\
+0     & \EU{2}   & \GG & \EC{2}  & 0    & \ED{2}   & 0 & 0 \\
+0 & 0 & \EU{3}  & 0      & \EC{3} & -\GG & \ED{3} & 0 \\
+0 & 0 & 0     & \EU{3}   & \GG & \EC{3}  & 0    & \ED{3} \\
+0 & 0 & 0 & 0 & \EU{4}  & 0      & \EC{4} & -\GG \\
+0 & 0 & 0 & 0 & 0     & \EU{4}   & \GG & \EC{4}      
+\end{bmatrix}
+\end{equation}
+}
+
+\subsection{Boundary conditions at the surface and at
+the bottom}
+
+Boundary conditions have to be integrated into this matrix. First
+the values of $\epsilon$  at the surface $\EUT{1}$ and at the 
+bottom $\EDT{L}$ have to be 0, because they are refering
+to differences between levels where one of the two do not
+exist:
+\begin{equation}
+	\EUT{1} = \EDT{L} = 0.
+\end{equation}
+
+For the surface layer a term due to the wind stress has to
+be added to the right hand side of the momentum equation
+\begin{equation}
+	F^x_1 := F^x_1 + (1/\rho_0)\tau^s_x
+	= F^x_1 + (\rho_a/\rho_0)c_D|w|w_x
+\end{equation}
+\begin{equation}
+	F^y_1 := F^y_1 + (1/\rho_0)\tau^s_y
+	= F^y_1 + (\rho_a/\rho_0)c_D|w|w_y
+\end{equation}
+where $\rho_0$ is the water density, $\rho_a$ the air density,
+$c_D$ the wind drag coefficient, $w_x,w_y$ the wind velocity
+in direction $x,y$ and $|w|$ its modulus.
+
+For the bottom layer a semi-implicit approach can be applied. The two terms to be considered are 
+\begin{equation}
+	(1/\rho_0)\tau^b_x = (c_B/H_L^2)|U_L|U_L
+	\hspace{1cm}
+	(1/\rho_0)\tau^b_y = (c_B/H_L^2)|U_L|V_L
+\end{equation}
+where $|U_L|$ is the modulus of the bottom transport. With $R=(c_B/H_L^2)|U_L|$, we can write
+\begin{equation}
+	(1/\rho_0)\tau^b_x 
+	= \alpha_r R\Unew_L + (1-\alpha_r)R\Uold_L
+	= \alpha_r R\Udel_L + R\Uold_L
+\end{equation}
+\begin{equation}
+	(1/\rho_0)\tau^b_y 
+	= \alpha_r R\Vnew_L + (1-\alpha_r)R\Vold_L
+	= \alpha_r R\Vdel_L + R\Vold_L
+\end{equation}
+The last (explicit) part of these equations has to be subtracted
+from $F^x,F^y$:
+\begin{equation}
+		F^x_L := F^x_L + R\Uold_L
+	\hspace{1cm}
+		F^y_L := F^y_L + R\Vold_L
+\end{equation}
+whereas the implicit part has to be integrated into 
+matrix $\Amat$
+\begin{equation}
+		\EC{L} := \EC{L} + \alpha_r\dt R.
+\end{equation}
+This completes the treatment of the vertical stress term
+and the set up of the matrix $\Amat$.
+
+
+\begin{figure}[!t]
+
+\begin{minipage}[b]{.99\textwidth}
+\unitlength=1mm\centering
+\begin{picture}(50,49)
+
+\put(0,10){\line(1,0){40}}
+\put(0,20){\line(1,0){40}}
+\put(0,30){\line(1,0){40}}
+%\put(0,40){\line(1,0){40}}
+\put(0,50){\line(1,0){40}}
+\put(0,60){\line(1,0){40}}
+\put(0,70){\line(1,0){40}}
+
+\put(10,12){\makebox(20,5){layer L}}
+\put(10,22){\makebox(20,5){layer L-1}}
+\put(10,52){\makebox(20,5){layer 2}}
+\put(10,62){\makebox(20,5){layer 1}}
+
+\put(50,8){\makebox(10,5){interface L}}
+\put(50,18){\makebox(10,5){interface L-1}}
+\put(50,28){\makebox(10,5){interface L-2}}
+\put(50,48){\makebox(10,5){interface 2}}
+\put(50,58){\makebox(10,5){interface 1}}
+\put(50,68){\makebox(10,5){interface 0}}
+
+\put(10,5){\makebox(20,5){bottom}}
+\put(10,70){\makebox(20,5){surface}}
+
+\end{picture}
+\caption{Vertical layer discretization with zeta layers. The surface
+layer is the first layer and layers until the bottom to layer $L$.}
+\label{fig:vdiscr}
+\end{minipage}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
+
+%\begin{bmatrix}
+%0 & \cdots & 0 
+%\\ \vdots & \ddots & \vdots 
+%\\ 0 & \cdots & 0 
+%\end{bmatrix}
+

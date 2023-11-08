@@ -6,9 +6,14 @@
 
 base="$HOME/shyfemcm/shyfemcm"
 
-src="src src/util src/shyutil src/shympi src/shyutilmpi"
-tools="tools/shybas tools/shyelab tools/shyplot tools/shypre"
-
+src="src/shyfem src/utils/generic src/utils/shyutil \
+		src/utils/shympi src/utils/shyutilmpi"
+tools="src/tools/shybas \
+	src/tools/shypre \
+	src/tools/shyadj src/tools/shynetcdf src/tools/shyparts \
+	src/tools/shyelab src/tools/shyplot \
+	src/tools/shyplot/util \
+	"
 alldir="$src $tools"
 
 actdir=$( pwd )
@@ -32,6 +37,30 @@ FullUsage()
   echo "  -file            look for pattern in file names"
   echo "  -pattern         look for pattern in files"
   echo ""
+}
+
+Do_File()
+{
+  echo "looking for file $*"
+  for dir in $alldir
+  do
+    echo "---- $dir ----" >&2
+    cd $base/$dir
+    ls $* 2> /dev/null
+    cd $actdir
+  done
+}
+
+Do_Pattern()
+{
+  echo "looking for pattern $*"
+  for dir in $alldir
+  do
+    echo "---- $dir ----" >&2
+    cd $base/$dir
+    grep $* *.f90 *.f 2> /dev/null
+    cd $actdir
+  done
 }
 
 #-----------------------------------------------
@@ -61,25 +90,12 @@ echo "looking for $*"
 #-----------------------------------------------
 
 if [ $do_file = "YES" ]; then
-  for dir in $alldir
-  do
-    echo "---- $dir ----" >&2
-    cd $base/$dir
-    ls $* 2> /dev/null
-    cd $actdir
-  done
+  Do_File $*
 elif [ $do_pattern = "YES" ]; then
-  for dir in $alldir
-  do
-    echo "---- $dir ----" >&2
-    cd $base/$dir
-    grep $* *.f90 *.f 2> /dev/null
-    cd $actdir
-  done
-elif [ $do_pattern = "YES" ]; then
-  :
+  Do_Pattern $*
 else
-  echo "do not know what to do..."
+  Do_File $*
+  Do_Pattern $*
 fi
 
 #-----------------------------------------------
