@@ -9,7 +9,26 @@ use strict;
 $::info = 0 unless $::info;
 $::used = 0 unless $::used;
 $::defined = 0 unless $::defined;
+$::autosufficient = 0 unless $::autosufficient;
 $::summary = 0 unless $::summary;
+$::help = 0 unless $::help;
+$::h = 0 unless $::h;
+$::help = 1 if $::h;
+
+if( $::help ) {
+  print "Usage: usemod.pl [-help|-h] [-options] file\n";
+  print "  options:\n";
+  print "    -info           shows info on modules use and definition\n";
+  print "    -used           shows used modules\n";
+  print "    -defined        shows defined modules\n";
+  print "    -autosufficient shows modules that are autosufficient\n";
+  print "    -summary        shows summary of used and defined modules\n";
+  print "    -h|-help        this help screen\n";
+  exit 0;
+} elsif( !@ARGV ) {
+  print "Usage: usemod.pl [-help|-h] [-options] file\n";
+  exit 0;
+}
 
 my $file = "";
 %::defined = ();
@@ -43,6 +62,8 @@ sub print_info
 {
   my $file = shift;
 
+  return unless $file;
+
   if( scalar %::used ) {
     if( $::info or $::used ) {
       print "modules used in file $file:\n";
@@ -68,7 +89,11 @@ sub print_info
     push(@list,$m) unless $::defined{$m};
   }
 
-  if( scalar @list and not $::summary ) {
+  if( not scalar @list and $::autosufficient ) {
+    print "autosufficient usage of modules in file $file\n";
+  }
+
+  if( scalar @list and not $::summary and not $::autosufficient ) {
     print "modules used but not defined in file $file:\n";
     foreach my $m (sort @list) {
       print "  $m\n";

@@ -83,6 +83,7 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 13.03.2019	ggu	changed VERS_7_5_61
 c 06.11.2019	ggu	setimp adapted
 c 16.02.2020	ggu	femtime eliminated
+c 09.11.2023	ggu	daux introduced to avoid error
 c
 c************************************************************************
 
@@ -191,7 +192,7 @@ c local
 	real volag,flxnod,areavl
 	real zvbnds
 	integer itybnd,ideffi,nbnds
-	double precision dtime
+	double precision dtime,daux
 
 c---------------------------------------------------------------
 c        integer ipnt,id,isect
@@ -774,7 +775,8 @@ c
 	  if(bimm)  istp=0
 	  if(istp.eq.0.or.bimm) iclos=0
           if(istp.eq.-isoft.or.bimm) then	!$$impli
-		call setimp(it+idt*implit,1.)
+		daux = it+idt*implit
+		call setimp(daux,1.)
 	  end if
 c
 		if(istp.eq.-isoft.or.bimm) then

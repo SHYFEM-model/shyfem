@@ -39,7 +39,7 @@ c
 c subroutine impini		initializes parameters for semi-implicit time
 c function bimpli(it)		checks if semi-implicit time-step is active
 c function getimp		gets weight for semi-implicit time-step
-c subroutine setimp(it,aweigh)	sets parameters for semi-implicit time-step
+c subroutine setimp(dtime,aweigh) sets parameters for semi-implicit time-step
 c
 c revision log :
 c
@@ -645,9 +645,9 @@ c
 c routines for handling semi-implicit time-step
 c
 c the only routines that should be necessary to be called are
-c setimp(it,weight) and getazam(az,am)
+c setimp(dtime,weight) and getazam(az,am)
 c
-c setimp sets the implicit parameter until time it to weight
+c setimp sets the implicit parameter until dtime to weight
 c getazam returns az,am with the actual weight
 c
 c usage: call setimp in a program that would like to change the

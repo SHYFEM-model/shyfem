@@ -1,5 +1,16 @@
 ============================================================
 
+Sat Dec  2 10:52:46 CET 2023
+
+avoid compiler error for setimp
+
+ fem3d/bin/usemod.pl | 27 ++++++++++++++++++++++++++-
+ fem3d/new36.f       |  6 ++++--
+ fem3d/subnsh.f      |  6 +++---
+ 3 files changed, 33 insertions(+), 6 deletions(-)
+
+============================================================
+
 Sat Dec  2 10:40:17 CET 2023
 
 utility routines
