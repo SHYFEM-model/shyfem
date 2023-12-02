@@ -1,5 +1,30 @@
 ============================================================
 
+Sat Dec  2 10:40:17 CET 2023
+
+utility routines
+
+ fem3d/bin/check_various.sh |  87 ++++++++++
+ fem3d/bin/f902f.pl         |  18 ++
+ fem3d/bin/i2m.pl           | 102 ++++++++++++
+ fem3d/bin/i2m.sh           |  29 ++++
+ femdoc/mwr/Makefile        |  35 ++--
+ femlib/perl/Makefile       |  38 +++++
+ femlib/perl/date.pm        |  30 +++-
+ femlib/perl/regress.pl     | 404 +++++++++++++++++++++++++++++++++++++++++++++
+ femlib/perl/regress.sh     |  31 ++++
+ 9 files changed, 758 insertions(+), 16 deletions(-)
+ new file:
+   fem3d/bin/check_various.sh
+   fem3d/bin/f902f.pl
+   fem3d/bin/i2m.pl
+   fem3d/bin/i2m.sh
+   femlib/perl/Makefile
+   femlib/perl/regress.pl
+   femlib/perl/regress.sh
+
+============================================================
+
 Wed Oct 25 13:11:31 CEST 2023
 
 new git-log, shyfind.sh and update compile.sh, usemod.pl

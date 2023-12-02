@@ -12,15 +12,34 @@
 #
 # example of usage:
 #
-# use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+# use lib ("$ENV{SHYFEMDIR}/lib/perl","$ENV{HOME}/shyfem/lib/perl");
 #
 # use date;
 # 
 # my $date = new date;
 #
-# $date->init_year($year0);		#set reference year
+# $date->init_year($year);				#set reference year
+# $date->init_date($year,$month,$day,$hour,$min,$sec);	#set reference date
+# $date->init_date($aline);				#set reference date
+#
 # $it = $date->convert_to_it($year,$month,$day,$hour,$min,$sec);
 # ($year,$month,$day,$hour,$min,$sec) = $date->convert_from_it($it);
+#
+# $atime = $date->convert_to_abs($aline);
+# $atime = $date->convert_to_abs($year,$month,$day,$hour,$min,$sec);
+# ($date,$time) = $date->convert_from_abs($atime);
+#
+# $aline = $date->format_abs($atime);
+# $atime = $date->unformat_abs($aline);
+#
+# $year		reference year
+# $it		seconds with respect to reference
+# $atime	absolute time in seconds
+# $aline	string of date: '2002-08-22::12:30:00'
+# $date		packed date: 20020822
+# $time		packed time: 123000
+#
+# $year,$month,$day,$hour,$min,$sec	not all values have to be given
 #
 # to convert date online please use the program convert_date.pl
 #
@@ -31,8 +50,9 @@
 # 21.10.2014	ggu	absolute time routines introduced
 # 21.10.2014	ggu	refer to 1.1.1 (date2days and days2date)
 # 05.11.2014	ggu	new routine unformat_time_date()
+# 24.11.2023	ggu	more documentation
 #
-# version 2.2
+# version 2.3
 #
 ##############################################################
 
@@ -49,6 +69,7 @@ sub new
     $self =	{
 	    		 days0		=>	undef
 			,secs0		=>	undef
+			,atime0		=>	undef
 			,verbose	=>	0
 			,md		=> 	[]
 			,td		=> 	[]
@@ -257,6 +278,7 @@ sub init_it
 
 	$self->{days0} = $days0;
 	$self->{secs0} = $secs0;
+	$self->{atime0} = 86400 * $days0 + $secs0;
 }
 
 #--------------------------------
@@ -270,7 +292,7 @@ sub convert_to_abs
 	my $days = $self->date2days($year,$month,$day);
 	my $secs = $self->time2secs($hour,$min,$sec);
 
-	return 86400.*$days + $secs;
+	return 86400 * $days + $secs;
 }
 
 sub convert_from_abs
