@@ -28,167 +28,168 @@
 !
 !--------------------------------------------------------------------------
 
-c finite element model shyfem (version 3D)
-c
-c original version from march 1991
-c
-c revision log :
-c
-c 30.08.1995	ggu	$$AUST - austausch coefficient introduced
-c 11.10.1995	ggu	$$BCLBND - boundary condition for baroclinic runs
-c 04.08.1997	ggu	$$ZEONV - new arrays for water level elementwise
-c 19.03.1998	ggu	$$IPCCV close data items commented or deleted
-c 03.04.1998	ggu	$$DESCRP BUG overwriting descrp with boundary vals.
-c 30.04.1998	ggu	finally eliminated /semimp/, /trock/, /ffloat/
-c 05.05.1998	ggu	izeit eliminated
-c 28.05.1998	ggu	call to sp131g changed
-c 14.08.1998	ggu	call to biocos (biological model) introduced
-c 20.08.1998	ggu	iextpo finally eliminated, momentum arrays added
-c 20.08.1998	ggu	spb11 -> sp111
-c 21.08.1998	ggu	xv eliminated
-c 03.09.1998	ggu	biological reactor integratated
-c 06.11.1998	ggu	hv renamed into hkv
-c 08.04.1999	ggu	equilibrium tide (tidal potential) introduced
-c 19.04.1999	ggu	subroutine custom called
-c 22.10.1999	ggu	igrv, ngrv eliminated (subst by ilinkv, lenkv)
-c 20.01.2000	ggu	common block /dimdim/ eliminated
-c 07.03.2000	ggu	arrays for vertical turbulent diffusion coefficient
-c 20.06.2000	ggu	alv -> visv    slv -> difv
-c 19.11.2001	ggu	h1hv eliminated, ulv, vlv eliminated
-c 03.12.2001	ggu	new arrays [cst]difhv
-c 21.08.2002	ggu	new arrays /kvolc/, /ivol/ copied from hp
-c 31.07.2003	ggu	array winv eliminated
-c 10.08.2003	ggu	big restructuring
-c 13.08.2003	ggu	some more restructuring
-c 14.08.2003	ggu	even more restructuring and cleaning up
-c 04.12.2003	ggu	integration of wave and sediment module
-c 06.03.2004	aac	lagrangian trajectories computation module
-c 03.09.2004	ggu	restart now in ht
-c 15.10.2004	ggu	gotm substituted by general turbulence closure
-c 02.12.2004	ggu	variable time step implemented
-c 17.01.2005	ggu	new routine diff_h_set, new difhv, ausv deleted
-c 24.02.2005	ggu	new routine smagorinski and common smagv
-c 03.03.2005	ggu	smagorinski uses difhv, inserted in subdif.f
-c 03.03.2005	ggu	new 3d boundary arrays for C/T/S
-c 12.08.2005	ggu	minimum level index, TVD arrays
-c 07.11.2005	ggu	new array sed2dn introduced (file name for sediments)
-c 16.02.2006	ggu	new routine atoxi3d (TOXI)
-c 23.03.2006	ggu	changed time step to real
-c 18.10.2006	ccf	radiation stress and waves included (with pipe)
-c 10.11.2006	ggu	initialize depth values after restart
-c 16.11.2006	ggu	turbulence values included
-c 02.04.2007	ggu	changes in algorithm (ASYM)
-c 31.05.2007	dbf	new arrays bpresxv, bclevvar (debora)
-c 26.09.2007	ggu	deleted arrays rcv,rtv,rsv
-c 27.09.2007	ggu	deleted call to tstvol,tstvol1
-c 20.03.2008	aac	new call for ERSEM ecological model (BFM MODULE)
-c 07.04.2008	aac	new array bfm*bc introduced (file name for ersem)
-c 10.04.2008	ggu&ccf	upro, waveov, stokes, z0bk
-c 16.04.2008	ggu	evaporation mass flux (evapv)
-c 22.04.2008	ggu	gradx/yv non global due to parallelization
-c 23.04.2008	ggu	deleted r3{c|t|s}v
-c 28.04.2008	ggu	new routine init_stability(), new conzm3sh()
-c 29.04.2008	ggu&aac	new BMF ERSEM model
-c 12.11.2008	ggu	new sigma level initialization
-c 10.12.2008	ggu	new array rfricv for bottom friction
-c 18.12.2008	ggu	new routine debug_output(), might be removed later
-c 04.03.2009	ggu	matrix amat into solver routines
-c 11.03.2009	ggu	new arrays for meteo data
-c 06.04.2009	ggu	renamed nlidim to nlkdim
-c 30.11.2009	ggu	write output file for successfull completion
-c 19.02.2010	ggu	init_stability() changed to reset_stability()
-c 22.02.2010	ggu	new arrays wxv, wyv
-c 26.02.2010	ggu	new arrays sauxe1/2
-c 29.04.2010	ggu	write volumes (wrfvla)
-c 26.01.2011	ggu	new arrays for observations and nudging
-c 16.02.2011	ggu	new iarnv, call to aquabc
-c 17.02.2011	ccf	new radiation stress in 3D
-c 23.03.2011	ggu	new call to adjust_spherical()
-c 31.03.2011	ggu	write finite volumes at initial time step
-c 20.05.2011	ggu	iwetv introduced, wet and dry from main
-c 25.10.2011	ggu	hlhv eliminated
-c 18.11.2011	ggu	new routine handle_projection
-c 24.01.2012	ggu	new call to setup_parallel()
-c 23.02.2012	ggu&ccf	meteo arrays adjusted (3*nkn)
-c 09.03.2012	ggu	call to residence time added
-c 21.06.2012	ggu&aar	fluid mud variables integrated
-c 05.08.2012	ggu	bug because lam2dn and dmfd2n not defined
-c 10.05.2013	dbf	initialization for non hydrostatic routines
-c 13.06.2013	ggu	set/copydepth simplified, offline version
-c 05.09.2013	ggu	changed order of adjust depth and barene structures
-c 29.10.2013	ggu	nudging implemented
-c 25.03.2014	ggu	new offline
-c 25.06.2014	ggu	new arrays hkv_min, hkv_max
-c 05.12.2014	ccf	new interface for waves
-c 30.07.2015	ggu	routine renamed from ht to shyfem
-c 18.09.2015	ggu	new routine scalar, call to hydro()
-c 23.09.2015	ggu	changed VERS_7_2_4
-c 29.09.2015	ccf	inverted set_spherical() and handle_projection()
-c 30.09.2015	ggu	changed VERS_7_2_6
-c 10.10.2015	ggu	fluid mud routines handled differently
-c 12.10.2015	ggu	changed VERS_7_3_3
-c 13.10.2015	ggu	changed VERS_7_3_5
-c 22.10.2015	ggu	changed VERS_7_3_7
-c 23.10.2015	ggu	changed VERS_7_3_9
-c 05.11.2015	ggu	changed VERS_7_3_12
-c 09.11.2015	ggu	changed VERS_7_3_13
-c 20.11.2015	ggu	changed VERS_7_3_15
-c 16.12.2015	ggu	changed VERS_7_3_16
-c 19.02.2016	ggu	changed VERS_7_5_2
-c 22.02.2016	ggu	changed VERS_7_5_4
-c 07.06.2016	ggu	changed VERS_7_5_12
-c 14.06.2016	ggu	changed VERS_7_5_14
-c 13.04.2017	ggu	changed VERS_7_5_25
-c 09.05.2017	ggu	changed VERS_7_5_26
-c 16.05.2017	ggu	changed VERS_7_5_27
-c 05.10.2017	ggu	command line options introduced, subs rearranged
-c 14.11.2017	ggu	changed VERS_7_5_36
-c 17.11.2017	ggu	changed VERS_7_5_37
-c 05.12.2017	ggu	changed VERS_7_5_39
-c 07.12.2017	ggu	changed VERS_7_5_40
-c 03.04.2018	ggu	changed VERS_7_5_43
-c 19.04.2018	ggu	changed VERS_7_5_45
-c 26.04.2018	ggu	changed VERS_7_5_46
-c 11.05.2018	ggu	changed VERS_7_5_47
-c 06.07.2018	ggu	changed VERS_7_5_48
-c 25.10.2018	ggu	changed VERS_7_5_51
-c 18.12.2018	ggu	changed VERS_7_5_52
-c 12.02.2019	ccf	bottom shear stress in substress.f
-c 16.02.2019	ggu	changed VERS_7_5_60
-c 12.03.2019	ccf	include new computation of tide potential/analysis
-c 04.07.2019	ggu	new ww3 routines introduced
-c 15.09.2019	ggu	subroutine to test only forcing
-c 02.10.2019	ggu	delete include files
-c 17.10.2019	ggu	no call to bfm_write, is done inside subroutine
-c 06.11.2019	ggu	femelab eliminated
-c 03.04.2020	ggu	write real start and end time of simulation
-c 09.04.2020    ggu     run bfm through bfm_run()
-c 21.05.2020    ggu     better handle copyright notice
-c 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
-c 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
-c 01.04.2021    ggu     turbulence cleaned
-c 02.04.2022    ggu     new option -mpi_debug -> calls shympi_check_all()
-c 02.04.2022    ggu     new routine shympi_write_debug_special()
-c 03.04.2022    ggu     timing problems in handle_debug_output() solved
-c 11.04.2022    ggu     no -mpi switch necessary anymore
-c 12.04.2022    ggu     message to show if mpi support is available
-c 18.05.2022    ggu     cpu_time routines introduced
-c 10.03.2023    ggu     do not use bmpirun anymore
-c 28.04.2023    ggu     update function calls for belem
-c 22.05.2023    ggu     new names for closing: close_init, close_handle
-c 05.06.2023    lrp     introduce z-star
-c
-c*****************************************************************
-c
-c notes :
-c
-c MPI calls
-c
-c call shympi_init(bmpirun)
-c   call shympi_alloc_global(nkn,nel,nen3v,ipv,ipev)
-c call shympi_setup			!sets up partitioning of basin
-c
-c----------------------------------------------------------------
+! finite element model shyfem (version 3D)
+!
+! original version from march 1991
+!
+! revision log :
+!
+! 30.08.1995	ggu	$$AUST - austausch coefficient introduced
+! 11.10.1995	ggu	$$BCLBND - boundary condition for baroclinic runs
+! 04.08.1997	ggu	$$ZEONV - new arrays for water level elementwise
+! 19.03.1998	ggu	$$IPCCV close data items commented or deleted
+! 03.04.1998	ggu	$$DESCRP BUG overwriting descrp with boundary vals.
+! 30.04.1998	ggu	finally eliminated /semimp/, /trock/, /ffloat/
+! 05.05.1998	ggu	izeit eliminated
+! 28.05.1998	ggu	call to sp131g changed
+! 14.08.1998	ggu	call to biocos (biological model) introduced
+! 20.08.1998	ggu	iextpo finally eliminated, momentum arrays added
+! 20.08.1998	ggu	spb11 -> sp111
+! 21.08.1998	ggu	xv eliminated
+! 03.09.1998	ggu	biological reactor integratated
+! 06.11.1998	ggu	hv renamed into hkv
+! 08.04.1999	ggu	equilibrium tide (tidal potential) introduced
+! 19.04.1999	ggu	subroutine custom called
+! 22.10.1999	ggu	igrv, ngrv eliminated (subst by ilinkv, lenkv)
+! 20.01.2000	ggu	common block /dimdim/ eliminated
+! 07.03.2000	ggu	arrays for vertical turbulent diffusion coefficient
+! 20.06.2000	ggu	alv -> visv    slv -> difv
+! 19.11.2001	ggu	h1hv eliminated, ulv, vlv eliminated
+! 03.12.2001	ggu	new arrays [cst]difhv
+! 21.08.2002	ggu	new arrays /kvolc/, /ivol/ copied from hp
+! 31.07.2003	ggu	array winv eliminated
+! 10.08.2003	ggu	big restructuring
+! 13.08.2003	ggu	some more restructuring
+! 14.08.2003	ggu	even more restructuring and cleaning up
+! 04.12.2003	ggu	integration of wave and sediment module
+! 06.03.2004	aac	lagrangian trajectories computation module
+! 03.09.2004	ggu	restart now in ht
+! 15.10.2004	ggu	gotm substituted by general turbulence closure
+! 02.12.2004	ggu	variable time step implemented
+! 17.01.2005	ggu	new routine diff_h_set, new difhv, ausv deleted
+! 24.02.2005	ggu	new routine smagorinski and common smagv
+! 03.03.2005	ggu	smagorinski uses difhv, inserted in subdif.f
+! 03.03.2005	ggu	new 3d boundary arrays for C/T/S
+! 12.08.2005	ggu	minimum level index, TVD arrays
+! 07.11.2005	ggu	new array sed2dn introduced (file name for sediments)
+! 16.02.2006	ggu	new routine atoxi3d (TOXI)
+! 23.03.2006	ggu	changed time step to real
+! 18.10.2006	ccf	radiation stress and waves included (with pipe)
+! 10.11.2006	ggu	initialize depth values after restart
+! 16.11.2006	ggu	turbulence values included
+! 02.04.2007	ggu	changes in algorithm (ASYM)
+! 31.05.2007	dbf	new arrays bpresxv, bclevvar (debora)
+! 26.09.2007	ggu	deleted arrays rcv,rtv,rsv
+! 27.09.2007	ggu	deleted call to tstvol,tstvol1
+! 20.03.2008	aac	new call for ERSEM ecological model (BFM MODULE)
+! 07.04.2008	aac	new array bfm*bc introduced (file name for ersem)
+! 10.04.2008	ggu&ccf	upro, waveov, stokes, z0bk
+! 16.04.2008	ggu	evaporation mass flux (evapv)
+! 22.04.2008	ggu	gradx/yv non global due to parallelization
+! 23.04.2008	ggu	deleted r3{c|t|s}v
+! 28.04.2008	ggu	new routine init_stability(), new conzm3sh()
+! 29.04.2008	ggu&aac	new BMF ERSEM model
+! 12.11.2008	ggu	new sigma level initialization
+! 10.12.2008	ggu	new array rfricv for bottom friction
+! 18.12.2008	ggu	new routine debug_output(), might be removed later
+! 04.03.2009	ggu	matrix amat into solver routines
+! 11.03.2009	ggu	new arrays for meteo data
+! 06.04.2009	ggu	renamed nlidim to nlkdim
+! 30.11.2009	ggu	write output file for successfull completion
+! 19.02.2010	ggu	init_stability() changed to reset_stability()
+! 22.02.2010	ggu	new arrays wxv, wyv
+! 26.02.2010	ggu	new arrays sauxe1/2
+! 29.04.2010	ggu	write volumes (wrfvla)
+! 26.01.2011	ggu	new arrays for observations and nudging
+! 16.02.2011	ggu	new iarnv, call to aquabc
+! 17.02.2011	ccf	new radiation stress in 3D
+! 23.03.2011	ggu	new call to adjust_spherical()
+! 31.03.2011	ggu	write finite volumes at initial time step
+! 20.05.2011	ggu	iwetv introduced, wet and dry from main
+! 25.10.2011	ggu	hlhv eliminated
+! 18.11.2011	ggu	new routine handle_projection
+! 24.01.2012	ggu	new call to setup_parallel()
+! 23.02.2012	ggu&ccf	meteo arrays adjusted (3*nkn)
+! 09.03.2012	ggu	call to residence time added
+! 21.06.2012	ggu&aar	fluid mud variables integrated
+! 05.08.2012	ggu	bug because lam2dn and dmfd2n not defined
+! 10.05.2013	dbf	initialization for non hydrostatic routines
+! 13.06.2013	ggu	set/copydepth simplified, offline version
+! 05.09.2013	ggu	changed order of adjust depth and barene structures
+! 29.10.2013	ggu	nudging implemented
+! 25.03.2014	ggu	new offline
+! 25.06.2014	ggu	new arrays hkv_min, hkv_max
+! 05.12.2014	ccf	new interface for waves
+! 30.07.2015	ggu	routine renamed from ht to shyfem
+! 18.09.2015	ggu	new routine scalar, call to hydro()
+! 23.09.2015	ggu	changed VERS_7_2_4
+! 29.09.2015	ccf	inverted set_spherical() and handle_projection()
+! 30.09.2015	ggu	changed VERS_7_2_6
+! 10.10.2015	ggu	fluid mud routines handled differently
+! 12.10.2015	ggu	changed VERS_7_3_3
+! 13.10.2015	ggu	changed VERS_7_3_5
+! 22.10.2015	ggu	changed VERS_7_3_7
+! 23.10.2015	ggu	changed VERS_7_3_9
+! 05.11.2015	ggu	changed VERS_7_3_12
+! 09.11.2015	ggu	changed VERS_7_3_13
+! 20.11.2015	ggu	changed VERS_7_3_15
+! 16.12.2015	ggu	changed VERS_7_3_16
+! 19.02.2016	ggu	changed VERS_7_5_2
+! 22.02.2016	ggu	changed VERS_7_5_4
+! 07.06.2016	ggu	changed VERS_7_5_12
+! 14.06.2016	ggu	changed VERS_7_5_14
+! 13.04.2017	ggu	changed VERS_7_5_25
+! 09.05.2017	ggu	changed VERS_7_5_26
+! 16.05.2017	ggu	changed VERS_7_5_27
+! 05.10.2017	ggu	command line options introduced, subs rearranged
+! 14.11.2017	ggu	changed VERS_7_5_36
+! 17.11.2017	ggu	changed VERS_7_5_37
+! 05.12.2017	ggu	changed VERS_7_5_39
+! 07.12.2017	ggu	changed VERS_7_5_40
+! 03.04.2018	ggu	changed VERS_7_5_43
+! 19.04.2018	ggu	changed VERS_7_5_45
+! 26.04.2018	ggu	changed VERS_7_5_46
+! 11.05.2018	ggu	changed VERS_7_5_47
+! 06.07.2018	ggu	changed VERS_7_5_48
+! 25.10.2018	ggu	changed VERS_7_5_51
+! 18.12.2018	ggu	changed VERS_7_5_52
+! 12.02.2019	ccf	bottom shear stress in substress.f
+! 16.02.2019	ggu	changed VERS_7_5_60
+! 12.03.2019	ccf	include new computation of tide potential/analysis
+! 04.07.2019	ggu	new ww3 routines introduced
+! 15.09.2019	ggu	subroutine to test only forcing
+! 02.10.2019	ggu	delete include files
+! 17.10.2019	ggu	no call to bfm_write, is done inside subroutine
+! 06.11.2019	ggu	femelab eliminated
+! 03.04.2020	ggu	write real start and end time of simulation
+! 09.04.2020    ggu     run bfm through bfm_run()
+! 21.05.2020    ggu     better handle copyright notice
+! 04.06.2020    ggu     debug_output() substituted with shympi_debug_output()
+! 30.03.2021    ggu     more on debug, call sp111(2) outside time loop
+! 01.04.2021    ggu     turbulence cleaned
+! 02.04.2022    ggu     new option -mpi_debug -> calls shympi_check_all()
+! 02.04.2022    ggu     new routine shympi_write_debug_special()
+! 03.04.2022    ggu     timing problems in handle_debug_output() solved
+! 11.04.2022    ggu     no -mpi switch necessary anymore
+! 12.04.2022    ggu     message to show if mpi support is available
+! 18.05.2022    ggu     cpu_time routines introduced
+! 10.03.2023    ggu     do not use bmpirun anymore
+! 28.04.2023    ggu     update function calls for belem
+! 22.05.2023    ggu     new names for closing: close_init, close_handle
+! 05.06.2023    lrp     introduce z-star
+! 11.12.2023    ggu     f90 style format
+!
+!*****************************************************************
+!
+! notes :
+!
+! MPI calls
+!
+! call shympi_init(bmpirun)
+!   call shympi_alloc_global(nkn,nel,nen3v,ipv,ipev)
+! call shympi_setup			!sets up partitioning of basin
+!
+!----------------------------------------------------------------
 
 	program shyfem
 
@@ -230,11 +231,11 @@ c----------------------------------------------------------------
 #endif
 
 
-c----------------------------------------------------------------
+!----------------------------------------------------------------
 
 	implicit none
 
-c local variables
+! local variables
 
 	logical bdebout,bdebug,bmpirun
 	logical bfirst
@@ -264,25 +265,25 @@ c local variables
 
         call get_real_time(atime_start,aline_start)
 
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-c%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%% code %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-c-----------------------------------------------------------
-c copyright and command line options
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! copyright and command line options
+!-----------------------------------------------------------
 
         call shyfem_init(strfile,bdebug,bdebout,bmpirun)
 
-c-----------------------------------------------------------
-c write  real start time
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! write  real start time
+!-----------------------------------------------------------
 
         write(6,*) 'simulation start:   ',aline_start 
 
-c-----------------------------------------------------------
-c read STR file
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! read STR file
+!-----------------------------------------------------------
 
 	call cstinit
 	call cstfile(strfile)			!read STR and basin
@@ -298,17 +299,17 @@ c-----------------------------------------------------------
 
 	call allocate_2d_arrays
 
-c-----------------------------------------------------------
-c check parameters read and set time and Coriolis
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! check parameters read and set time and Coriolis
+!-----------------------------------------------------------
 
 	call cstcheck
 
-c	call pritst(1)
+!	call pritst(1)
 
-c-----------------------------------------------------------
-c initialize triangles
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! initialize triangles
+!-----------------------------------------------------------
 
 	!call levels_init_2d(nkn,nel)	!maybe not needed
 	call set_spherical
@@ -322,16 +323,16 @@ c-----------------------------------------------------------
 	call domain_clusterization	!create subsets for OMP
 	call shympi_barrier
 
-c-----------------------------------------------------------
-c inititialize time independent vertical arrays
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! inititialize time independent vertical arrays
+!-----------------------------------------------------------
 
 	call adjust_depth	!adjusts hm3v
 	call init_vertical	!makes nlv,hlv,hldv,ilhv,ilhkv, adjusts hm3v
 
-c-----------------------------------------------------------
-c allocates arrays
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! allocates arrays
+!-----------------------------------------------------------
 
 	call allocate_3d_arrays
 	call set_depth		!makes hev,hkv and exchanges
@@ -340,31 +341,31 @@ c-----------------------------------------------------------
 
 	call poisson_init
 
-c-----------------------------------------------------------
-c initialize barene data structures
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! initialize barene data structures
+!-----------------------------------------------------------
 
 	if( .not. bmpi ) call setweg(-1,n)	!shympi - FIXME
 	call setnod
 	call update_geom	!update ieltv - needs inodv
 	call populate_strings	!populate strings here
 
-c-----------------------------------------------------------
-c initialize boundary conditions
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! initialize boundary conditions
+!-----------------------------------------------------------
 
 	call check_point('checking ht 2')
 
 	call get_date_time(date,time)
-	call iff_init_global(nkn,nel,nlv,ilhkv,ilhv
-     +				,hkv_max,hev,hlv,date,time)
+        call iff_init_global(nkn,nel,nlv,ilhkv,ilhv                     &
+     &                          ,hkv_max,hev,hlv,date,time)
 
 	call init_zadaptation
 	call sp111(1)           !here zenv, utlnv, vtlnv are initialized
 
-c-----------------------------------------------------------
-c initialize depth arrays and barene data structure
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! initialize depth arrays and barene data structure
+!-----------------------------------------------------------
 
 	call setweg(0,n)
 	!if( bmpi .and. n > 0 ) goto 95
@@ -387,9 +388,9 @@ c-----------------------------------------------------------
 	call get_first_dtime(dtanf)
 	call get_last_dtime(dtend)
 
-c-----------------------------------------------------------
-c initialize open boundary routines
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! initialize open boundary routines
+!-----------------------------------------------------------
 
 	call check_point('checking ht 3')
 
@@ -398,9 +399,9 @@ c-----------------------------------------------------------
 	  call bndo_info_file('bndo_info.dat')
 	end if
 
-c-----------------------------------------------------------
-c initialize transports and velocities
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! initialize transports and velocities
+!-----------------------------------------------------------
 
 	call init_uv            !set vel, w, pr, ... from transports
 	call copy_uvz		!copy new to old
@@ -412,9 +413,9 @@ c-----------------------------------------------------------
 	call initsed		!sediments
         call init_bstress	!bottom shear stress
 
-c-----------------------------------------------------------
-c initialize modules
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! initialize modules
+!-----------------------------------------------------------
 
 	call init_others
 	call init_chezy
@@ -436,9 +437,9 @@ c-----------------------------------------------------------
 
 	call cstsetup
 
-c-----------------------------------------------------------
-c write input values to log file and perform check
-c-----------------------------------------------------------
+!-----------------------------------------------------------
+! write input values to log file and perform check
+!-----------------------------------------------------------
 
 	call check_point('checking ht 4')
 
@@ -478,9 +479,9 @@ c-----------------------------------------------------------
 	call test_zeta_init
 	call cpu_time_start(2)
 
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-c%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	bfirst = .true.
 
@@ -554,9 +555,9 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call cpu_time_end(2)
 
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-c%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call print_end_time
 	call ww3_finalize
@@ -589,8 +590,8 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	call cpu_time(time2)
 	print *,"TIME TO SOLUTION (CPU)  = ",time2-time1,my_id
-	print *,"TIME TO SOLUTION PARALLEL REGION (CPU) = "
-     +				,time2-time3,my_id
+        print *,"TIME TO SOLUTION PARALLEL REGION (CPU) = "             &
+     &                          ,time2-time3,my_id
 
 	call cpu_time_get(1,time0)
 	write(6,1200) 'cpu time (total):        ',time0
@@ -637,9 +638,9 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         stop 'error stop shyfem: not yet ready'
         end
 
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
         subroutine ht_finished
 
@@ -651,7 +652,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
         subroutine shyfem_init(strfile,bdebug,bdebout,bmpirun)
 
@@ -679,13 +680,13 @@ c*****************************************************************
         call clo_add_option('silent',.false.,'be silent')
 
 	call clo_add_sep('mpi options:')
-        call clo_add_option('mpi',.false.
-     +			,'runs in MPI mode (experimental)')
+        call clo_add_option('mpi',.false.                               &
+     &                  ,'runs in MPI mode (experimental)')
 
 	call clo_add_sep('debug options:')
         call clo_add_option('debug',.false.,'enable debugging')
-        call clo_add_option('debout',.false.
-     +			,'writes debugging information to file')
+        call clo_add_option('debout',.false.                            &
+     &                  ,'writes debugging information to file')
         call clo_add_option('mpi_debug',.false.,'enable mpi debugging')
 
         call clo_parse_options
@@ -724,9 +725,9 @@ c*****************************************************************
 
         end
 
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
 	subroutine allocate_2d_arrays
 
@@ -773,7 +774,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine allocate_3d_arrays
 
@@ -836,7 +837,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine run_scalar()
 	
@@ -893,7 +894,7 @@ c*****************************************************************
 
 	end subroutine
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine print_file_usage
 
@@ -912,9 +913,9 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
 	subroutine handle_debug_output(dtime)
 
@@ -951,8 +952,8 @@ c*****************************************************************
 	      iunit = 200
               call find_unit(iunit)
               if( iunit == 0 ) goto 98
-              open(iunit,file=file,status='unknown',form='unformatted'
-     +                          ,iostat=ios)
+              open(iunit,file=file,status='unknown',form='unformatted'  &
+     &                          ,iostat=ios)
               if( ios /= 0 ) goto 99
 	      call set_debug_unit(iunit)
 	      call shympi_write_debug_unit(iunit)
@@ -991,7 +992,7 @@ c*****************************************************************
         stop 'error stop handle_debug_output: cannot open file'
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine shympi_debug_output(dtime)
 
@@ -1086,7 +1087,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine shympi_write_debug_special
 
@@ -1141,7 +1142,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine debug_output_old1(dtime)
 
@@ -1225,7 +1226,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine debug_output_old(dtime)
 
@@ -1294,7 +1295,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine debug_output_record(ntot,nfirst,val,text)
 	implicit none
@@ -1308,9 +1309,9 @@ c*****************************************************************
 	write(66) val
 	end
 
-c*****************************************************************
-c*****************************************************************
-c*****************************************************************
+!*****************************************************************
+!*****************************************************************
+!*****************************************************************
 
 	subroutine check_layer_depth
 
@@ -1348,7 +1349,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine check_max_depth
 
@@ -1379,7 +1380,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine check_special
 
@@ -1405,7 +1406,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine check_point(text)
 
@@ -1431,7 +1432,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
         subroutine test_forcing(dtime,dtend)
 
@@ -1457,7 +1458,7 @@ c*****************************************************************
 
         end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine mpi_debug(dtime)
 
@@ -1537,7 +1538,7 @@ c*****************************************************************
 
         end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine test_vertical(itime)
 
@@ -1571,7 +1572,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine test_zeta_debug(dtime)
 
@@ -1597,7 +1598,7 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 
 	subroutine test_scalar_debug(text,ip,dtime,scal)
 
@@ -1646,5 +1647,5 @@ c*****************************************************************
 
 	end
 
-c*****************************************************************
+!*****************************************************************
 

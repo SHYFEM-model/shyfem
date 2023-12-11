@@ -134,6 +134,7 @@
 ! 5		writing of boxes_geom.txt (with boxes and external nums)
 !		boxes_stats.txt has different section format
 !		boxes_geom.txt has different format
+! 6		in 3d write also act_eta and bstress
 !
 !******************************************************************
 !
@@ -162,6 +163,17 @@
 !
 ! 	bdtarea = 0
 ! 	call boxes_2d_init(nbox,nv2d,val2d)
+!
+! computation of fluxes:
+!
+!	call flxscs()			flux for all sections
+!	    call flxsec()		flux for one section
+!		call flx3d()		flux over one node in section
+!			call flx3d_k()	compute divergence free flux transports
+!
+!	flxscs, flxsec in subflxu.f
+!	flx3d, flx3d_k in subflx3d.f
+!	flxtype, mkweig in subflx3d.f
 !
 !******************************************************************
 
