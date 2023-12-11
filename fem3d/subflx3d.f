@@ -75,6 +75,16 @@ c 16.02.2019	ggu	changed VERS_7_5_60
 c 16.02.2020	ggu	femtime eliminated
 c 05.03.2020	ggu	do not print flux divergence
 c 21.04.2023	ggu	avoid access of node 0 in flxtype()
+c 11.12.2023	ggu	prepared for new 3d flux computation
+c
+c info :
+c
+c istype is set in flxtype():
+c
+c	0	not in domain
+c	1	inner node
+c	2	material boundary
+c	3-5	open boundary
 c
 c******************************************************************
 c******************************************************************
@@ -385,6 +395,7 @@ c passed in are pointers to these section in lnk structure
 
 	logical bdebug
 	logical bdiverg		!write error on flux divergence
+	logical, parameter ::  bold = .true.
 	integer i,n,ne
 	integer l
 	real ttot,tabs
@@ -392,6 +403,7 @@ c passed in are pointers to these section in lnk structure
 	real tt(nlvdi)
 
 	integer elems(maxlnk)
+	real fflux(maxlnk),qflux(maxlnk)
 	real transp(nlvdi,ngr)
 	real weight(ngr)
 	real weight1(ngr)
@@ -443,29 +455,37 @@ c---------------------------------------------------------
 c compute transport through section in finite volume k
 c---------------------------------------------------------
 
-	do l=1,lkmax
-	  tt(l) = 0.
-	end do
+	tt(1:lkmax) = 0.
 
-	call mkweig(n,istype,ibefor,weight)
+	if( bold ) then
 
-	do i=1,n
+	  call mkweig(n,istype,ibefor,weight)
+
+	  do i=1,n
 	  do l=1,lkmax
 	    tt(l) = tt(l) - weight(i) * transp(l,i)	!this flux is negative
 	  end do
-	end do
+	  end do
 
-	call mkweig(n,istype,iafter,weight1)
+	  call mkweig(n,istype,iafter,weight1)
 
-	do i=1,n
+	  do i=1,n
 	  do l=1,lkmax
 	    tt(l) = tt(l) + weight1(i) * transp(l,i)
 	  end do
-	end do
+	  end do
 
-	do l=1,lkmax
-	  flux(l) = tt(l)
-	end do
+	else
+
+	  do l=1,lkmax
+	    fflux(:) = transp(l,:)
+	    call flux_with_bounds(n,l,istype,elems,fflux,qflux)
+	    tt(l) = qflux(iafter) - qflux(ibefor)
+	  end do
+
+	end if
+
+	flux(1:lkmax) = tt(1:lkmax)
 
 c---------------------------------------------------------
 c end of routine
@@ -473,6 +493,37 @@ c---------------------------------------------------------
 
 	end
 	
+c******************************************************************
+
+	subroutine flux_with_bounds(n,l,istype,elems,fflux,qflux)
+
+	use basin
+	use levels
+	use mod_geom
+
+	implicit none
+
+	integer n,l,istype
+	integer elems(maxlnk)
+	real fflux(maxlnk)
+	real qflux(maxlnk)
+
+	integer npres,i,ie
+	logical present(maxlnk)
+
+	npres = 0
+	present = .false.
+
+	do i=1,n
+	  ie = elems(i)
+	  if( ie <= 0 ) cycle
+	  if( l > ilhv(ie) ) cycle
+	  present(i) = .true.
+	  npres = npres + 1
+	end do
+
+	end
+
 c******************************************************************
 c******************************************************************
 c******************************************************************

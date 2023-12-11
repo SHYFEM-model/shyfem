@@ -178,6 +178,7 @@
 ! 22.05.2023    ggu     new names for closing: close_init, close_handle
 ! 05.06.2023    lrp     introduce z-star
 ! 11.12.2023    ggu     f90 style format
+! 11.12.2023    ggu     create subroutines for init/run/finalize
 !
 !*****************************************************************
 !
@@ -192,6 +193,12 @@
 !----------------------------------------------------------------
 
 	program shyfem
+	call shyfem_main
+	end program
+
+!================================================================
+	module mod_shyfem
+!================================================================
 
 	use mod_bound_geom
 	use mod_geom
@@ -230,12 +237,9 @@
 	use subww3
 #endif
 
-
-!----------------------------------------------------------------
-
 	implicit none
 
-! local variables
+! internal variables
 
 	logical bdebout,bdebug,bmpirun
 	logical bfirst
@@ -255,7 +259,29 @@
 	character*80 strfile
 	character*80 mpi_code,omp_code
 
-	real getpar
+!================================================================
+	end module mod_shyfem
+!================================================================
+
+	subroutine shyfem_main
+	use mod_shyfem
+	implicit none
+	call shyfem_initialize
+	call shyfem_run
+	call shyfem_finalize
+	end subroutine shyfem_main
+
+!*****************************************************************
+
+	subroutine shyfem_initialize
+
+!-----------------------------------------------------------
+! start of program
+!-----------------------------------------------------------
+
+	use mod_shyfem
+
+	implicit none
 
 	call cpu_time(time1)
 	call cpu_time_init
@@ -368,7 +394,6 @@
 !-----------------------------------------------------------
 
 	call setweg(0,n)
-	!if( bmpi .and. n > 0 ) goto 95
 	call setznv		! -> change znv since zenv has changed
 
         call rst_perform_restart        !restart
@@ -479,9 +504,17 @@
 	call test_zeta_init
 	call cpu_time_start(2)
 
+	end subroutine shyfem_initialize
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	subroutine shyfem_run
+
+	use mod_shyfem
+
+	implicit none
 
 	bfirst = .true.
 
@@ -553,11 +586,19 @@
 
 	end do
 
-	call cpu_time_end(2)
+	end subroutine shyfem_run
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%%%%%%%%%%%%%%%%%%%%% end of time loop %%%%%%%%%%%%%%%%%%%%%%%%
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	subroutine shyfem_finalize
+
+	use mod_shyfem
+
+	implicit none
+
+	call cpu_time_end(2)
 
 	call print_end_time
 	call ww3_finalize
@@ -632,11 +673,7 @@
 	call shympi_exit(99)
 	call exit(99)
 
-	stop
-   95	continue
-        write(6,*) 'no wetting and drying for mpi yet...',n
-        stop 'error stop shyfem: not yet ready'
-        end
+        end subroutine shyfem_finalize
 
 !*****************************************************************
 !*****************************************************************
