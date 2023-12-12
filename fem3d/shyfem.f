@@ -179,6 +179,7 @@
 ! 05.06.2023    lrp     introduce z-star
 ! 11.12.2023    ggu     f90 style format
 ! 11.12.2023    ggu     create subroutines for init/run/finalize
+! 12.12.2023    ggu     introduce dtmax to make limited run
 !
 !*****************************************************************
 !
@@ -242,7 +243,7 @@
 ! internal variables
 
 	logical bdebout,bdebug,bmpirun
-	logical bfirst
+	logical, save ::  bfirst = .true.
 	integer k,ic,n
 	integer iwhat
 	integer date,time
@@ -255,6 +256,7 @@
 	double precision mpi_t_solve
 	double precision dtime,dtanf,dtend
         double precision atime_start,atime_end
+        double precision, parameter :: zero = 0.
         character*20 aline_start,aline_end
 	character*80 strfile
 	character*80 mpi_code,omp_code
@@ -267,7 +269,7 @@
 	use mod_shyfem
 	implicit none
 	call shyfem_initialize
-	call shyfem_run
+	call shyfem_run(zero)
 	call shyfem_finalize
 	end subroutine shyfem_main
 
@@ -510,22 +512,27 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%% time loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	subroutine shyfem_run
+	subroutine shyfem_run(dtstep)
 
 	use mod_shyfem
 
 	implicit none
 
-	bfirst = .true.
+	double precision dtstep		!time step to run, 0: run to end
 
-	do while( dtime .lt. dtend )
+	double precision dtmax		!run to this time
+
+	dtmax = dtend
+	if( dtstep > 0. ) dtmax = dtime + dtstep
+
+	do while( dtime .lt. dtmax )
 
            if(bmpi_debug) call shympi_check_all(0)	!checks arrays
 
 	   call check_crc
 	   call set_dry
 
-           call set_timestep		!sets dt and t_act
+           call set_timestep(dtmax)		!sets dt and t_act
            call get_timestep(dt)
 	   call get_act_dtime(dtime)
 
@@ -1481,7 +1488,7 @@
 
 	do while( dtime .lt. dtend )
 
-           call set_timestep		!sets dt and t_act
+           call set_timestep(dtend)		!sets dt and t_act
            call get_timestep(dt)
 	   call get_act_dtime(dtime)
 

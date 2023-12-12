@@ -125,6 +125,7 @@ c 20.03.2022	ggu	eliminated convert_time -> convert_time_d
 c 21.03.2022	ggu	bug in set_timestep: dtmin is real, now use ddtmin as dp
 c 28.03.2022	ggu	bug fix: ddtmin was not saved
 c 02.04.2023    ggu     only master writes to iuinfo
+c 12.12.2023    ggu     introduced dtmax (maximum time to run to)
 c
 c**********************************************************************
 c**********************************************************************
@@ -462,13 +463,15 @@ c********************************************************************
 c********************************************************************
 c********************************************************************
 
-        subroutine set_timestep
+        subroutine set_timestep(dtmax)
 
 c controls time step and adjusts it
 
 	use shympi
 
         implicit none
+
+        double precision :: dtmax	!maximum time for run (normally dtend)
 
 	include 'femtime.h'
 
@@ -479,7 +482,7 @@ c controls time step and adjusts it
 	integer idta(n_threads)
         double precision dt,dtnext,atime,ddts,dtsync,dtime,dt_recom
         double precision, save :: ddtmin
-        double precision :: dtmax
+        double precision :: dtbest
 	real dtr,dtaux
         real ri,rindex,rindex1,sindex
 	real perc,rmax
@@ -628,16 +631,16 @@ c----------------------------------------------------------------------
 c	syncronize time step
 c----------------------------------------------------------------------
 
-	dtmax = dt
+	dtbest = dt
 	dtime = t_act
 	dtsync = idts
         call sync_step(dtanf,dtsync,dtime,dt,bsync)
 
 	if( dt <= 0 ) stop 'error stop set_timestep: dt<=0'
 
-	if( dtime .gt. dtend ) then	!sync with end of sim
-	  dt = dtend - t_act
-	  dtime = dtend
+	if( dtime .gt. dtmax ) then	!sync with end of sim
+	  dt = dtmax - t_act
+	  dtime = dtmax
 	  bsync = .true.
 	end if
 
@@ -645,9 +648,9 @@ c----------------------------------------------------------------------
 
 	if( dt <= 0 ) then
 	  write(6,*) 'dt is negative after syncronize'
-	  write(6,*) dtmax
+	  write(6,*) dtbest
 	  write(6,*) dtime,t_act
-	  write(6,*) dtanf,dtend
+	  write(6,*) dtanf,dtend,dtmax
 	  write(6,*) dtr,isplit,idtfrac,dt_orig
 	  write(6,*) dt,cmax,rindex,cmax/rindex
 	  write(6,*) dtnext,bsync

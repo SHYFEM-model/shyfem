@@ -1,5 +1,15 @@
 ============================================================
 
+Tue Dec 12 10:29:31 CET 2023
+
+introduced dtmax for limited run
+
+ fem3d/shyfem.f  | 21 ++++++++++++++-------
+ fem3d/subtime.f | 19 +++++++++++--------
+ 2 files changed, 25 insertions(+), 15 deletions(-)
+
+============================================================
+
 Mon Dec 11 18:42:28 CET 2023
 
 new shyfem main
