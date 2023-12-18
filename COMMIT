@@ -1,5 +1,16 @@
 ============================================================
 
+Mon Dec 18 10:01:55 CET 2023
+
+flux computation for 3d is ok
+
+ fem3d/Makefile   |   1 +
+ fem3d/subboxa.f  |  44 ++++++++------
+ fem3d/subflx3d.f | 179 ++++++++++++++++++++++++++++++++++++++++++++++---------
+ 3 files changed, 180 insertions(+), 44 deletions(-)
+
+============================================================
+
 Tue Dec 12 10:29:31 CET 2023
 
 introduced dtmax for limited run

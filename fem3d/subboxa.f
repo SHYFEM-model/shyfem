@@ -102,6 +102,7 @@
 ! 28.10.2023	ggu	bug fix for not existing boundaries
 ! 02.12.2023	ggu	changes marked with GGU_LAST
 ! 06.12.2023	ggu	more in assert_values(), 3d writing and check better
+! 18.12.2023	ggu	new version 6
 !
 ! notes :
 !
@@ -134,7 +135,7 @@
 ! 5		writing of boxes_geom.txt (with boxes and external nums)
 !		boxes_stats.txt has different section format
 !		boxes_geom.txt has different format
-! 6		in 3d write also act_eta and bstress
+! 6		in 3d file also write act_eta and bstress
 !
 !******************************************************************
 !
@@ -184,7 +185,7 @@
 	implicit none
 
         integer, parameter :: idbox = 473226		!id for box files
-        integer, parameter :: nversbox = 5		!newest version
+        integer, parameter :: nversbox = 6		!newest version
 
 	logical, save :: bextra = .true.		!write extra info
 	logical, save :: bflush = .true.		!flush after write
@@ -2746,13 +2747,14 @@
 	double precision fluxesg_ob(0:nlv_global,3,nbc_ob)
 	double precision voldif(nbox)		!volume difference due to eta
 
+	character*80 string
+	logical bdebug,bw
 	integer ib,is,ib1,ib2,iu,l
 	real volf,vole,volb,vola,vold,volr
 	real errmax,errv(nbox),errd(nbox)
 	real eps
 	double precision vol(nbox)
 	double precision flux
-	logical bdebug,bw
 
 	eps = eps2d
 	if( eps == 0. ) return
@@ -2805,14 +2807,17 @@
 	  !write(115,*) ib,volf,vole,vold,volr
 	end do
 
+	string = 'boxes mass balance errmax 2d: '
+
 	if( errmax .gt. eps ) then
-	  if( bw ) write(6,*) '*** errmax 2d: ',errmax,eps
+	  if( bw ) write(6,*) '*** ',trim(string),errmax,eps
 	else if( bdebug .and. bw ) then
-	  write(6,*) 'errmax 2d: ',errmax,eps
+	  write(6,*) trim(string),errmax,eps
 	end if
 
 	if( bmasserror .and. bw ) then
-	  write(601,*) 'boxes mass errmax 2d: ',errmax,eps,nbox
+	  write(601,*) trim(string),errmax,eps
+	  write(601,*) nbox
 	  do ib=1,nbox
 	    write(601,*) ib,errv(ib),errd(ib)
 	  end do
@@ -2845,6 +2850,7 @@
 	double precision voldif(nbox)			!volume difference due to eta
 	double precision wflux(0:nlv_global,nbox)	!vertical fluxes [m**3/s]
 
+	character*80 string
 	logical bdebug,bw
 	integer ib,is,ib1,ib2
 	integer l,lmax,ltot
@@ -2937,14 +2943,16 @@
 
 	end do
 
+	string = 'boxes mass balance errmax 3d: '
 	if( errmax .gt. eps ) then
-	  if( bw ) write(6,*) '*** errmax 3d: ',errmax,eps
+	  if( bw ) write(6,*) '*** ',trim(string),errmax,eps
 	else if( bdebug .and. bw ) then
-	  write(6,*) 'errmax 3d: ',errmax,eps
+	  write(6,*) trim(string),errmax,eps
 	end if
 
 	if( bmasserror .and. bw ) then
-	  write(601,*) 'boxes mass errmax 3d: ',errmax,eps
+	  write(601,*) trim(string),errmax,eps
+	  write(601,*) nbox
 	  do ib=1,nbox
 	    write(601,*) ib,errv(ib),errd(ib)
 	  end do
@@ -3111,6 +3119,7 @@
 
 	logical bw
 	integer ib,lmax,l,iv,is
+	integer iu
 	double precision val,val0,dval,rval
 	double precision fmax,fsum,ftot
 	double precision vals(3),vals0(3),avals(3),dvals(3),rvals(3)
@@ -3119,6 +3128,7 @@
 
 	bw = .true.
 	bw = .false.
+	iu = 456
 
 !-------------------------------------------------
 ! check volume
@@ -3128,7 +3138,7 @@
 	text = 'checking volume'
 	iv = 0
 
-	if( bw ) write(6,*) 'checking variable ',iv
+	if( bw ) write(iu,*) 'checking variable ',iv
 	do ib=1,nbox
 	  lmax = nblayers(ib)
 	  val = 0.
@@ -3138,7 +3148,7 @@
 	  val0 = bvol3d(0,ib)
 	  dval = abs(val-val0)
 	  rval = dval / val
-	  if( bw ) write(6,2000) iv,ib,val,val0,dval,rval
+	  if( bw ) write(iu,2000) iv,ib,val,val0,dval,rval
 	  if( rval > eps ) goto 99
 	end do
 
@@ -3150,7 +3160,7 @@
 	text = 'checking val3d'
 
 	do iv=1,nv3d
-	  if( bw ) write(6,*) 'checking variable ',iv
+	  if( bw ) write(iu,*) 'checking variable ',iv
 	  do ib=1,nbox
 	    lmax = nblayers(ib)
 	    val = 0.
@@ -3161,7 +3171,7 @@
 	    dval = abs(val-val0)
 	    rval = 0.
 	    if( val > 0. ) rval = dval / val
-	    if( bw ) write(6,2000) iv,ib,val,val0,dval,rval
+	    if( bw ) write(iu,2000) iv,ib,val,val0,dval,rval
 	    if( rval > eps ) goto 99
 	  end do
 	end do
@@ -3174,7 +3184,7 @@
 	text = 'checking fluxes'
 
 	do is=1,nsect
-	  if( bw ) write(6,*) 'checking flux ',is
+	  if( bw ) write(iu,*) 'checking flux ',is
 	  lmax = nslayers(is)
 	  do l=1,lmax
 	    fmax = max(fluxes(l,2,is),fluxes(l,3,is))
@@ -3183,7 +3193,7 @@
 	    dval = abs(fsum-ftot)
 	    rval = 0.
 	    if( fmax > 0. ) rval = dval / fmax
-	    !if( bw ) write(6,2000) l,is,fsum,ftot,dval,rval
+	    !if( bw ) write(iu,2000) l,is,fsum,ftot,dval,rval
 	    if( rval > eps ) goto 98
 	  end do
 	end do
@@ -3196,7 +3206,7 @@
 	text = 'checking sections'
 
 	do is=1,nsect
-	  if( bw ) write(6,*) 'checking section ',is
+	  if( bw ) write(iu,*) 'checking section ',is
 	  lmax = nslayers(is)
 	  vals = 0.
 	  do l=1,lmax
@@ -3211,7 +3221,7 @@
 	  val0 = maxval( vals0 )
 	  dval = maxval( dvals )
 	  rval = maxval( rvals )
-	  if( bw ) write(6,2000) 0,is,val,val0,dval,rval
+	  if( bw ) write(iu,2000) 0,is,val,val0,dval,rval
 	  if( rval > eps ) goto 97
 	end do
 

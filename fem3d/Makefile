@@ -1321,6 +1321,7 @@ $(MODDIR)/mod_zeta_system.mod: $(simsys_solver)
 ../femlib/mod/mod_sediment.mod: sedi3d.o
 ../femlib/mod/mod_sediment_para.mod: sedi3d.o
 ../femlib/mod/mod_sedtrans05.mod: sedtrans05.o
+../femlib/mod/mod_shyfem.mod: shyfem.o
 ../femlib/mod/mod_shympi_debug.mod: check_shympi_debug.o
 ../femlib/mod/mod_shypre.mod: shypre.o
 ../femlib/mod/mod_sinking.mod: mod_sinking.o
