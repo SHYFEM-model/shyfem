@@ -23,7 +23,7 @@
 #
 #--------------------------------------------------------
 
-use lib ("$ENV{SHYFEMDIR}/femlib/perl","$ENV{HOME}/shyfem/femlib/perl");
+use lib ("$ENV{SHYFEMDIR}/lib/perl","$ENV{HOME}/shyfem/lib/perl");
 
 use str;
 use grd;
@@ -765,6 +765,8 @@ sub collect_str {
       $filename =~ s/\.grd//;
       $basin = $filename;
       $str->set_basin($filename);
+    } elsif( $section eq "none" ) {
+      #nothing
     } else {
       replace_value($str,$varname,"'$newdir$filename'",$section);
     }

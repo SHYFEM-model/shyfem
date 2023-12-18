@@ -1,5 +1,16 @@
 ============================================================
 
+Mon Dec 18 10:30:02 CET 2023
+
+minor
+
+ fem3d/subboxa.f    | 4 ++--
+ fem3d/subflx3d.f   | 4 ++--
+ fembin/strparse.pl | 4 +++-
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
+============================================================
+
 Mon Dec 18 10:01:55 CET 2023
 
 flux computation for 3d is ok

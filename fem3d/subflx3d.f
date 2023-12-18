@@ -412,8 +412,8 @@ c passed in are pointers to these section in lnk structure
 	double precision, save :: tomax = 0.
 	double precision, save :: dmax = 0.
 	double precision, save :: eps = 1.e-4
-	!double precision, save :: epsdiv = 1.
-	double precision, save :: epsdiv = 1.e-1
+	double precision, save :: epsdiv = 1.
+	!double precision, save :: epsdiv = 1.e-1
 
 	double precision tt(nlvdi)
 	double precision ttnew(nlvdi)
