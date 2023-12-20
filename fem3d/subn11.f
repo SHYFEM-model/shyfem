@@ -189,6 +189,7 @@ c 16.12.2022	ggu	no tilting for mpi -> error
 c 01.02.2023	ggu	rflux introduced for double BC
 c 01.04.2023	ggu	handle new boundary type 5
 c 09.05.2023    lrp     introduce top layer index variable
+c 18.12.2023    ggu     new routine get_discharge_3d()
 c
 c***************************************************************
 
@@ -1728,6 +1729,91 @@ c for z-boundaries 0 is returned
 
 	get_discharge = acc
 
+	end
+
+c**********************************************************************
+
+	subroutine get_discharge_3d(ibc,flux3d,flux2d)
+
+	use levels
+	use mod_bound_dynamic
+	use mod_bound_geom
+
+	implicit none
+
+	integer ibc
+	real flux3d(nlvdi)
+	real flux2d
+
+	integer mode,nk
+	integer ibtyp,levmin,levmax
+	integer l,lmax,lmin
+	integer i,k,kindex
+	double precision vol,voltot,vols(nlvdi),flux,rval
+	double precision flux3dacum(nlvdi)
+	double precision flux2dacum
+
+	integer nkbnds,kbnds,nbnds,kbndind
+	real volnode		!function to compute volume of node
+
+	mode = +1
+	flux3dacum = 0.
+	flux2dacum = 0.
+
+          nk = nkbnds(ibc)
+	  call get_bnd_ipar(ibc,'ibtyp',ibtyp)
+	  call get_bnd_ipar(ibc,'levmin',levmin)
+	  call get_bnd_ipar(ibc,'levmax',levmax)
+
+	  if( ibtyp .lt. 2 .or. ibtyp .gt. 3 ) nk = 0		!skip
+
+	  do i=1,nk
+            k = kbnds(ibc,i)
+	    kindex = kbndind(ibc,i)
+	    if( k <= 0 ) cycle
+
+	    lmax = ilhkv(k)
+	    if( levmax .gt. 0 ) lmax = min(lmax,levmax)
+	    if( levmax .lt. 0 ) lmax = min(lmax,lmax+1+levmax)
+	    lmin = jlhkv(k)
+	    if( levmin .gt. 0 ) lmin = max(lmin,levmin)
+	    if( levmin .lt. 0 ) lmin = max(lmin,lmax+1+levmin)
+
+	    if( lmin .gt. lmax ) goto 98
+
+	    voltot = 0.
+	    do l=lmin,lmax
+	      vol = volnode(l,k,mode)
+	      vols(l) = vol
+	      voltot = voltot + vol
+	    end do
+
+	    if( voltot .le. 0. ) goto 99
+
+	    flux = rflux(kindex)
+	    flux2dacum = flux2dacum + flux
+	    do l=lmin,lmax
+	      rval = flux * vols(l) / voltot
+	      flux3dacum(l) = flux3dacum(l) + rval
+	    end do
+	  end do
+
+	flux3d = flux3dacum
+	flux2d = flux2dacum
+
+	return
+   98	continue
+	write(6,*) 'lmin > lmax'
+   99	continue
+	write(6,*) 'ibc = ',ibc
+	write(6,*) 'i = ',i
+	write(6,*) 'k = ',k
+	write(6,*) 'ilhkv(k) = ',ilhkv(k)
+	write(6,*) 'levmin = ',levmin
+	write(6,*) 'levmax = ',levmax
+	write(6,*) 'lmin = ',lmin
+	write(6,*) 'lmax = ',lmax
+	stop 'error stop get_discharge_3d: voltot = 0'
 	end
 
 c**********************************************************************

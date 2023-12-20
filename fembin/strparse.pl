@@ -23,7 +23,7 @@
 #
 #--------------------------------------------------------
 
-use lib ("$ENV{SHYFEMDIR}/lib/perl","$ENV{HOME}/shyfem/lib/perl");
+use FindBin qw($Bin); use lib "$Bin/../lib/perl"; 
 
 use str;
 use grd;

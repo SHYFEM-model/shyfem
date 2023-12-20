@@ -77,6 +77,7 @@ c 05.03.2020	ggu	do not print flux divergence
 c 21.04.2023	ggu	avoid access of node 0 in flxtype()
 c 11.12.2023	ggu	prepared for new 3d flux computation
 c 18.12.2023	ggu	finished for new 3d flux computation
+c 20.12.2023	ggu	debugged 3d flux computation, still to be cleaned
 c
 c info :
 c
@@ -381,6 +382,7 @@ c internal section is defined by:  kbefor - k - kafter
 c passed in are pointers to these section in lnk structure
 
 	use mod_geom
+	use mod_debug
 	use evgeom
 	use levels, only : nlvdi,nlv
 	use basin
@@ -394,11 +396,11 @@ c passed in are pointers to these section in lnk structure
 	integer lkmax		!maximum layer in finite volume k (return)
 	real flux(nlvdi)	!computed fluxes (return)
 
-	logical bdebug
+	logical bdebug,bcheck
 	logical bw
 	logical bdiverg		!write error on flux divergence
 	logical, parameter ::  bold = .true.
-	integer i,n,ne
+	integer i,n,ne,nepres
 	integer l
 
 	integer elems(maxlnk)
@@ -406,13 +408,15 @@ c passed in are pointers to these section in lnk structure
 
 	double precision dtransp(nlvdi,ngr)
 
-	double precision ttot,tabs,tlmax,ttmax
-	double precision dflux
+	double precision ttot,tabs,tlmax,ttmax,rtot,trmax
+	double precision dflux,drflux,dabs
 	double precision, save :: tmax = 0.
 	double precision, save :: tomax = 0.
 	double precision, save :: dmax = 0.
 	double precision, save :: eps = 1.e-4
-	double precision, save :: epsdiv = 1.
+	double precision, save :: deps = 1.e-2
+	double precision, save :: reps = 1.e-3
+	double precision, save :: epsdiv = 1.e-2
 	!double precision, save :: epsdiv = 1.e-1
 
 	double precision tt(nlvdi)
@@ -422,12 +426,16 @@ c passed in are pointers to these section in lnk structure
 	double precision weight(ngr)
 	double precision weight1(ngr)
 
+	integer ipext
+
 	bdebug = k .eq. 6615
 	bdebug = k .eq. 0
+	bw = .true.
 	bw = .false.
 
 	bdiverg = .false.
 	bdiverg = .true.
+	bcheck = .true.
 
 c---------------------------------------------------------
 c compute transport through finite volume k
@@ -462,22 +470,27 @@ c---------------------------------------------------------
 	      ttot = ttot + dtransp(l,i)
 	      tabs = tabs + abs(dtransp(l,i))
 	    end do
-	    ttmax = max(ttmax,abs(ttot))
-	    if( abs(ttot) .gt. epsdiv .and. bdiverg ) then
-	      write(6,*) '******** flx3d (divergence): ',ttot,tabs,tlmax
-	      write(6,*) '     ',k,l,n,lkmax,istype
+	    rtot = 0.
+	    if( tabs > 0 ) rtot = abs(ttot)/tabs
+	    if( bdiverg ) then
+	     if( rtot .gt. epsdiv .and. abs(ttot) > 1. ) then
+	      write(6,*) '*** flx3d (divergence): '
+	      write(6,*) k,l,n,lkmax,istype
+	      write(6,*) ttot,tabs,tlmax,rtot
+	     end if
 	    end if
-	    dtransp(l,1:n) = dtransp(l,1:n) - ttot/n
-	    ttot = sum(dtransp(l,1:n))
 	    tlmax = max(tlmax,abs(ttot))
+	    ttmax = max(ttmax,abs(tabs))
 	  end do
-	  if( ttmax > tomax ) then
-	    tomax = ttmax
-	    if( bw ) write(6,*) 'tomax: ',k,istype,tomax
-	  end if
+	  !if( ttmax > tomax ) then
+	  !  tomax = ttmax
+	  !  if( bw ) write(6,*) 'tomax: ',k,istype,tomax
+	  !end if
 	  if( tlmax > tmax ) then
 	    tmax = tlmax
-	    if( bw ) write(6,*) 'tmax: ',k,istype,tmax
+	    trmax = 0.
+	    if( ttmax > 0. ) trmax = tlmax / ttmax
+	    if( bw ) write(6,*) 'tmax: ',k,istype,real(tmax),real(trmax)
 	  end if
 	end if
 
@@ -510,22 +523,27 @@ c---------------------------------------------------------
 	  end do
 	  end do
 
-	else
-
-	  do l=1,lkmax
-	    fflux(:) = dtransp(l,:)
-	    call flux_with_bounds(n,l,istype,elems,fflux,qflux)
-	    ttnew(l) = qflux(iafter) - qflux(ibefor)
-	  end do
-
 	end if
 
 	  do l=1,lkmax
 	    fflux(:) = dtransp(l,:)
 	    call flux_with_bounds(n,l,istype,elems,fflux,qflux)
-	    ttnew(l) = qflux(iafter) - qflux(ibefor)
+	    ttnew(l) = 0.
+	    if( iafter > 0 ) ttnew(l) = ttnew(l) + qflux(iafter)
+	    if( ibefor > 0 ) ttnew(l) = ttnew(l) - qflux(ibefor)
 	  end do
 
+	!if( bdebug ) then
+	if( .false. ) then
+	write(665,*) '--------'
+	write(665,*) k,ipext(k),lkmax,istype
+	write(665,*) ibefor,iafter
+	do l=1,lkmax
+	write(665,*) l,ttnew(l),tt(l)
+	end do
+	end if
+
+	if( bcheck ) then	!checks difference between old nad new flux
 	do l=1,lkmax
 	  dflux = abs( tt(l) - ttnew(l) )
 	  !if( dflux /= 0. .and. istype /= 1 ) then
@@ -534,11 +552,21 @@ c---------------------------------------------------------
 	    dmax = dflux
 	    if( bw ) write(6,*) 'dmax ',k,l,istype,dflux,dmax
 	  end if
-	  if( dflux > eps .and. bdebug ) then
-	    write(6,*) '*** dflux',k,l,istype,dflux,dmax
-	    !write(6,*) '*** ',k,l,istype,tt(l),ttnew(l)
+	  call count_present_elements(l,ne,elems,nepres)
+	  if( dflux > deps .and. ne == nepres ) then
+	    dabs = 0.5 * (abs(tt(l))+abs(ttnew(l)))
+	    drflux = 0.
+	    if( dabs > 0 ) drflux = dflux/dabs
+	    if( drflux > reps ) then
+	    write(6,*) '*** dflux ----------'
+	    write(6,*) k,ipext(k),l,n,nepres
+	    write(6,*) istype,ibefor,iafter
+	    write(6,*) dflux,drflux,dmax
+	    write(6,*) tt(l),ttnew(l)
+	    end if
 	  end if
 	end do
+	end if
 
 	!flux(1:lkmax) = tt(1:lkmax)
 	flux(1:lkmax) = ttnew(1:lkmax)
@@ -556,39 +584,43 @@ c******************************************************************
 	use basin
 	use levels
 	use mod_geom
+	use mod_debug
 
 	implicit none
 
 	integer n,l,istype
-	integer elems(maxlnk)
-	double precision fflux(maxlnk)
-	double precision qflux(maxlnk)
+	integer elems(n)
+	double precision fflux(n)
+	double precision qflux(n)
 
-	integer npres,i,ie
+	logical bdebug
+	integer npres,i,ie,iu
 	integer j,jback,jforw,jnext,jstart
-	logical present(maxlnk)
-	double precision fact,facum
+	logical present(n)
+	double precision fact,facum,faver
 
 	npres = 0
 	present = .false.
+	qflux = 0.
+	jstart = 0
 
+	faver = 0.
 	do i=1,n
 	  ie = elems(i)
-	!write(6,*) 'ggguuu: ',i,n,ie,istype,l
 	  if( ie <= 0 ) cycle
 	  if( l > ilhv(ie) ) cycle
 	  present(i) = .true.
+	  faver = faver + fflux(i)
 	  npres = npres + 1
 	end do
+	if( npres > 0 ) faver = faver / npres
 
-	!present = .true.
+	if( istype <= 2 ) then
+	  where( present ) fflux = fflux - faver
+	end if
 
-	if( istype > 1 ) then		!boundary (material or open)
-	  if( istype == 2 ) then
-	    qflux(1) = 0.
-	    jforw = 2
-	    jback = 0
-	  else if( istype == 3 ) then	!BOO
+	if( istype > 2 ) then		!open boundary
+	  if( istype == 3 ) then	!BOO
 	    qflux(n) = 0.
 	    jforw = n+1
 	    jback = n-1
@@ -619,19 +651,26 @@ c******************************************************************
 	  do j=jback,1,-1
 	    qflux(j) = qflux(j+1) - fflux(j)
 	  end do
-	else				!internal element
-	  !if( npres == n ) then		!all elements are present
+	else				!internal or boundary element
+	  if( istype == 1 .and. npres == n ) then  !all elements are present
 	    fact = 1.
 	    facum = 0.
 	    do i=n-1,1,-1
-	      if( .not. present(i) ) exit
 	      facum = facum + fact*fflux(i)
 	      fact = fact + 1.
 	    end do
-	    if( i == 0 ) then		!all elements present
-	      jstart = 1
-	      qflux(jstart) = -facum / n
+	    qflux(1) = -facum / n
+	    do i=2,n
+	      qflux(i) = qflux(i-1) + fflux(i-1)
+	    end do
+	  else				!missing elements or material boundary
+	    if( istype == 2 ) then
+	      jstart = n
 	    else
+	      do i=1,n
+	        if( .not. present(i) ) exit
+	      end do
+	      if( i > n ) stop 'error stop flux_with_bounds: i>n'
 	      jstart = i
 	    end if
 	    j = jstart
@@ -645,9 +684,50 @@ c******************************************************************
 	      end if
 	      j = jnext
 	    end do
-	  !else				!some elements are missing
-	  !end if
+	    qflux(jstart) = 0.
+	  end if
 	end if
+
+	return
+
+	bdebug = l > 51 .and. is_debug()
+	iu = 662
+	iu = 665
+
+	!if( bdebug .and. any( qflux(1:n) /= 0. ) ) then
+	if( l == 1 ) then
+	  write(iu,*) ' ========================= qflux: ',istype
+	  write(iu,*) n,l,istype,npres,n-npres
+	  write(iu,*) jstart
+	  write(iu,*) qflux(1:n)
+	  write(iu,*) fflux(1:n)
+	  write(iu,*) present(1:n)
+	end if
+
+	end
+
+c******************************************************************
+
+	subroutine count_present_elements(l,ne,elems,nepres)
+
+	use levels
+
+	implicit none
+
+	integer l
+	integer ne
+	integer elems(ne)
+	integer nepres
+
+	integer i,ie
+
+	nepres = 0
+	do i=1,ne
+	  ie = elems(i)
+	  if( ie <= 0 ) stop 'count_present_elements: ie==0'
+	  if( l > ilhv(ie) ) cycle
+	  nepres = nepres + 1
+	end do
 
 	end
 

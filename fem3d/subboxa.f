@@ -103,6 +103,7 @@
 ! 02.12.2023	ggu	changes marked with GGU_LAST
 ! 06.12.2023	ggu	more in assert_values(), 3d writing and check better
 ! 18.12.2023	ggu	new version 6
+! 20.12.2023	ggu	bug fixes for flux computation, no OBC section
 !
 ! notes :
 !
@@ -133,9 +134,10 @@
 ! 3		for MPI	(after 15.03.2022)
 ! 4		final version of with 3d computations under MPI
 ! 5		writing of boxes_geom.txt (with boxes and external nums)
-!		boxes_stats.txt has different section format
 !		boxes_geom.txt has different format
+!		boxes_stats.txt has different section format
 ! 6		in 3d file also write act_eta and bstress
+!		in sections block write section number
 !
 !******************************************************************
 !
@@ -221,7 +223,7 @@
 !       iboxes(ie)      index from elements to boxes
 !       ikboxes(k)      index from nodes to boxes (<0 if node on box boundary)
 !       isects(5,is)    description of section (n,type,box1,box2,ipnt)
-!       iscbnd(4,ibc)   description of OB (n,type,box1,box2)
+!       iscbnd(5,ibc)   description of OB (n,type,box1,box2,is)
 !
 !       i runs on list of nodes (1:kfluxm)
 !       ie runs on elements (1:nel)
@@ -256,7 +258,7 @@
 	allocate(iboxes(nel))
 	allocate(ikboxes(nkn))
 	allocate(isects(5,ns))
-	allocate(iscbnd(4,nbc))
+	allocate(iscbnd(5,nbc))
 
 	end subroutine box_alloc
 
@@ -408,7 +410,7 @@
 	integer j,i,k,l,lmax,nlmax,ivar,nvers,nk_ob
 	integer date,time
 	integer idtbox
-	integer nvar,ierr,iuaux,ib,iv,iu
+	integer nvar,ierr,iuaux,ib,iv,iu,is,ibtyp
 	real az,azpar,dt,dt1
 	double precision atime0,atime,dtime
 	double precision daux
@@ -469,7 +471,7 @@
 
 		nbxdim = nbox
 		nscboxdim = nsect + nbc_ob
-		nfxboxdim = kfluxm + nbc_ob + nk_ob
+		nfxboxdim = kfluxm + nbc_ob + nk_ob + 1
                 call box_alloc(nkn,nel,nlvdi,nbc_ob,nbox                &
      &					,nscboxdim,nfxboxdim)
                 call box_arrays_alloc(nlv,nlv_global,nbc_ob,nbox        &
@@ -490,7 +492,7 @@
                 call box_make_stats(nbox,iboxes,nblayers                &
      &					,barea,bvol2d,bdepth)
 
-		call debug_nslayers
+		call finalize_nslayers
 
                 if( nsect .gt. nscboxdim ) then
                   stop 'error stop wrboxa: dimension nscboxdim'
@@ -557,8 +559,11 @@
 
 		allocate(taubot(nkn))
 
+		!call write_section_info
 		call write_matrix_boxes
         end if
+
+	! at this point nsect is total number of sections (intern+OB)
 
 !-----------------------------------------------------------------
 ! normal call
@@ -584,10 +589,10 @@
 !	-------------------------------------------------------
 
 	ivar = 0
-	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)
+	call flxscs(kfluxm,kflux,iflux,az,fluxes,ivar,rhov)	!rhov is ignored
 	call fluxes_accum_d(nlvdi,nsect,nslayers,dt,trm,masst,fluxes)
 
-	call box_ob_compute(nbc_ob,nlvdi,fluxes_ob)	!open boundary conditions
+	call box_ob_compute(nbc_ob,nlvdi,fluxes_ob)  !open boundary conditions
         call fluxes_accum_d(nlvdi,nbc_ob,nslayers_ob,dt,trob            &
      &				,masst_ob,fluxes_ob)
 
@@ -686,11 +691,20 @@
 	ivar = 0
 	call fluxes_aver_d(nlvdi,nsect,nslayers,trm,masst,fluxes)
 	call box_flx_collect(nlvdi,fluxes,fluxesg_m)
-	call box_flx_write(atime,nbflx,ivar,fluxesg_m)
 
         call fluxes_aver_d(nlvdi,nbc_ob,nslayers_ob,trob                &
      &					,masst_ob,fluxes_ob)
 	call box_flx_collect(nlvdi,fluxes_ob,fluxesg_ob)
+
+	!write(6,*) 'transfering OB fluxes to section...'
+
+	do i=1,nbc_ob
+	  is = iscbnd(5,i)
+	  ibtyp = iscbnd(2,i)
+	  if( ibtyp == 3 ) fluxesg_m(:,:,is) = fluxesg_ob(:,:,i)
+	end do
+
+	call box_flx_write(atime,nbflx,ivar,fluxesg_m)
 
 	if( ibarcl .gt. 0 ) then
 	  ivar = 11
@@ -1637,38 +1651,38 @@
 	itypes(:) = isects(2,:)
 	ic = count( itypes == 1 .or. itypes == 99 )
 	!write(69,*) ns,ic
-	ns = ic		!only show type 1 (zeta bound) or 99 (internal)
+	!ns = ic		!only show type 1 (zeta bound) or 99 (internal)
 
 	!if( bextra ) write(iu,'(a)') '# fluxes through sections'
 	if( bextra ) write(iu,'(a)') '#   sections'
 	if( bw ) write(iu,*) ns
-	s1 = '# from    to'
+	s1 = '# section  from    to'
 	s2 = '         total      positive      negative'
 	!     12345678901234567890123456789012345678901234567890
 	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
+	flux2d(:,:) = fluxesg(0,:,:)
 	do is=1,ns
-	  flux2d(:,:) = fluxesg(0,:,:)
 	  itype = isects(2,is)
-	  if( itype /= 1 .and. itype /= 99 ) flux2d = 0.
+	  !if( itype /= 1 .and. itype /= 99 ) flux2d = 0.
 	  !call flx_collect_2d(3*nsect,flux2d)
 	  ib1 = isects(3,is)
 	  ib2 = isects(4,is)
 	  !write(69,*) is,ib1,ib2,itype
 	  !write(iu,2000) ib1,ib2,(fluxes(0,ii,is),ii=1,3)
-	  if( bw ) write(iu,2000) ib1,ib2,(flux2d(ii,is),ii=1,3)
- 2000	  format(2i6,3e14.6)
+	  if( bw ) write(iu,2000) is,ib1,ib2,(flux2d(ii,is),ii=1,3)
+ 2000	  format(i9,2i6,3e14.6)
 	end do
 
-	!if( bextra ) write(iu,'(a)') '# fluxes through open boundaries'
+	if( nversbox < 6 ) then		!only write up to version 5
+	ns = nbc_ob
 	if( bextra ) write(iu,'(a)') '#        OBC'
-	if( bw ) write(iu,*) nbc_ob
+	if( bw ) write(iu,*) ns
 	if( bextra ) write(iu,'(a)') trim(s1)//trim(s2)
 
-	if( nbc_ob > nsect ) stop 'error stop box_write_2d: nbc_ob>nsect'
+	if( ns > nsect ) stop 'error stop box_write_2d: nbc_ob>nsect'
 	flux2d(:,1:nbc_ob) = fluxesg_ob(0,:,1:nbc_ob)
-	!call flx_collect_2d(3*nbc_ob,flux2d)
 
-	do is=1,nbc_ob
+	do is=1,ns
 	  itype = iscbnd(2,is)
 	  ib1 = iscbnd(3,is)
 	  ib2 = iscbnd(4,is)
@@ -1676,10 +1690,9 @@
 	    ib1 = 0
 	    ib2 = 0
 	  end if
-	  !flux2d(:,is) = fluxes_ob(0,:,is)
-	  !call flx_collect_2d(3*nsect,flux2d(:,is))
-	  if( bw ) write(iu,2000) ib1,ib2,(flux2d(ii,is),ii=1,3)
+	  if( bw ) write(iu,2000) is,ib1,ib2,(flux2d(ii,is),ii=1,3)
 	end do
+	end if
 
 	if( bflush ) call file_flush(iu)
 
@@ -1714,14 +1727,15 @@
 	double precision val2d(nbox,nv2d)		!2d variables
 	double precision eta_act(nbox)			!actual eta
 
-	logical bw
-	integer ib,is,ib1,ib2,ii,itype,iv
+	logical bw,bcheck
+	integer ib,is,ib1,ib2,ii,itype,iv,iss
 	integer lmax,l
 
 	integer ifileo
 	character*80 file,s1,s2
 	integer, save :: iu = 0
 
+	bcheck = .true.
 	bw = .false.		!FIXME
 	bw = .true.		!FIXME
 	if( iu == 0 ) then
@@ -1761,8 +1775,8 @@
 	if( bextra ) write(iu,'(a)') '#   sections  max_layers'
 	if( bw ) write(iu,*) nsect,nlvdi
 
-	s1 = '#       from          to      layers'
-	!            12345678901234567890123456789012345678901234567890
+	s1 = '#    section        from          to      layers'
+	!     12345678901234567890123456789012345678901234567890
 	s2 = '# layer         total      positive      negative'
 
 	do is=1,nsect
@@ -1770,17 +1784,17 @@
 	  ib1 = isects(3,is)
 	  ib2 = isects(4,is)
 	  if( bextra ) write(iu,'(a)') trim(s1)
-	  if( bw ) write(iu,2000) ib1,ib2,lmax
+	  if( bw ) write(iu,2000) is,ib1,ib2,lmax
 	  if( bextra ) write(iu,'(a)') trim(s2)
 	  do l=1,lmax
 	    if( bw ) write(iu,2100) l,(fluxesg(l,ii,is),ii=1,3)
 	  end do
 	end do
 
- 2000	format(3i12)
+ 2000	format(4i12)
  2100	format(i7,3e14.6)
 
-	!if( bextra ) write(iu,'(a)') '# fluxes through open boundaries'
+	if( nversbox < 6 ) then		!only write up to version 5
 	if( bextra ) write(iu,'(a)') '#        OBC  max_layers'
 	if( bw ) write(iu,*) nbc_ob,nlvdi
 
@@ -1788,17 +1802,32 @@
 	  itype = iscbnd(2,is)
 	  ib1 = iscbnd(3,is)
 	  ib2 = iscbnd(4,is)
+	  iss = iscbnd(5,is)		!section number
+	  lmax = nslayers(iss)
 	  if( itype .eq. 1 ) then	!z-boundary, ignore
 	    ib1 = 0
 	    ib2 = 0
 	  end if
 	  if( bextra ) write(iu,'(a)') trim(s1)
-	  if( bw ) write(iu,2000) ib1,ib2,1
+	  if( bw ) write(iu,2000) is,ib1,ib2,lmax
 	  if( bextra ) write(iu,'(a)') trim(s2)
-	  if( bw ) write(iu,2100) 0,(fluxesg_ob(0,ii,is),ii=1,3)
+	  do l=1,lmax
+	    if( bw ) write(iu,2100) l,(fluxesg_ob(l,ii,is),ii=1,3)
+	  end do
 	end do
+	end if
 
 	if( bflush ) call file_flush(iu)
+
+	if( .not. bcheck ) return
+
+	do is=1,nsect
+	  lmax = nslayers(is)
+	  if( any( fluxesg(lmax+1:nlv_global,:,is) /= 0. ) ) then
+	    write(6,*) 'fluxes below last layer found...'
+	    stop 'error stop box_write_3d: fluxes below last layer'
+	  end if
+	end do
 
 	end
 
@@ -2479,12 +2508,14 @@
 	  ito = shympi_max(ito)
 	  itype = shympi_max(itype)
 
+	  nsect = nsect + 1
+
 	  iscbnd(1,ibc) = nk		!total number of boundary nodes
 	  iscbnd(2,ibc) = itype		!type of boundary
 	  iscbnd(3,ibc) = ifrom		!from box
 	  iscbnd(4,ibc) = ito		!to box
+	  iscbnd(5,ibc) = nsect		!section number
 
-	  nsect = nsect + 1
 	  if( nsect .gt. nscboxdim ) goto 95
 	  call box_insert_section(nsect,nk,itype,ifrom,ito,iauxv,ierr)
 	  if( kfluxm .gt. nfxboxdim ) goto 96
@@ -2519,8 +2550,6 @@
 	subroutine box_ob_compute(nbc_ob,nlvddi,fluxes_ob)
 
 ! computes open boundary inputs
-!
-! these fluxes are barotropic, so we insert them in 0 (baro) and 1 (1 layer)
 
 	use shympi
 
@@ -2530,31 +2559,39 @@
 	integer nlvddi
 	double precision fluxes_ob(0:nlvddi,3,nbc_ob) !discharges at open bound
 
-	integer ibc,nbc
+	integer ibc,nbc,l,lmax
 	real val
-
-	real get_discharge
+	real flux3d(nlvddi)
+	real flux2d
 
 	nbc = nbc_ob
+	lmax = nlvddi
 	fluxes_ob = 0.
 
 	do ibc = 1,nbc
-	  val = get_discharge(ibc)
+	  call get_discharge_3d(ibc,flux3d,flux2d)
+	  val = flux2d
 	  if( val .ge. 0 ) then
 	    fluxes_ob(0,1,ibc) = val
 	    fluxes_ob(0,2,ibc) = val
 	    fluxes_ob(0,3,ibc) = 0.
-	    fluxes_ob(1,1,ibc) = val
-	    fluxes_ob(1,2,ibc) = val
-	    fluxes_ob(1,3,ibc) = 0.
 	  else
 	    fluxes_ob(0,1,ibc) = val
 	    fluxes_ob(0,2,ibc) = 0.
 	    fluxes_ob(0,3,ibc) = -val
-	    fluxes_ob(1,1,ibc) = val
-	    fluxes_ob(1,2,ibc) = 0.
-	    fluxes_ob(1,3,ibc) = -val
 	  end if
+	  do l=1,lmax
+	    val = flux3d(l)
+	    if( val .ge. 0 ) then
+	      fluxes_ob(l,1,ibc) = val
+	      fluxes_ob(l,2,ibc) = val
+	      fluxes_ob(l,3,ibc) = 0.
+	    else
+	      fluxes_ob(l,1,ibc) = val
+	      fluxes_ob(l,2,ibc) = 0.
+	      fluxes_ob(l,3,ibc) = -val
+	    end if
+	  end do
 	end do
 
 	end
@@ -2852,7 +2889,9 @@
 
 	character*80 string
 	logical bdebug,bw
+	integer ierr
 	integer ib,is,ib1,ib2
+	integer nb1,nb2,nbs
 	integer l,lmax,ltot
 	real volf,vole,volb,vola,vold,volr,volv
 	real wtop
@@ -2874,20 +2913,30 @@
 	end do
 
 	vol = 0.
+	ierr = 0
+	string = '   is  ib1  ib2  nb1  nb2    l          flux'
 
 	do is=1,nsect
+	  nbs = nslayers(is)
 	  ib1 = isects(3,is)
 	  ib2 = isects(4,is)
-	  lmax = nslayers(is)
+	  nb1 = 0
+	  if( ib1 > 0 ) nb1 = nblayers(ib1)
+	  nb2 = nblayers(ib2)
+	  lmax = nbs
 	  do l=1,lmax
 	    flux = dtbox * fluxesg(l,1,is)
 	    if( ib1 > 0 ) vol(l,ib1) = vol(l,ib1) - flux
 	    if( ib2 > 0 ) vol(l,ib2) = vol(l,ib2) + flux
 	    if( bdebug .and. abs(flux) > 0. ) then
-	      if( nblayers(ib1) < l .or. nblayers(ib2) < l ) then
+	      if( l > nb1 .or. l > nb2 ) then
+	       if( ib1 > 0 .and. nb1 > 0 ) then		
+		if( ierr == 0 ) write(6,'(19x,a)') trim(string)
                 write(6,'(a,6i5,g14.4)') 'non existing flux: '          &
      &                          ,is,ib1,ib2                             &
-     &				,nblayers(ib1),nblayers(ib2),l,flux
+     &				,nb1,nb2,l,flux
+		ierr = ierr + 1
+	       end if
 	      end if
 	    end if
 	  end do
@@ -3447,15 +3496,32 @@
 
 !******************************************************************
 
-	subroutine debug_nslayers
+	subroutine finalize_nslayers
+
 	use box
 	use box_arrays
 	use levels
 	use basin
+
 	implicit none
 
+	integer is,nbs,ib1,ib2,nb1,nb2
 	integer k,ie,i,ii,lmax
 	integer kk(2)
+
+!       isects(5,is)    description of section (n,type,box1,box2,ipnt)
+
+	do is=1,nsect
+	  nbs = nslayers(is)
+	  ib1 = isects(3,is)
+	  ib2 = isects(4,is)
+	  nb1 = nblayers(ib1)
+	  nb2 = nblayers(ib2)
+	  !write(6,*) is,ib1,ib2,nbs,nb1,nb2
+	  if( ib1 <= 0 ) nb1 = nb2	!do not use nb1
+	  nbs = min(nbs,nb1,nb2)
+	  nslayers(is) = nbs
+	end do
 
 	return
 
@@ -3475,4 +3541,33 @@
 
 	stop 'stop debug_nslayers'
 	end
+
+!******************************************************************
+
+	subroutine write_section_info
+
+!       isects(5,is)    description of section (n,type,box1,box2,ipnt)
+
+	use box
+	use box_arrays
+	use levels
+	use basin
+
+	implicit none
+
+	integer is,nbs
+
+	write(6,*) 'total number of sections: ',nsect
+	write(6,'(a)') '    is itype   ib1   ib2  lmax'
+
+	do is=1,nsect
+	  nbs = nslayers(is)
+	  write(6,'(5i6)') is,isects(2:4,is),nbs
+	end do
+
+	!stop 'write_section_info'
+
+	end
+
+!******************************************************************
 
