@@ -1,5 +1,14 @@
 ============================================================
 
+Thu Jan 25 21:43:52 EET 2024
+
+parametric wave module parllelized with OMP
+
+ fem3d/subwaves.f | 260 ++++++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 163 insertions(+), 97 deletions(-)
+
+============================================================
+
 Thu Jan 25 16:17:31 CET 2024
 
 eliminate compiler error in subboxa, small other stuff
