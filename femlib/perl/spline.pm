@@ -93,7 +93,7 @@
 require Exporter;
 package spline;
 @ISA=qw(Exporter);
-@EXPORT_OK=qw(linsearch binsearch spline);
+@EXPORT_OK=qw(linsearch binsearch spline Derivative2);
 use Carp;
 use strict;
 

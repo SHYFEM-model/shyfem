@@ -3532,7 +3532,11 @@
 	do ii=1,2
 	k = kk(ii)
 	do ie=1,nel
-	  i = findloc(nen3v(:,ie),k,1)
+	  !i = findloc(nen3v(:,ie),k,1)		!compiler error
+	  do i=1,3
+	    if( nen3v(i,k) == k ) exit
+	  end do
+	  if( i > 3 ) cycle
 	  if( i <= 0 ) cycle
 	  lmax = ilhv(ie)
 	  write(6,'(7i8)') k,nen3v(:,ie),ie,lmax,iboxes(ie)

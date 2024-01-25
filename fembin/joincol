@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -s
 
 #------------------------------------------------------------------------
 #
@@ -43,8 +43,7 @@ while( defined ($t0 = shift(@tbasic)) ) {
     $ref = $tref[$i];
     $t = shift(@$ref);
     if( $t != $t0 ) {
-	print "different times: $t0 $t\n";
-	die "error\n";
+	die "*** error... different times: $t0 $t\n";
     }
     $ref = $dref[$i];
     $d = shift(@$ref);

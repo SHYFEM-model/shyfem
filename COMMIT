@@ -1,5 +1,17 @@
 ============================================================
 
+Thu Jan 25 16:17:31 CET 2024
+
+eliminate compiler error in subboxa, small other stuff
+
+ fem3d/subboxa.f       | 6 +++++-
+ fembin/joincol        | 5 ++---
+ femlib/perl/date.pm   | 4 ++++
+ femlib/perl/spline.pm | 2 +-
+ 4 files changed, 12 insertions(+), 5 deletions(-)
+
+============================================================
+
 Wed Dec 20 23:11:59 CET 2023
 
 debug boxmodel 3d

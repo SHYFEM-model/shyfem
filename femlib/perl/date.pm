@@ -315,6 +315,8 @@ sub format_abs
 {
 	my ($self,$atime) = @_;
 
+	return "" unless $atime;
+
 	my ($date,$time) = $self->convert_from_abs($atime);
 	return $self->format_time_date($date,$time);
 }
@@ -322,6 +324,8 @@ sub format_abs
 sub unformat_abs
 {
 	my ($self,$aline) = @_;
+
+	return 0 unless $aline;
 
 	my @time = $self->unformat_time_date($aline);
 	my $atime = $self->convert_to_abs(@time);
