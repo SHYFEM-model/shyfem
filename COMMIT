@@ -1,5 +1,14 @@
 ============================================================
 
+Fri Jan 26 17:41:14 EET 2024
+
+bug fix for optional argument
+
+ fem3d/subfemutil.f | 29 ++++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
+
+============================================================
+
 Thu Jan 25 21:43:52 EET 2024
 
 parametric wave module parllelized with OMP

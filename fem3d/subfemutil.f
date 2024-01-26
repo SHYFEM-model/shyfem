@@ -38,6 +38,7 @@ c 01.04.2020    ggu     new routines to write regular fem file
 c 22.04.2020    ggu     module procedures introduced
 c 18.05.2020    ggu     check read/write of files, flag in structure
 c 10.07.2020    ggu     compiler warnings resolved (do not init arrays)
+c 26.01.2024    ggu     bug fix in femutil_read_record_ff() with optional
 c
 c**************************************************************
 c**************************************************************
@@ -418,7 +419,8 @@ c**************************************************************
 	integer llmax(frec%nvar)
 	character*80 file
 
-	bbskip = present(bskip) .and. bskip
+	bbskip = .false.
+	if( present(bskip) ) bbskip = bskip
 
 	iunit = ffile%iunit
 	iformat = ffile%iformat
@@ -586,6 +588,31 @@ c**************************************************************
 	type(femrec_type) :: frec_from,frec_to
 	frec_to = frec_from
 	end subroutine
+
+!******************************************************************
+
+	subroutine femfile_info(ffinfo)
+
+	type(femfile_type) :: ffinfo
+
+	integer iformat,iunit
+	character*20 fline
+	character*80 file
+
+        iformat = ffinfo%iformat
+        iunit = ffinfo%iunit
+	inquire(unit=iunit, name=file)
+        call fem_file_get_format_description(iformat,fline)
+
+        write(6,*) 'info on femfile'
+        write(6,*) 'file:   ',trim(file)
+        write(6,*) 'iunit:  ',ffinfo%iunit
+        write(6,*) 'nvers:  ',ffinfo%nvers
+        write(6,*) 'format: ',iformat,"  (",trim(fline),")"
+        write(6,*) 'bread:  ',ffinfo%bread
+        write(6,*) 'info on femfile finished'
+
+	end
 
 !******************************************************************
 
