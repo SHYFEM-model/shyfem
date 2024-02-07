@@ -12,8 +12,9 @@
 #
 #########################################################
 
-version=2.00
+version=2.01
 
+# 2.01	27.01.2024	new option -solid
 # 2.00	09.09.2023	can accept 24 hours date (GetSecs)
 # 1.99	29.11.2022	use -u if given for 2 data column
 # 1.98	19.02.2022	bug fix for option -labels
@@ -85,6 +86,7 @@ xfact="1"		# scaling of x axis
 yfact="1"		# scaling of y axis
 style=""
 color=""
+solid=""
 width=""
 xtics=""
 outfile=""
@@ -145,6 +147,7 @@ FullUsage()
   echo "  -xlog|-ylog      use logarithmic scaling for x/y axis"
   echo "  -style style     sets line style for following files"
   echo "  -color color     sets line color for following files"
+  echo "  -solid solid     transparency for line filling [0-1]"
   echo "  -width width     sets line width (integer) for following files"
   echo "  -dash dash       sets dash style (integer) for following files"
   echo "  -xtics xtics     sets tics style for x-axis"
@@ -266,6 +269,7 @@ HandleFiles()
     afiles[$n]=$file
     astyles[$n]=$style
     acolors[$n]=$color
+    asolids[$n]=$solid
     awidths[$n]=$width
     aaxes[$n]=$axes
     adash[$n]=$dash
@@ -277,6 +281,7 @@ InsertFiles()
 {
   local s=${astyles[0]}
   local c=${acolors[0]}
+  local t=${asolids[0]}
   local w=${awidths[0]}
   local x=${aaxes[0]}
   local d=${adash[0]}
@@ -289,6 +294,7 @@ InsertFiles()
     afiles[$n]=$file
     astyles[$n]=$s
     acolors[$n]=$c
+    asolids[$n]=$t
     awidths[$n]=$w
     aaxes[$n]=$x
     adash[$n]=$d
@@ -308,10 +314,11 @@ ShowFiles()
      f=${afiles[$m]}
      s=${astyles[$m]}
      c=${acolors[$m]}
+     t=${asolids[$m]}
      w=${awidths[$m]}
      x=${aaxes[$m]}
      d=${adash[$m]}
-     echo "$mm/$n $f $s $c $w $x $d"
+     echo "$mm/$n $f $s $c $t $w $x $d"
      ((m++))
      ((mm++))
   done
@@ -468,6 +475,7 @@ Plotting()
     file=${afiles[$1]}
     style=${astyles[$1]}
     color=${acolors[$1]}
+    solid=${asolids[$1]}
     width=${awidths[$1]}
     axes=${aaxes[$1]}
     dash=${adash[$1]}
@@ -476,6 +484,7 @@ Plotting()
     lc=""
     lw=""
     lt=""
+    fs=""
     use=$using
     if [ -n "$style" ]; then
       with="w $style"
@@ -494,7 +503,7 @@ Plotting()
         [ $usinggiven = "NO" ] && use="using 1:2:3"
       elif [ $style = "fill" ]; then	#needs two data columns
         [ $usinggiven = "NO" ] && use="using 1:2:3"
-        with="w filledcu"
+        with="w filledcurves"
       fi
     fi
     if [ -n "$axes" ]; then
@@ -503,17 +512,20 @@ Plotting()
     if [ -n "$dash" ]; then
       lt="lt $dash"
     fi
-    if [ -n "$color" ]; then
+    if [ -n "$color" -a "$color" != "none" ]; then
       lc="lc rgb '$color'"
     fi
     if [ -n "$width" ]; then
       lw="lw $width"
     fi
+    if [ -n "$solid" -a "$solid" != "none" ]; then
+      fs="fs transparent solid $solid"
+    fi
 
     [ -z "$2" ] && eol=' '
 
     legend=`MakeLegend $file`
-    line="     \"$file\" $use $axes title \"$legend\" $with $lt $lc $lw"
+    line="     \"$file\" $use $axes title \"$legend\" $with $lt $fs $lc $lw"
     echo "$cont $line $eol" >> gnu.tmp
     cont=', '
 
@@ -692,6 +704,7 @@ InsertLabels()
 declare -a afiles		#must be global
 declare -a astyles
 declare -a acolors
+declare -a asolids
 declare -a awidths
 declare -a aaxes
 declare -a adash
@@ -710,6 +723,7 @@ do
 	-xtics)		xtics=$2; shift;;
 	-style)		style=$2; shift;;
 	-color)		color=$2; shift;;
+	-solid)		solid=$2; shift;;
 	-width)		width=$2; shift;;
 	-dash)		dash=$2; shift;;
 	-xlog)		xlog="YES";;

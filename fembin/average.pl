@@ -324,6 +324,7 @@ sub read_cols
     foreach (@$lines) {
 	s/^\s+//;
 	next if /^\#/;
+	next if /NaN/;
 	my @f = split;
         my $ncols = @f;
         for(my $i=0;$i<$ncols;$i++) {

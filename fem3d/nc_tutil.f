@@ -40,7 +40,7 @@
 ! 14.02.2019	ggu	changed VERS_7_5_56
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 23.06.2022	ggu	allow for custom time correction (correct_nc_time*)
-!
+! 07.02.2024	ggu	changes in clean_time
 !
 ! notes :
 !
@@ -228,13 +228,17 @@ c*****************************************************************
 
 	len = len_trim(string)
 
-	if( string(len-1:len) == '.0' ) then
+	if( string(len-1:len) == '.0' ) then	! fractional part not allowed
 	  string(len-1:) = ' ' 
 	  len = len - 2
 	end if
-	if( string(len-1:len) == ':0' ) then
+	if( string(len-1:len) == ':0' ) then	! seconds only with 0 not 00
 	  string(len-1:) = ':00' 
 	  len = len + 1
+	end if
+	if( string(len:len) == 'Z' ) then	! extra chars after date
+	  string(len:len) = ' '
+	  len = len - 1
 	end if
 
 	end

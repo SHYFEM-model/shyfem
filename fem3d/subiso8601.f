@@ -36,6 +36,7 @@
 ! 13.07.2018	ggu	changed VERS_7_4_1
 ! 16.02.2019	ggu	changed VERS_7_5_60
 ! 21.10.2021	ggu	allow for short version of date: YYYY-M-D
+! 07.02.2024	ggu	bug fix for YYYY-M-D (bless)
 !
 ! notes :
 !
@@ -120,11 +121,11 @@
 	  ia = ichar(ll(10:10))
 	  if( ia.lt.ia0.or.ia.gt.ia9 ) nl = 9		!no digit
         else if( bless ) then
-          read(ll(1:10) ,'(i4,1x,i1,1x,i2)',iostat=ios) dt(1:3)
+          read(ll(1:8) ,'(i4,1x,i1,1x,i1)',iostat=ios) dt(1:3)
 	  if( ios /= 0 ) goto 9
-	  nl = 9
-	  ia = ichar(ll(9:9))
-	  if( ia.lt.ia0.or.ia.gt.ia9 ) nl = 8		!no digit
+	  nl = 8
+	  !ia = ichar(ll(9:9))
+	  !if( ia.lt.ia0.or.ia.gt.ia9 ) nl = 8		!no digit
 	else						!try basic
           read(ll(1:8) ,'(i4,i2,i2)',err=9) dt(1:3)
 	  nl = 8

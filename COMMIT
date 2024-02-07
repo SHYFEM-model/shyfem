@@ -1,5 +1,22 @@
 ============================================================
 
+Wed Feb  7 14:06:58 CET 2024
+
+new utilities, bug fix for netcdf
+
+ fem3d/nc_tutil.f     |  10 ++--
+ fem3d/subiso8601.f   |   9 ++--
+ fembin/average.pl    |   1 +
+ fembin/gp            |  24 +++++++--
+ fembin/rename.sh     |  36 +++++++++++++
+ femlib/perl/histo.pm | 149 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 217 insertions(+), 12 deletions(-)
+ new file:
+   fembin/rename.sh
+   femlib/perl/histo.pm
+
+============================================================
+
 Fri Jan 26 17:41:14 EET 2024
 
 bug fix for optional argument
