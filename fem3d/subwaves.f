@@ -286,11 +286,11 @@ c**************************************************************
 	use mod_roughness
 	use levels, only : nlvdi,nlv
 	use basin, only : nkn,nel,ngr,mbw
+	!use pkonst
 
         implicit none
 
 c common
-	include 'param.h'
 	include 'pkonst.h'
 
 c local
@@ -557,9 +557,7 @@ c local
 
         implicit none
 
-	!include 'param.h'
-
-	real, allocatable	:: ddl(:,:) !3D layer depth (in the middle of layer)
+	real, allocatable	:: ddl(:,:) !3D layer depth (mid-layer)
 	real, allocatable 	:: h(:)
         integer it              !time [s]
         integer k,l,nlev,flev,lmax
@@ -707,8 +705,6 @@ c local
 
         implicit none
 
-        !include 'param.h'
-
         real SXX3D(nlv,nkn)       !radiation stress xx
         real SYY3D(nlv,nkn)       !radiation stress yy
         real SXY3D(nlv,nkn)       !radiation stress xy
@@ -755,11 +751,9 @@ c local
 	use evgeom
 	use levels
 	use basin
+	!use pkonst
 
         implicit none
-
-c parameters
-        !include 'param.h'
 
 c arguments
         double precision stokesx(nlv,nkn) !x stokes velocity

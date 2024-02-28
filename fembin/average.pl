@@ -12,6 +12,7 @@
 #
 # -move=m	computes moving average over m data (on both sides)
 # -gauss=s	computes gaussian average with std=s
+# -trend	computes trend
 # -col=c	averages only column c, else all columns
 # -noxcol	files has no x/time column
 # -fact=f	multiplies columns with f
@@ -40,6 +41,7 @@ $::h = 0 unless $::h;
 $::help = 0 unless $::help;
 $::move = 0 unless $::move;
 $::gauss = 0 unless $::gauss;
+$::trend = 0 unless $::trend;
 $::regress = 0 unless $::regress;
 $::noxcol = 0 unless $::noxcol;
 $::col = 0 unless $::col;
@@ -94,6 +96,9 @@ if( $::minmaxes ) {
 } elsif( $::move or $::gauss ) {
     $cols[1] = average_timeseries($cols[1],$kernel);
     print_cols(@cols);
+} elsif( $::trend ) {
+    ($a,$b) = make_trend($cols[1]);
+    print "trend: $a $b\n";
 } elsif( $::regress ) {
     print STDERR "computing linear regression\n";
     my $ncols = @cols;
@@ -175,6 +180,33 @@ sub aver
     $aver = $total if $::sum;
 
     return ($aver,$std);
+}
+
+###############################################################
+
+sub make_trend
+{
+  my ($val) = @_;
+
+  my $n = @$val;
+
+  my $x0 = ($n-1)/2.;
+
+  my ($yy,$xy,$xx) = 0;
+
+  for( my $i=0; $i<$n; $i++ ) {
+    my $x = $i - $x0;
+    my $y = $val->[$i];;
+    $yy += $y;
+    $xy += $x*$y;
+    $xx += $x*$x;
+  }
+
+  my $a = $yy / $n;
+  my $b = $xy / $xx;
+  $a += $x0;
+
+  return ($a,$b);
 }
 
 ###############################################################
@@ -411,6 +443,7 @@ sub fullusage
   print "  options:\n";
   print "  -move=m	computes moving average over m data (on both sides)\n";
   print "  -gauss=s	computes gaussian average with std=s\n";
+  print "  -trend	computes trend of timeseries\n";
   print "  -regress	computes linear regression\n";
   print "  -col=c	averages only column c, else all columns\n";
   print "  -noxcol	file has no x/time column\n";
