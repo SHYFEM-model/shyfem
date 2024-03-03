@@ -132,6 +132,7 @@ c 02.06.2021	ggu	call levels_reinit() changed to levels_hlv_reinit()
 c 20.07.2021	ggu	test if file has been opened for velocities
 c 21.10.2022	ggu	in init_vertical() bug fix - update sigma_info (GGUBS)
 c 28.04.2023	ggu	possible nkn=nel bug flagged with GGU_NKN_NEL
+c 03.03.2024    ggu     bug fix in init_file_uv() - reset np
 c
 c notes :
 c
@@ -1625,6 +1626,8 @@ c initializes water level from file
 	  write(6,*) 'read error from file ',trim(name)
 	  stop 'error stop init_file_uv: np'
 	end if
+
+        np = nkn		!velocities must be on node - relax later
 
         call iff_init(dtime,name,nvar,np,lmax,nintp
      +                          ,nodes,uvconst,idvel)

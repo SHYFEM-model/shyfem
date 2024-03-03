@@ -1,5 +1,16 @@
 ============================================================
 
+Sun Mar  3 18:06:50 CET 2024
+
+bug fix in newini.f, sediemnts in netcdf.f
+
+ fem3d/netcdf.f    | 46 ++++++++++++++++++++++++++++++++++++++++-
+ fem3d/newini.f    |  3 +++
+ fembin/git-commit | 62 ++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 102 insertions(+), 9 deletions(-)
+
+============================================================
+
 Wed Feb 28 10:31:27 CET 2024
 
 small changes to bring on par with shyfemcm

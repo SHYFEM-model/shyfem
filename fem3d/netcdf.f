@@ -66,6 +66,7 @@ c 22.04.2021	ggu	accept short data type (NF_SHORT)
 c 20.03.2022	ggu	accept int64 data type for time variable
 c 20.06.2022	ggu	maximum dimensions updated
 c 09.05.2023    lrp     write vertical velocity and density
+c 02.03.2024    ccf     new entries for sediments
 c
 c notes :
 c
@@ -293,7 +294,8 @@ c---------------------
 
 c---------------------
 
-	retval = nf_def_var(ncid, 'total_depth', NF_REAL, 2, matrix_dimid
+	retval = nf_def_var(ncid, 'total_depth', NF_REAL
+     +				, 2, matrix_dimid
      +				,dep_varid)
 	call nc_handle_err(retval,'open_reg')
 	varid = dep_varid
@@ -2711,6 +2713,48 @@ c*****************************************************************
 	  units = 'm'
 	  cmin = 0.
 	  cmax = 100.
+	else if( ivar .eq. 800 ) then	! suspended sediment concentration
+	  name = 'ssc'
+	  what = 'long_name'
+	  std = 'suspended_sediment_concentration'
+	  units = 'kg m-3'
+	  cmin = 0.
+	  cmax = 10000.
+	else if( ivar .eq. 891 ) then	! sediment erosion-deposition
+	  name = 'erosion-deposition'
+	  what = 'long_name'
+	  std = 'erosion-deposition'
+	  units = 'm'
+	  cmin = 0.
+	  cmax = 100.
+	else if( ivar .eq. 892 ) then	! sediment grainsize
+	  name = 'sediment_grainsize'
+	  what = 'long_name'
+	  std = 'average sediment grainsize'
+	  units = 'm'
+	  cmin = 0.
+	  cmax = 1.
+	else if( ivar .eq. 893 ) then	! bottom_shear_stress
+	  name = 'bottom_shear_stress'
+	  what = 'long_name'
+	  std = 'bottom_shear_stress'
+	  units = 'm'
+	  cmin = 0.
+	  cmax = 100.
+	else if( ivar .eq. 894 ) then	! mud_fraction
+	  name = 'mud_fraction'
+	  what = 'long_name'
+	  std = 'mud_fraction'
+	  units = ''
+	  cmin = 0.
+	  cmax = 1.
+	else if( ivar .eq. 895 ) then	! bedload_transport
+	  name = 'bedload_transport'
+	  what = 'long_name'
+	  std = 'bedload_transport'
+	  units = 'kg/ms'
+	  cmin = 0.
+	  cmax = 1.
 	else
 	  write(6,*) 'unknown variable: ',ivar
 	  stop 'error stop descr_var'
