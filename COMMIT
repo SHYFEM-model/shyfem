@@ -1,5 +1,14 @@
 ============================================================
 
+Wed Mar  6 11:58:07 CET 2024
+
+preparing for last tag
+
+ fem3d/subver.f | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+============================================================
+
 Wed Mar  6 11:55:39 CET 2024
 
 helper routines, last commit before final

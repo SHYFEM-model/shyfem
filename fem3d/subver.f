@@ -383,6 +383,7 @@ c 04.12.2022	ggu	version 7.5.81  Malta edition
 c 04.12.2022	ggu	version 7.5.82  Malta edition bis
 c 24.03.2023	ggu	version 7.5.83  Pre-Istanbul23 edition
 c 25.09.2023	ggu	version 7.5.84  Pre-community edition
+c 06.03.2024	ggu	version 7.5.85  This is the end edition
 c
 c*****************************************************************
 
@@ -392,8 +393,8 @@ c*****************************************************************
 
 c DOCS	START	P_version
 c
-c \newcommand{\VERSION}{7.5.84}
-c \newcommand{\version}{7\_5\_84}
+c \newcommand{\VERSION}{7.5.85}
+c \newcommand{\version}{7\_5\_85}
 c \newcommand{\COMMIT}{2024-03-06}
 c
 c DOCS	END
@@ -402,7 +403,7 @@ c DOCS	END
 
 	logical, save		:: bshort = .false.
 
-        character*10, parameter :: version = '7.5.84'
+        character*10, parameter :: version = '7.5.85'
         character*10, parameter :: commit  = '2024-03-06'
         character*17, parameter :: text    = 'SHYFEM VERSION = '
 
@@ -411,7 +412,7 @@ c DOCS	END
 	character*50, parameter :: acronym =
      +	    	'System of HydrodYnamic Finite Element Modules'
 	character*50, parameter :: copyright =
-     +		'Copyright (C) The Shyfem Team 1985-2023'
+     +		'Copyright (C) The Shyfem Team 1985-2024'
 
 !=================================================================
 	end module shyfem_version
