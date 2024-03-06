@@ -1,3 +1,78 @@
+version  7_5_85    06-03-2024    VERS_7_5_85
+
+========================================================== 06-03-2024 - 7_5_85
+
+c ./fem3d/new36.f:
+c 09.11.2023	ggu	daux introduced to avoid error
+c
+c ./fem3d/subhisto.f:
+c 28.09.2023	ggu	include substituted with module
+c
+c ./fem3d/newini.f:
+c 03.03.2024    ggu     bug fix in init_file_uv() - reset np
+c
+c ./fem3d/subflxu.f:
+c 28.10.2023	ggu	bug fix for node at boundary with ibtyp==3
+c
+c ./fem3d/shyfem.f:
+! 11.12.2023    ggu     f90 style format
+! 11.12.2023    ggu     create subroutines for init/run/finalize
+! 12.12.2023    ggu     introduce dtmax to make limited run
+!
+c ./fem3d/subn11.f:
+c 18.12.2023    ggu     new routine get_discharge_3d()
+c
+c ./fem3d/netcdf.f:
+c 02.03.2024    ccf     new entries for sediments
+c
+c ./fem3d/lagrange_vertical.f:
+c 28.09.2023    lrp     bug fix for zstar (wrong declaration nadapt/hadapt)
+c
+c ./fem3d/subiso8601.f:
+! 07.02.2024	ggu	bug fix for YYYY-M-D (bless)
+!
+c ./fem3d/subflx3d.f:
+c 11.12.2023	ggu	prepared for new 3d flux computation
+c 18.12.2023	ggu	finished for new 3d flux computation
+c 20.12.2023	ggu	debugged 3d flux computation, still to be cleaned
+c
+c ./fem3d/subver.f:
+c 06.03.2024	ggu	version 7.5.85  This is the end edition
+c
+c ./fem3d/subfemutil.f:
+c 26.01.2024    ggu     bug fix in femutil_read_record_ff() with optional
+c
+c ./fem3d/subtime.f:
+c 12.12.2023    ggu     introduced dtmax (maximum time to run to)
+c
+c ./fem3d/subvola.f:
+c 28.09.2023    ggu     include substituted by module
+c
+c ./fem3d/nc_tutil.f:
+! 07.02.2024	ggu	changes in clean_time
+!
+c ./fem3d/shyelab1.f:
+! 29.09.2023    ggu     new atime0out for correct concatenating of files
+c
+c ./fem3d/subboxa.f:
+! 25.10.2023	ggu	eps2d and eps3d introduced
+! 28.10.2023	ggu	bug fix for not existing boundaries
+! 02.12.2023	ggu	changes marked with GGU_LAST
+! 06.12.2023	ggu	more in assert_values(), 3d writing and check better
+! 18.12.2023	ggu	new version 6
+! 20.12.2023	ggu	bug fixes for flux computation, no OBC section
+!
+c ./fem3d/subwaves.f:
+! 25.01.2024    ggu     in parwaves() introduced OMP parallelization
+!
+c ./femplot/shyplot.f:
+! 28.09.2023    lrp     bug fix for zstar (forgotten parameter)
+!
+c ./femplot/supdep.f:
+c 28.09.2023    lrp     bug fix for zstar (forgotten parameter)
+
+==========================================================
+
 version  7_5_84    25-09-2023    VERS_7_5_84   commit_2024-03-06
 
 version  7_5_84    25-09-2023    VERS_7_5_84   commit_2024-03-06
