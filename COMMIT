@@ -1,5 +1,21 @@
 ============================================================
 
+Wed Mar  6 11:55:39 CET 2024
+
+helper routines, last commit before final
+
+ fem3d/Makefile           |  1 +
+ fem3d/netcdf.f           |  2 +-
+ fembin/shyfem_dir.sh     | 42 +++++++++++++++++++++++++++++++-----------
+ fembin/shyfem_profile.sh | 21 +++++++++++++--------
+ fembin/shyfem_version.pl |  2 +-
+ fembin/shyfem_version.sh | 15 ++++++++++++---
+ fembin/subst_make.pl     | 14 +++++++++++---
+ femcheck/test_compile.sh |  3 +++
+ 8 files changed, 73 insertions(+), 27 deletions(-)
+
+============================================================
+
 Sun Mar  3 18:06:50 CET 2024
 
 bug fix in newini.f, sediemnts in netcdf.f

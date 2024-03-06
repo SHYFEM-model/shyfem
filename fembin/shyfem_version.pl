@@ -28,7 +28,7 @@ chomp;
 @f = split;
 $n = @f;
 
-die "cannot parse first line of VERSION file:\n$_\n" unless /^version/;
+die "*** cannot parse first line of VERSION file:\n$_\n" unless /^version/;
 
 if( $noextra ) {
   s/\s+\S+\s*$// if $n >= 5;

@@ -44,9 +44,13 @@ if( -f $skel ) {		# read file
   %vals = parse_macros($skel);
 }
 
-foreach my $key (keys %vals) {
-  my $val = $vals{$key};
-  print STDERR "$key  ->  $val\n" unless $quiet;
+unless( $quiet ) {
+  print STDERR "...after parsing\n";
+  foreach my $key (keys %vals) {
+    my $val = $vals{$key};
+    print STDERR "$key  ->  $val\n";
+  }
+  print STDERR "...finished parsing\n";
 }
 
 #------------------------- substitute in Makefile
@@ -91,6 +95,10 @@ sub parse_macros {
 
   foreach $macro (@f) {
     if( $macro =~ /^(\w+)=(\w+)$/ ) {
+      my $key = $1;
+      my $val = $2;
+      $vals{$key} = $val;
+    } elsif( $macro =~ /^(\w+)=(\S+)$/ ) {
       my $key = $1;
       my $val = $2;
       $vals{$key} = $val;

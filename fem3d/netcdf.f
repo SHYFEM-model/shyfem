@@ -1056,7 +1056,7 @@ c*****************************************************************
  1010     format(3i5,a,a)
 
 	  if( blong ) then
-	    do ia=1,n atts
+	    do ia=1,natts
 	      retval = nf_inq_attname(ncid,var_id,ia,aname)
 	      call nc_handle_err(retval,'get_var_info')
 	      retval = nf_inq_att(ncid,var_id,aname,xtype,length)
